@@ -28,7 +28,7 @@ class UpstageParseNode(BaseNode):
         self.api_key = api_key
         self.config = DEFAULT_CONFIG
 
-    def _execute_upstage_digitization(self, input_file_path : str):
+    def _parse_document_via_upstage(self, input_file_path : str):
         """
         Upstage의 Document Parse API를 호출하여 문서 분석을 수행합니다.
 
@@ -63,4 +63,31 @@ class UpstageParseNode(BaseNode):
         else:
             # API 요청이 실패한 경우 예외 발생
             raise ValueError(f"Unexpected status code: {response.status_code}")
-        
+    
+    def run(self, state: ParseState):
+        """
+        주어진 입력 파일에 대해 문서 분석을 실행합니다.
+
+        :param input_file: 분석할 PDF 파일의 경로
+        :return: 분석 결과가 저장된 JSON 파일의 경로
+        """
+
+        start_time = time.time()
+        filepath = state['filepath']
+        self.log(f"Start Parsing: {filepath}")
+
+        parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
+
+        with open(parsed_document_json_file_path, 'r') as f:
+            data = json.load(f)
+
+        metadata = {
+            'api' : data.pop('api'),
+            'model' : data.pip('model'),
+            'usage' : data.pop('usage'),
+        }
+
+        duration = time.time() - start_time
+        self.log(f"Finished Parsing in {duration:.2f} seconds")
+
+        return {"metadata": [metadata], "raw_elements": [data["elements"]]}
