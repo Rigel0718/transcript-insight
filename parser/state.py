@@ -9,7 +9,6 @@ class ParseState(TypedDict):
     filetype: Annotated[
         str, "filetype"
     ]
-    working_filepath: Annotated[str, "working_filepath"]  # 현재 작업중인 파일
 
     metadata: Annotated[
         List[Dict], operator.add
@@ -17,9 +16,6 @@ class ParseState(TypedDict):
 
 
     raw_elements: Annotated[List[Dict], operator.add]  # raw elements from Upstage
-    elements_from_parser: Annotated[
-        List[Dict], "elements_from_parser"
-    ]  # elements after post-processing
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
     reconstructed_elements: Annotated[
