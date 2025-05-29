@@ -1369,6 +1369,8 @@ name = "transcript-insight"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "ipython", version = "8.36.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "ipython", version = "9.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "langchain" },
     { name = "langchain-core" },
     { name = "pandas" },
@@ -1384,6 +1386,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ipython", specifier = ">=8.36.0" },
     { name = "langchain", specifier = ">=0.3.25" },
     { name = "langchain-core", specifier = ">=0.3.62" },
     { name = "pandas", specifier = ">=2.2.3" },
