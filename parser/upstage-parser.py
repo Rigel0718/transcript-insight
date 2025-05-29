@@ -1,0 +1,66 @@
+import requests
+import json
+import os
+import time
+from .base import BaseNode
+from .state import ParseState
+
+
+
+DEFAULT_CONFIG = {
+    "ocr": "auto",    # "auto" | "force"
+    "coordinates": True, # true | false
+    "output_formats": "['html', 'text', 'markdown']", # default ['html]
+    "model": "document-parse",
+    "base64_encoding": "['figure', 'chart', 'table']", # default []
+}
+
+
+class UpstageParseNode(BaseNode):
+    def __init__(self, api_key, verbose=False, **kwargs):
+        """
+        DocumentParse 클래스의 생성자
+
+        :param api_key: Upstage API 인증을 위한 API 키
+        :param config: API 요청에 사용할 설정값. None인 경우 기본 설정 사용
+        """
+        super().__init__(verbose=verbose, **kwargs)
+        self.api_key = api_key
+        self.config = DEFAULT_CONFIG
+
+    def _execute_upstage_digitization(self, input_file_path : str):
+        """
+        Upstage의 Document Parse API를 호출하여 문서 분석을 수행합니다.
+
+        :param input_file: 분석할 PDF 파일의 경로
+        :return: 분석 결과가 저장된 JSON 파일의 경로
+        """
+
+        # API request header
+        headers = {'Authorization' : f'Bearer {self.api_key}'}
+
+        # post API requests
+        with open(input_file_path, 'rb') as f:
+            files = {"document": f}
+            response = requests.post(
+                "https://api.upstage.ai/v1/document-digitization",
+                headers=headers,
+                data=self.config,
+                files=files
+            )
+        
+
+        # API 응답 처리 및 결과 저장
+        if response.status_code == 200:
+            # 분석 결과를 저장할 JSON 파일 경로 생성
+            output_file_path = os.path.splitext(input_file_path)[0] + ".json"
+
+            # 분석 결과를 JSON 파일로 저장
+            with open(output_file_path, "w") as f:
+                json.dump(response.json(), f, ensure_ascii=False, indent=2)
+
+            return output_file_path
+        else:
+            # API 요청이 실패한 경우 예외 발생
+            raise ValueError(f"Unexpected status code: {response.status_code}")
+        
