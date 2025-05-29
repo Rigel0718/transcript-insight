@@ -116,3 +116,76 @@ class ExportHTML(BaseNode):
         self.log(f"HTML file was successfully created: {html_filepath}")
 
         return {"export": [html_filepath]}
+    
+
+
+
+class ExportMarkdown(BaseNode):
+    def __init__(
+        self,
+        ignore_new_line_in_text=False,
+        show_image=True,
+        verbose=False,
+        **kwargs,
+    ):
+        """문서 내용을 마크다운 형식으로 변환하여 저장하는 클래스입니다.
+
+        이미지는 로컬 파일 경로를 참조하는 방식으로 저장됩니다.
+        테이블은 마크다운 테이블 문법으로 변환됩니다.
+        텍스트의 줄바꿈 처리를 선택적으로 할 수 있습니다.
+        """
+        super().__init__(verbose=verbose, **kwargs)
+        self.ignore_new_line_in_text = ignore_new_line_in_text
+        self.show_image = show_image
+        self.separator = "\n\n"
+
+    def _add_src_to_markdown(self, png_filepath):
+        if not png_filepath:
+            return ""
+        return f"![]({png_filepath})"
+
+    def run(self, state: ParseState):
+        # 원본 파일의 전체 경로를 유지하면서 확장자만 .md로 변경
+        filepath = state["filepath"]
+        dirname = os.path.abspath(os.path.dirname(filepath))
+        basename = os.path.basename(filepath)
+        md_basename = os.path.splitext(basename)[0] + ".md"
+        md_filepath = os.path.join(dirname, md_basename)
+
+        # full_markdown 내용을 파일로 저장
+        with open(md_filepath, "w", encoding="utf-8") as f:
+            for elem in state["elements_from_parser"]:
+                # 주석 처리된 요소는 제외
+                if elem["category"] in ["header", "footer", "footnote"]:
+                    continue
+
+                if elem["category"] in ["figure", "chart"]:
+                    # png_filepath가 있는지 확인
+                    if self.show_image:
+                        png_filepath = elem.get("png_filepath")
+                        modified_md = self._add_src_to_markdown(png_filepath)
+                        f.write(modified_md + self.separator)
+
+                elif elem["category"] in ["table"]:
+                    # png_filepath가 있는지 확인
+                    if self.show_image:
+                        png_filepath = elem.get("png_filepath")
+                        modified_md = self._add_src_to_markdown(png_filepath)
+                        f.write(modified_md + self.separator)
+                    # markdown 형식의 테이블 추가
+                    f.write(elem["content"]["markdown"] + self.separator)
+
+                elif elem["category"] in ["paragraph"]:
+                    if self.ignore_new_line_in_text:
+                        f.write(
+                            elem["content"]["markdown"].replace("\n", " ")
+                            + self.separator
+                        )
+                    else:
+                        f.write(elem["content"]["markdown"] + self.separator)
+                else:
+                    f.write(elem["content"]["markdown"] + self.separator)
+
+        self.log(f"Markdown file was successfully created: {md_filepath}")
+
+        return {"export": [md_filepath]}
