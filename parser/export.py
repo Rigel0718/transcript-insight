@@ -93,7 +93,7 @@ class ExportHTML(BaseNode):
 
         # full_markdown 내용을 파일로 저장
         with open(html_filepath, "w", encoding="utf-8") as f:
-            for elem in state["elements_from_parser"]:
+            for elem in state["raw_elements"]:
                 # 주석 처리된 요소는 제외
                 if elem["category"] in ["header", "footer", "footnote"]:
                     continue
@@ -154,7 +154,7 @@ class ExportMarkdown(BaseNode):
 
         # full_markdown 내용을 파일로 저장
         with open(md_filepath, "w", encoding="utf-8") as f:
-            for elem in state["elements_from_parser"]:
+            for elem in state["raw_elements"]:
                 # 주석 처리된 요소는 제외
                 if elem["category"] in ["header", "footer", "footnote"]:
                     continue
