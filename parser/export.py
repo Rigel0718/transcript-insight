@@ -7,6 +7,7 @@ from io import StringIO
 import pandas as pd
 from .base import BaseNode
 from .state import ParseState
+from bs4 import BeautifulSoup
 
 class ExportImage(BaseNode):
     def __init__(self, verbose=False, **kwargs):
@@ -189,3 +190,73 @@ class ExportMarkdown(BaseNode):
         self.log(f"Markdown file was successfully created: {md_filepath}")
 
         return {"export": [md_filepath]}
+    
+
+
+class ExportTableCSV(BaseNode):
+    def __init__(self, verbose=False, **kwargs):
+        """문서에서 추출한 테이블을 CSV 형식으로 저장하는 클래스입니다.
+
+        HTML 형식의 테이블을 파싱하여 CSV 파일로 변환합니다.
+        각 테이블은 개별 CSV 파일로 저장되며, 파일명에는 페이지 번호와 인덱스가 포함됩니다.
+        """
+        super().__init__(verbose=verbose, **kwargs)
+
+    def run(self, state: ParseState):
+        # 원본 파일의 전체 경로를 유지하면서 확장자만 .csv로 변경
+        filepath = state["filepath"]
+
+        dirname = os.path.dirname(filepath)
+        # dirname 내에 tables 폴더와 하위 카테고리 폴더 생성
+        table_dir = os.path.join(dirname, "tables")
+        os.makedirs(table_dir, exist_ok=True)
+
+        basename = os.path.basename(filepath)
+        base_without_ext = os.path.splitext(basename)[0]
+
+        csv_filepaths = []
+
+        # 테이블 데이터 추출 및 변환
+        for elem in state["raw_elements"]:
+            if elem["category"] == "table":
+                # BeautifulSoup으로 HTML 파싱
+                soup = BeautifulSoup(elem["content"]["html"], "html.parser")
+
+                # 불규칙한 문자 정리
+                for td in soup.find_all("td"):
+                    td.string = (
+                        td.get_text(strip=True).replace("\\t", " ").replace("\t", " ")
+                    )
+
+                # 정리된 HTML을 문자열로 변환
+                cleaned_html = str(soup)
+                cleaned_html_io = StringIO(cleaned_html)
+
+                # pandas로 테이블 파싱
+                try:
+                    parsed_tables = pd.read_html(cleaned_html_io)
+                    for table in parsed_tables:
+                        # 각 테이블마다 개별 CSV 파일 생성 (페이지 번호와 인덱스 번호 포함)
+                        csv_filename = f"{base_without_ext.upper()}_TABLE_Page_Index_{elem['id']}.csv"
+                        csv_filepath = os.path.join(table_dir, csv_filename)
+                        absolute_path = os.path.abspath(csv_filepath)
+
+                        # CSV 파일로 저장
+                        table.to_csv(absolute_path, index=False, encoding="utf-8-sig")
+                        csv_filepaths.append(absolute_path)
+                        elem["csv_filepath"] = absolute_path
+                        self.log(
+                            f"CSV file was successfully created: {absolute_path}"
+                        )
+                except Exception as e:
+                    self.log(f"Error occurred while parsing table: {str(e)}")
+                    continue
+
+        if csv_filepaths:
+            return {
+                "elements_from_parser": state["elements_from_parser"],
+                "export": csv_filepaths,
+            }
+        else:
+            self.log("No tables available for conversion.")
+            return {"raw_elements": state["raw_elements"], "export": []}
