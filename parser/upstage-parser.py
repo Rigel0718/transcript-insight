@@ -83,7 +83,7 @@ class UpstageParseNode(BaseNode):
 
         metadata = {
             'api' : data.pop('api'),
-            'model' : data.pip('model'),
+            'model' : data.pop('model'),
             'usage' : data.pop('usage'),
         }
 
