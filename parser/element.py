@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Dict, Optional
 from pydantic import BaseModel
 
@@ -13,5 +14,5 @@ class Element(BaseModel):
     coordinates: Optional[List[Dict]] = None
     entity: str = ""
 
-    def copy(self) -> "Element":
+    def copy(self) -> Element:
         return self.model_copy(deep=True)
