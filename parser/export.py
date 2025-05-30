@@ -11,7 +11,8 @@ from bs4 import BeautifulSoup
 
 class ExportImage(BaseNode):
     def __init__(self, verbose=False, **kwargs):
-        """문서에서 추출한 이미지를 PNG 파일로 저장하는 클래스입니다.
+        """
+        문서에서 추출한 이미지를 PNG 파일로 저장하는 클래스입니다.
 
         base64로 인코딩된 이미지 데이터를 디코딩하여 PNG 파일로 저장합니다.
         저장된 이미지는 카테고리별로 분류되어 저장됩니다.
@@ -66,7 +67,8 @@ class ExportImage(BaseNode):
 
 class ExportHTML(BaseNode):
     def __init__(self, ignore_new_line_in_text=False, verbose=False, **kwargs):
-        """문서 내용을 HTML 형식으로 변환하여 저장하는 클래스입니다.
+        """
+        문서 내용을 HTML 형식으로 변환하여 저장하는 클래스입니다.
 
         이미지가 포함된 경우 base64 인코딩을 통해 HTML 내에 직접 삽입합니다.
         텍스트의 줄바꿈 처리를 선택적으로 할 수 있습니다.
@@ -129,7 +131,8 @@ class ExportMarkdown(BaseNode):
         verbose=False,
         **kwargs,
     ):
-        """문서 내용을 마크다운 형식으로 변환하여 저장하는 클래스입니다.
+        """
+        문서 내용을 마크다운 형식으로 변환하여 저장하는 클래스입니다.
 
         이미지는 로컬 파일 경로를 참조하는 방식으로 저장됩니다.
         테이블은 마크다운 테이블 문법으로 변환됩니다.
@@ -195,7 +198,8 @@ class ExportMarkdown(BaseNode):
 
 class ExportTableCSV(BaseNode):
     def __init__(self, verbose=False, **kwargs):
-        """문서에서 추출한 테이블을 CSV 형식으로 저장하는 클래스입니다.
+        """
+        문서에서 추출한 테이블을 CSV 형식으로 저장하는 클래스입니다.
 
         HTML 형식의 테이블을 파싱하여 CSV 파일로 변환합니다.
         각 테이블은 개별 CSV 파일로 저장되며, 파일명에는 페이지 번호와 인덱스가 포함됩니다.
