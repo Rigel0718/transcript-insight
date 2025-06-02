@@ -264,3 +264,6 @@ class ExportTableCSV(BaseNode):
         else:
             self.log("No tables available for conversion.")
             return {"raw_elements": state["raw_elements"], "export": []}
+        
+
+# TODO Export에서 Json 형식의 자료구조를 추가하기. 약간 신문 기사를 parsing해오는 느낌으로.
