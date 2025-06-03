@@ -71,7 +71,7 @@ class UpstageParseNode(BaseNode):
         :param input_file: 분석할 PDF 파일의 경로
         :return: 분석 결과가 저장된 JSON 파일의 경로
         """
-
+    
         start_time = time.time()
         filepath = state['filepath']
         self.log(f"Start Parsing: {filepath}")
