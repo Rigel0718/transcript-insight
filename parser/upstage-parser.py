@@ -94,3 +94,29 @@ class UpstageParseNode(BaseNode):
 
 
 #TODO Upstage OCR 기능 추가하기. -> 위에 Document Parsing과 OCR 기능을 상속 받을 수 있는 기초 클래스를 생성도 추가.
+
+
+
+
+def document_ocr_via_upstage(input_file_path : str):
+    model = 'ocr'
+    api_key = os.environ.get('UPSTAGE_API_KEY') 
+    url = "https://api.upstage.ai/v1/document-digitization"
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    files = {"document": open(input_file_path, "rb")}
+    data = {"model": model}
+    response = requests.post(url, headers=headers, files=files, data=data)
+
+    if response.status_code == 200:
+        # 분석 결과를 저장할 JSON 파일 경로 생성
+        output_file_path = os.path.splitext(input_file_path)[0]+ '_ocr_' + ".json"
+
+        # 분석 결과를 JSON 파일로 저장
+        with open(output_file_path, "w") as f:
+            json.dump(response.json(), f, ensure_ascii=False, indent=2)
+
+        return output_file_path
+    else:
+        # API 요청이 실패한 경우 예외 발생
+        raise ValueError(f"Unexpected status code: {response.status_code}")
