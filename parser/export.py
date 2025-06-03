@@ -313,3 +313,11 @@ def group_by_lines(ocr_data, page_width, num_cols=3, y_threshold=3):
         lines.append(current_line_sorted)
 
     return lines
+
+
+def format_as_text(lines):
+    return "\n".join(
+        # f"[{' '.join(item.replace('|', 'I') for item in line)}]"
+        f"{' '.join(item.replace('|', 'I') for item in line)}"
+        for line in lines
+    )
