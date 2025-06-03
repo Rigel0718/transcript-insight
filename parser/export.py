@@ -267,3 +267,49 @@ class ExportTableCSV(BaseNode):
         
 
 # TODO Export에서 Json 형식의 자료구조를 추가하기. 약간 신문 기사를 parsing해오는 느낌으로.
+
+from collections import defaultdict
+
+def group_by_lines(ocr_data, page_width, num_cols=3, y_threshold=3):
+    col_width = page_width / num_cols
+    columns = defaultdict(list)
+
+    # Step 1: 열 분류
+    for entry in ocr_data:
+        x0 = entry["boundingBox"]["vertices"][0]["x"]
+        y0 = entry["boundingBox"]["vertices"][0]["y"]
+        col_index = int(x0 // col_width)
+        col_index = min(col_index, num_cols - 1)
+        columns[col_index].append((y0, x0, entry["text"]))  # 🔥 x0도 추가
+
+    # Step 2: 좌 → 우, 각 열 내부 y 정렬
+    all_texts = []
+    for col in range(num_cols):
+        sorted_col = sorted(columns[col], key=lambda t: t[0])  # y 기준 정렬
+        all_texts.extend(sorted_col)
+
+    # Step 3: y가 비슷한 것들끼리 묶기 + 같은 줄 내 x 기준 정렬
+    lines = []
+    current_line = []
+    current_y = None
+
+    for y, x, text in all_texts:
+        if current_y is None:
+            current_y = y
+            current_line.append((x, text))
+        elif abs(y - current_y) <= y_threshold:
+            current_line.append((x, text))
+        else:
+            # 🔥 x 기준 정렬 추가
+            current_line_sorted = [t[1] for t in sorted(current_line, key=lambda t: t[0])]
+            lines.append(current_line_sorted)
+
+            current_line = [(x, text)]
+            current_y = y
+
+    # 마지막 줄 처리
+    if current_line:
+        current_line_sorted = [t[1] for t in sorted(current_line, key=lambda t: t[0])]
+        lines.append(current_line_sorted)
+
+    return lines
