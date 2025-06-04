@@ -108,12 +108,11 @@ class UpstageOCRNode(BaseNode):
         self.api_key = api_key
 
     def _document_ocr_via_upstage(self, input_file_path : str):
-        model = 'ocr'
         url = "https://api.upstage.ai/v1/document-digitization"
         headers = {"Authorization": f"Bearer {self.api_key}"}
 
         files = {"document": open(input_file_path, "rb")}
-        data = {"model": model}
+        data = {"model": 'ocr'}
         response = requests.post(url, headers=headers, files=files, data=data)
 
         if response.status_code == 200:
