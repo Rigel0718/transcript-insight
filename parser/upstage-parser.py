@@ -28,7 +28,7 @@ class UpstageParseNode(BaseNode):
         self.api_key = api_key
         self.config = DEFAULT_CONFIG
 
-    def _parse_document_parser_via_upstage(self, input_file_path : str):
+    def _parse_document_via_upstage(self, input_file_path : str):
         """
         Upstage의 Document Parse API를 호출하여 문서 분석을 수행합니다.
 
@@ -76,7 +76,7 @@ class UpstageParseNode(BaseNode):
         filepath = state['filepath']
         self.log(f"Start Parsing: {filepath}")
 
-        parsed_document_json_file_path = self._parse_document_parser_via_upstage(filepath)
+        parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
 
         with open(parsed_document_json_file_path, 'r') as f:
             data = json.load(f)
