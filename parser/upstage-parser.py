@@ -144,12 +144,11 @@ class UpstageOCRNode(BaseNode):
 
         with open(parsed_document_json_file_path, 'r') as f:
             data = json.load(f)
-
-        metadata = {
-            'api' : data.pop('api'),
-            'model' : data.pop('model'),
-            'usage' : data.pop('usage'),
-        }
+        # data['pages'][0]['words'][0]['boundingBox']['vertices'][0]  => x,y 좌측 상단 좌표
+        # data['metadata']['pages'][0] =>  metadata {height, width, page} 
+        
+        data['metadata']['pages'][0].pop('page') # metadata에서 height, width값만 
+        metadata = data['metadata']['pages'][0]
 
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
