@@ -7,3 +7,9 @@ class TableClassificationNode(BaseNode):
     ...
 
 
+
+class CreateElements(BaseNode):
+    '''
+    Parsing된 json response를 필요한 elements class에 대입
+    '''
+    ...
