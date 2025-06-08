@@ -14,13 +14,9 @@ class ParseState(TypedDict):
         List[Dict], operator.add
     ]  # parsing metadata (api, model, usage)
 
-
     raw_elements: Annotated[List[Dict], operator.add]  # raw elements from Upstage
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
-    reconstructed_elements: Annotated[
-        List[Dict], "reconstructed_elements"
-    ]  # reconstructed elements
 
     export: Annotated[List, operator.add]  # export results
 
@@ -28,9 +24,6 @@ class ParseState(TypedDict):
         Dict[int, List[Element]], "images_by_page"
     ]  # images by page
 
-    tables_by_page: Annotated[
-        Dict[int, List[Element]], "tables_by_page"
-    ]  # tables by page
 
     extracted_image_entities: Annotated[
         List[Element], "extracted_image_entities"
