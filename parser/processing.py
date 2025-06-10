@@ -23,4 +23,10 @@ class CreateElementsNode(BaseNode):
         post_processed_elements = []
         directory = os.path.dirname(state["filepath"])
         base_filename = os.path.splitext(os.path.basename(state["filepath"]))[0]
-    
+
+
+class ElementIntegration(BaseNode):
+    '''
+    최종적으로 정제시킨 Elements들을 합치는 Node
+    '''
+    ...
