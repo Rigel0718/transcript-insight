@@ -18,6 +18,7 @@ dependencies = [
     "unstructured[all-docs]>=0.17.2",
     "unstructured-inference>=1.0.2",
     "langgraph>=0.4.8",
+    "langchain-openai>=0.3.18",
 ]
 
 [dependency-groups]
