@@ -30,3 +30,10 @@ class ElementIntegration(BaseNode):
     최종적으로 정제시킨 Elements들을 합치는 Node
     '''
     ...
+
+
+class StructureExtractor(BaseNode):
+    '''
+    LLM을 활용해서 OCR데이터를 구조화시키는 Node
+    '''
+    ...
