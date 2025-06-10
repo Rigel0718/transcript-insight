@@ -6,9 +6,6 @@ from langchain_core.documents import Document
 
 class ParseState(TypedDict):
     filepath: Annotated[str, "filepath"]  # 원본 파일 경로
-    filetype: Annotated[
-        str, "filetype"
-    ]
 
     metadata: Annotated[
         List[Dict], operator.add
@@ -28,9 +25,5 @@ class ParseState(TypedDict):
     extracted_image_entities: Annotated[
         List[Element], "extracted_image_entities"
     ]  # extracted image entities
-
-    extracted_table_entities: Annotated[
-        List[Element], "extracted_table_entities"
-    ]  # extracted table entities
 
     documents: Annotated[List[Document], "documents"]  # documents
