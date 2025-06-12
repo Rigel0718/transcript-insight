@@ -27,3 +27,11 @@ class ParseState(TypedDict):
     ]  # extracted image entities
 
     documents: Annotated[List[Document], "documents"]  # documents
+
+
+class OCRJsonState(TypedDict):
+    "OCR로 Jsondata를 추출하는 sub graph의 state"
+    filepath: Annotated[str, "filepath"]
+    raw_elements: Annotated[List[Dict], operator.add]
+    extracted_json: Annotated[List[Dict], 'output jsondata']
+    ...
