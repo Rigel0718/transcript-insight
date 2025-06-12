@@ -32,6 +32,7 @@ class ParseState(TypedDict):
 class OCRJsonState(TypedDict):
     "OCR로 Jsondata를 추출하는 sub graph의 state"
     filepath: Annotated[str, "filepath"]
-    raw_elements: Annotated[List[Dict], operator.add]
+    ocr_data: Annotated[List[Dict], operator.add]
+    page_width: int
     extracted_json: Annotated[List[Dict], 'output jsondata']
     ...
