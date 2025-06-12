@@ -1,6 +1,8 @@
 from collections import defaultdict
+from state import OCRJsonState
 
-def group_by_xy_lines(ocr_data, page_width, num_cols=3, y_threshold=3):
+
+def group_by_xy_lines(state: OCRJsonState):
     '''
     ## function ##
     성적표 document 특징상 신문처럼 칸마다 세로로 layout되어있기 때문에 
@@ -12,6 +14,11 @@ def group_by_xy_lines(ocr_data, page_width, num_cols=3, y_threshold=3):
     num_cols: 성적표가 세로로 나누어진 칸 수
     y_threshold: ocr결과에서 같은 줄이라고 볼 수 있는 y값의 오차범위
     '''
+    ocr_data = state['ocr_data']
+    page_width = state['page_width']
+    num_cols = 3
+    y_threshold = 3
+
     col_width = page_width / num_cols
     columns = defaultdict(list)
 
