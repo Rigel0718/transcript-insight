@@ -1,6 +1,10 @@
 from collections import defaultdict
 from state import OCRJsonState
 from .base import BaseNode
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import load_prompt
+from langchain_core.output_parsers import StrOutputParser
+
 
 class GroupXYLine(BaseNode):
 
@@ -66,3 +70,31 @@ class GroupXYLine(BaseNode):
             lines.append(current_line_sorted)
 
         return lines
+
+
+class OCRJsonExtractorNode(BaseNode):
+
+    def __init__(self, verbose=False, **kwargs):
+        '''
+        ocr된 정보들을 llm으로 구조화 시키는 노드
+        '''
+        super().__init__(verbose=verbose, **kwargs)
+
+    def run(self, state: OCRJsonState):
+        
+        llm = ChatOpenAI(
+        temperature=0, 
+        model_name="gpt-4o-mini",  
+        )
+    
+        source=state['ocr_data']
+
+        prompt_templete = load_prompt(
+            'prompts/OCRJSONExtractor.yaml', encoding='utf-8'
+        )
+
+        chain = prompt_templete | llm | StrOutputParser()
+
+        result = chain.invoke({'source' : source})
+
+        return {'extracted_json' : result}
