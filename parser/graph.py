@@ -12,4 +12,8 @@ group_xy_line_node = GroupXYLine(verbose=True)
 
 ocr_extract_json_node = OCRJsonExtractorNode(verbose=True)
 
-ocr_json_extract_workflow = StateGraph(OCRJsonState)
+ocr_json_workflow = StateGraph(OCRJsonState)
+
+ocr_json_workflow.add_node('upstage_ocr_parser', upstage_ocr_node)
+ocr_json_workflow.add_node('group_by_xy', group_xy_line_node)
+ocr_json_workflow.add_node('ocr_extract_llm', ocr_extract_json_node)
