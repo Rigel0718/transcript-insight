@@ -1,7 +1,7 @@
 from .upstage_parser import UpstageOCRNode
 from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
 from .state import OCRJsonState
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 import os
 
 upstage_ocr_node = UpstageOCRNode(
@@ -20,5 +20,6 @@ ocr_json_workflow.add_node('ocr_extract_llm', ocr_extract_json_node)
 
 ocr_json_workflow.add_edge('upstage_ocr_parser', 'group_by_xy')
 ocr_json_workflow.add_edge('group_by_xy', 'ocr_extract_llm')
+ocr_json_workflow.add_edge('ocr_extract_llm', END)
 
 ocr_json_workflow.set_entry_point('upstage_ocr_parser')
