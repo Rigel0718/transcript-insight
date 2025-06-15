@@ -1,5 +1,7 @@
 from .upstage_parser import UpstageOCRNode
-from .ocrjsonparser  import GroupXYLine
+from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
+from .state import OCRJsonState
+from langgraph.graph import StateGraph
 import os
 
 upstage_ocr_node = UpstageOCRNode(
@@ -7,3 +9,7 @@ upstage_ocr_node = UpstageOCRNode(
 )
 
 group_xy_line_node = GroupXYLine(verbose=True)
+
+ocr_extract_json_node = OCRJsonExtractorNode(verbose=True)
+
+ocr_json_extract_workflow = StateGraph(OCRJsonState)
