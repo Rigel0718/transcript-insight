@@ -28,3 +28,6 @@ def ocr_json_graph() -> CompiledStateGraph:
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
     
     return ocr_json_workflow.compile()
+
+def transcript_extract_graph():
+    ...
