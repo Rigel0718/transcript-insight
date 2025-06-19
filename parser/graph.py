@@ -5,7 +5,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 import os
 
-
+# TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
 def ocr_json_graph() -> CompiledStateGraph:
     upstage_ocr_node = UpstageOCRNode(
         api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
