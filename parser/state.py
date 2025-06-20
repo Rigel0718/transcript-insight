@@ -26,5 +26,7 @@ class OCRJsonState(TypedDict):
 
     page_width: Annotated[int, 'page_width']
 
+    elements: Annotated[List[Element], "elements"]
+
     extracted_json: Annotated[List[Dict], 'output jsondata']
     
