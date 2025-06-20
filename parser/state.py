@@ -1,7 +1,6 @@
 from typing import TypedDict, Annotated, List, Dict
 import operator
 from .element import Element
-from langchain_core.documents import Document
 
 
 class ParseState(TypedDict):
