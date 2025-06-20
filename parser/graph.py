@@ -2,9 +2,11 @@ from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
 from .processing import CreateElementsNode, TableClassificationNode
 from .state import OCRJsonState, ParseState
+from .route import need_ocr_tool
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 import os
+from langgraph.checkpoint.memory import MemorySaver
 
 # TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
 def ocr_json_graph() -> CompiledStateGraph:
@@ -30,7 +32,7 @@ def ocr_json_graph() -> CompiledStateGraph:
     
     return ocr_json_workflow.compile()
 
-def transcript_extract_graph():
+def transcript_extract_graph() ->CompiledStateGraph:
     upstage_document_parse_node = UpstageParseNode(
         api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
     )
@@ -56,5 +58,14 @@ def transcript_extract_graph():
     upstage_document_parser_workflow.add_edge('upstage_document_parse_node', 'preprocessing_elements_node')
     upstage_document_parser_workflow.add_edge('preprocessing_elements_node','grader_table_elements_node')
     upstage_document_parser_workflow.add_edge('grader_table_elements_node', 'elements_working_queue_node')
+    upstage_document_parser_workflow.add_conditional_edges(
+        'elements_working_queue_node',
+        need_ocr_tool,
+        {False: 'integrate_elements_node', True: 'ocr_json_tool_node'}
+    )
+    upstage_document_parser_workflow.add_edge('ocr_json_tool_node','elements_working_queue_node')
 
-    ...
+    upstage_document_parser_workflow.set_entry_point('upstage_document_parse_node')
+    upstage_document_parser_workflow.set_finish_point('integrate_elements_node')
+    
+    return upstage_document_parser_workflow.compile(checkpointer=MemorySaver())
