@@ -15,18 +15,7 @@ class ParseState(TypedDict):
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
 
-    export: Annotated[List, operator.add]  # export results
-
-    images_by_page: Annotated[
-        Dict[int, List[Element]], "images_by_page"
-    ]  # images by page
-
-
-    extracted_image_entities: Annotated[
-        List[Element], "extracted_image_entities"
-    ]  # extracted image entities
-
-    documents: Annotated[List[Document], "documents"]  # documents
+    unstructured_elements: Annotated[str, 'unstrutured_element']
 
 
 class OCRJsonState(TypedDict):
