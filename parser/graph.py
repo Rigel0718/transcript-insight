@@ -1,6 +1,7 @@
-from .upstage_parser import UpstageOCRNode
+from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
-from .state import OCRJsonState
+from .processing import CreateElementsNode, TableClassificationNode
+from .state import OCRJsonState, ParseState
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 import os
@@ -30,4 +31,30 @@ def ocr_json_graph() -> CompiledStateGraph:
     return ocr_json_workflow.compile()
 
 def transcript_extract_graph():
+    upstage_document_parse_node = UpstageParseNode(
+        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
+    )
+    preprocessing_elements_node = CreateElementsNode(verbose=True)
+
+    grader_table_elements_node = TableClassificationNode(verbose=True)
+
+    elements_working_queue_node = ...
+
+    ocr_json_tool_node = ocr_json_graph()
+
+    integrate_elements_node = ...
+    
+    upstage_document_parser_workflow = StateGraph(ParseState)
+
+    upstage_document_parser_workflow.add_node('upstage_document_parse_node', upstage_document_parse_node)
+    upstage_document_parser_workflow.add_node('preprocessing_elements_node', preprocessing_elements_node)
+    upstage_document_parser_workflow.add_node('grader_table_elements_node', grader_table_elements_node)
+    upstage_document_parser_workflow.add_node('ocr_json_tool_node', ocr_json_tool_node)
+    upstage_document_parser_workflow.add_node('integrate_elements_node', integrate_elements_node)
+    upstage_document_parser_workflow.add_node('elements_working_queue_node', elements_working_queue_node)
+
+    upstage_document_parser_workflow.add_edge('upstage_document_parse_node', 'preprocessing_elements_node')
+    upstage_document_parser_workflow.add_edge('preprocessing_elements_node','grader_table_elements_node')
+    upstage_document_parser_workflow.add_edge('grader_table_elements_node', 'elements_working_queue_node')
+
     ...
