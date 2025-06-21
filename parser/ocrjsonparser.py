@@ -1,5 +1,5 @@
 from collections import defaultdict
-from state import OCRJsonState
+from .state import OCRJsonState
 from .base import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import load_prompt

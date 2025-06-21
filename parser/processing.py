@@ -6,7 +6,12 @@ class TableClassificationNode(BaseNode):
     '''
     Parsing된 elements의 table중 OCR할 element 분류
     '''
-    ...
+    def __init__(self, verbose=False, *kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: ParseState) -> ParseState:
+        return state
 
 
 
@@ -29,11 +34,21 @@ class ElementIntegration(BaseNode):
     '''
     최종적으로 정제시킨 Elements들을 합치는 Node
     '''
-    ...
+    def __init__(self, verbose=False, *kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: ParseState) -> ParseState:
+        return state
 
 
 class StructureExtractor(BaseNode):
     '''
     LLM을 활용해서 OCR데이터를 구조화시키는 Node
     '''
-    ...
+    def __init__(self, verbose=False, *kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: ParseState) -> ParseState:
+        return state
