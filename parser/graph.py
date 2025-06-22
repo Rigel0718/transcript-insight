@@ -30,7 +30,7 @@ def ocr_json_graph() -> CompiledStateGraph:
 
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
     
-    return ocr_json_workflow.compile()
+    return ocr_json_workflow.compile(checkpointer=MemorySaver())
 
 def transcript_extract_graph() ->CompiledStateGraph:
     upstage_document_parse_node = UpstageParseNode(
