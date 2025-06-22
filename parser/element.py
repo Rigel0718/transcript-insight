@@ -13,3 +13,13 @@ class Element(BaseModel):
 
     def copy(self) -> Element:
         return self.model_copy(deep=True)
+
+
+class OCR_Element(BaseModel):
+    id: Optional[int] = None
+    content: str = ""
+    base64_encoding: Optional[str] = None
+    coordinates: Optional[List[Dict]] = None
+
+    def copy(self) -> Element:
+        return self.model_copy(deep=True)
