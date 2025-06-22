@@ -52,3 +52,31 @@ class StructureExtractor(BaseNode):
     
     def run(self, state: ParseState) -> ParseState:
         return state
+
+    
+class ElementsWorkingQueueNode(BaseNode):
+    '''
+    OCR tool이 필요한 Element를 OCR_json Node로 보내는 Node 
+
+    Element를 반복문을 돌리면서 Queue형태로 OCR_json_tool_Node에 거쳤다가 온 
+    Element는 뒤로 다시 보내면서 worflow를 생성하는 Node
+
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: ParseState) -> ParseState:
+        return state
+    
+
+class IntegrateElementNode(BaseNode):
+    '''
+    구조화된 Element들을 하나의 문서로 만들어서 LLM이 이해할 수 있는 형태로 통합하는 Node
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: ParseState) -> ParseState:
+        return state
