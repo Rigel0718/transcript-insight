@@ -21,5 +21,5 @@ class OCR_Element(BaseModel):
     base64_encoding: Optional[str] = None
     coordinates: Optional[List[Dict]] = None
 
-    def copy(self) -> Element:
+    def copy(self) -> OCR_Element:
         return self.model_copy(deep=True)
