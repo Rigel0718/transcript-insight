@@ -1,6 +1,6 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
-from .processing import CreateElementsNode, TableClassificationNode
+from .processing import CreateElementsNode, TableClassificationNode, IntegrateElementNode, ElementsWorkingQueueNode
 from .state import OCRJsonState, ParseState
 from .route import need_ocr_tool
 from langgraph.graph import StateGraph, END
@@ -40,11 +40,11 @@ def transcript_extract_graph() ->CompiledStateGraph:
 
     grader_table_elements_node = TableClassificationNode(verbose=True)
 
-    elements_working_queue_node = ...
+    elements_working_queue_node = ElementsWorkingQueueNode(verbose=True)
 
     ocr_json_tool_node = ocr_json_graph()
 
-    integrate_elements_node = ...
+    integrate_elements_node = IntegrateElementNode(verbose=True)
     
     upstage_document_parser_workflow = StateGraph(ParseState)
 
