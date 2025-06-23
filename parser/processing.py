@@ -1,5 +1,6 @@
 from .base import BaseNode
 from .state import ParseState, OCRJsonState
+from .element import Element
 import os
 
 class TableClassificationNode(BaseNode):
@@ -26,8 +27,45 @@ class CreateElementsNode(BaseNode):
     
     def run(self, state: ParseState) -> ParseState:
         post_processed_elements = []
-        directory = os.path.dirname(state["filepath"])
-        base_filename = os.path.splitext(os.path.basename(state["filepath"]))[0]
+
+        for element in state["elements_from_parser"]:
+            elem = None
+
+            # 'footnote', 'header', 'footer'는 활용 X 
+            if element['category'] in ['footnote', 'header', 'footer']:
+                continue
+        
+            # table category가 핵심 내용
+            if element['category'] in ['table']:
+
+                elem = Element(
+                    category=element['category'],
+                    content=element['content']['markdown'] + self.newline,
+                    base64_encoding=element['base64_encoding'],
+                    id=element['id'],
+                    coordinates=element['coordinates'],
+                )
+
+            elif element['category'] in ['heading1']:
+        
+                    elem = Element(
+                        category=element['category'],
+                        content=f'# {element["content"]["text"]}{self.newline}',
+                        markdown=element['content']['markdown'],
+                        id=element['id'],
+                    )
+
+            elif element['category'] in ["caption", 'paragraph', 'list', 'index']:
+
+                elem = Element(
+                    category=element['category'],
+                    content=element['content']['text'] + self.newline,
+                    markdown=element['content']['markdown'],
+                    id=element['id'],
+                    )
+
+            if elem is not None:
+                post_processed_elements.append(elem)
 
 
 class ElementIntegration(BaseNode):
