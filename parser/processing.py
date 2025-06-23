@@ -19,6 +19,7 @@ class TableClassificationNode(BaseNode):
 class CreateElementsNode(BaseNode):
     '''
     Parsing된 json response를 필요한 elements class에 대입
+    pydantic basemodel를 활용해서 검증.
     '''
     def __init__(self, verbose=False, add_newline=True, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
@@ -67,6 +68,8 @@ class CreateElementsNode(BaseNode):
             if elem is not None:
                 post_processed_elements.append(elem)
 
+
+            return {"elements": post_processed_elements}
 
 class ElementIntegration(BaseNode):
     '''
