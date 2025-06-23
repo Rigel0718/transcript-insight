@@ -37,6 +37,6 @@ messages:
       - `x` and `y` are the top-left coordinates of where the text appears on the page.
       - The list is sorted top-to-bottom, then left-to-right (i.e., newspaper-like layout: read down, then across).
 
-      
-      input data : {source}
+      ## Input data
+      {source}
 
