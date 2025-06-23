@@ -16,7 +16,7 @@ class GroupXYLine(BaseNode):
         '''
         ## function 
         - RuleBase로 OCR 좌표를 이용하여 layout을 LLM이 이해할 수 있는 형태로 전처리.
-        
+
         성적표 document 특징상 신문처럼 칸마다 세로로 layout되어있기 때문에 
         세로로 cols 값 대로 나누고, 한 줄 씩 묶어주는 함수
 
@@ -92,7 +92,7 @@ class OCRJsonExtractorNode(BaseNode):
         source=state['ocr_data']
 
         templete = load_prompt(
-            'prompts/OCRJSONExtractor.yaml', encoding='utf-8'
+            'prompts/ocr_json_extracter_prompt.yaml', encoding='utf-8'
         )
 
         prompt_templete = PromptTemplate(
