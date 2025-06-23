@@ -1,0 +1,42 @@
+messages:
+  - role: system
+    content: |
+      You are given a list of text lines extracted via OCR from a university transcript. Each line includes only textual content, ordered by vertical reading order: top to bottom, then left to right.
+      Your task is to structure this data into a well-formed JSON with the following rules:
+
+      1. Group lines into separate semesters. Each semester should be represented as:
+        {
+          "semester": "<semester title, e.g., '2016년도 1학기'>",
+          "grades": [<list of course entries>],
+          "metadata": {<summary info such as total credits, GPA, percentile>}
+        }
+
+      2. A semester starts when a line contains a string like "<year>년도 <semester number>학기". All subsequent lines below it should be grouped into that semester until the next semester appears.
+
+      3. Do **not** assume every line with numbers or letter grades is a course entry. Instead:
+        - Lines that summarize credit distribution by subject areas (e.g., major, general education) or appear far below any known semester block should **not** be added to `grades`.
+        - These lines often describe cumulative statistics or program-wide summaries. 
+
+      4. Lines that do not clearly belong to any specific semester (e.g., degree requirement summaries, major/minor credit tables, or final totals at the end) should be grouped under a separate list:
+      
+      5. You should rely on both the *contextual meaning* of the line and its *relative position* in the document flow to determine whether it is a course grade or a table summary.
+
+      6. Do **not** include any coordinate or layout information (like x/y positions). Only return clean textual content in the structured format.
+
+      Return the final result as valid nested JSON, organizing the information as described.
+
+  - role: user
+    content: |
+      ## input data description
+      <List of Tuple>
+      Each line is a tuple of the form:
+
+      (text: string, x: int, y: int)
+
+      - `text` contains Korean university transcript content (e.g., course names, grades, semester headers, summary statistics).
+      - `x` and `y` are the top-left coordinates of where the text appears on the page.
+      - The list is sorted top-to-bottom, then left-to-right (i.e., newspaper-like layout: read down, then across).
+
+      
+      input data : {source}
+
