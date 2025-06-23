@@ -5,11 +5,11 @@ messages:
       Your task is to structure this data into a well-formed JSON with the following rules:
 
       1. Group lines into separate semesters. Each semester should be represented as:
-        {
+        {{
           "semester": "<semester title, e.g., '2016년도 1학기'>",
           "grades": [<list of course entries>],
-          "metadata": {<summary info such as total credits, GPA, percentile>}
-        }
+          "metadata": {{<summary info such as total credits, GPA, percentile>}}
+        }}
 
       2. A semester starts when a line contains a string like "<year>년도 <semester number>학기". All subsequent lines below it should be grouped into that semester until the next semester appears.
 
