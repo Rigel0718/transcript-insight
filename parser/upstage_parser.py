@@ -3,7 +3,7 @@ import json
 import os
 import time
 from .base import BaseNode
-from .state import ParseState
+from .state import ParseState, OCRJsonState
 
 
 
@@ -139,7 +139,7 @@ class UpstageOCRNode(BaseNode):
         metadata['text']=data['text']
         return metadata
 
-    def run(self, state: ParseState):
+    def run(self, state: OCRJsonState):
         """
         주어진 입력 파일에 대해 문서 분석을 실행합니다.
 
@@ -169,4 +169,4 @@ class UpstageOCRNode(BaseNode):
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
 
-        return {"metadata": [metadata], "filtered_elements": updata_words}
+        return {'metadata': [metadata], 'ocr_data': updata_words, 'page_width': metadata['size']['width']}
