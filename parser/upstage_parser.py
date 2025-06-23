@@ -128,7 +128,7 @@ class UpstageOCRNode(BaseNode):
             # API 요청이 실패한 경우 예외 발생
             raise ValueError(f"Unexpected status code: {response.status_code}")
     
-    def _filtered_ocr_json(data):
+    def _metadata_ocr_json(data):
         #단일 페이지라고 가정
         metadata = dict()
         # data['pages'][0]['words'][0]['boundingBox']['vertices'][0]  => x,y 좌측 상단 좌표
@@ -155,11 +155,9 @@ class UpstageOCRNode(BaseNode):
 
         with open(parsed_document_json_file_path, 'r') as f:
             data = json.load(f)
-        # data['pages'][0]['words'][0]['boundingBox']['vertices'][0]  => x,y 좌측 상단 좌표
-        # data['metadata']['pages'][0] =>  metadata {height, width, page} 
-        
-        data['metadata']['pages'][0].pop('page') # metadata에서 height, width값만 
-        metadata = data['metadata']['pages'][0]
+
+        metadata = self._metadata_ocr_json(data)
+
         updata_words = []
         for word in data['pages'][0]['words']:
                 word_index = dict()
