@@ -2,7 +2,7 @@ from collections import defaultdict
 from .state import OCRJsonState
 from .base import BaseNode
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import load_prompt
+from langchain_core.prompts import load_prompt, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 
@@ -89,8 +89,13 @@ class OCRJsonExtractorNode(BaseNode):
     
         source=state['ocr_data']
 
-        prompt_templete = load_prompt(
+        templete = load_prompt(
             'prompts/OCRJSONExtractor.yaml', encoding='utf-8'
+        )
+
+        prompt_templete = PromptTemplate(
+            template=templete,
+            input_variables=['source']
         )
 
         chain = prompt_templete | llm | StrOutputParser()
