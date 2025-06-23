@@ -128,6 +128,17 @@ class UpstageOCRNode(BaseNode):
             # API 요청이 실패한 경우 예외 발생
             raise ValueError(f"Unexpected status code: {response.status_code}")
     
+    def _filtered_ocr_json(data):
+        #단일 페이지라고 가정
+        metadata = dict()
+        # data['pages'][0]['words'][0]['boundingBox']['vertices'][0]  => x,y 좌측 상단 좌표
+        # data['metadata']['pages'][0] =>  metadata {height, width, page} 
+        metadata['model']=data['modelVersion']
+        data['metadata']['pages'][0].pop('page') # metadata에서 height, width값만 
+        metadata['size']=data['metadata']['pages'][0]
+        metadata['text']=data['text']
+        return metadata
+
     def run(self, state: ParseState):
         """
         주어진 입력 파일에 대해 문서 분석을 실행합니다.
@@ -149,8 +160,15 @@ class UpstageOCRNode(BaseNode):
         
         data['metadata']['pages'][0].pop('page') # metadata에서 height, width값만 
         metadata = data['metadata']['pages'][0]
+        updata_words = []
+        for word in data['pages'][0]['words']:
+                word_index = dict()
+                word_index['id']=word['id']
+                word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
+                word_index['text']=word['text']
+                updata_words.append(word_index)
 
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
 
-        return {"metadata": [metadata], "raw_elements": [data["elements"]]}
+        return {"metadata": [metadata], "filtered_elements": updata_words}
