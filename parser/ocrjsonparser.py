@@ -14,11 +14,13 @@ class GroupXYLine(BaseNode):
 
     def run(state: OCRJsonState):
         '''
-        ## function ##
+        ## function 
+        - RuleBase로 OCR 좌표를 이용하여 layout을 LLM이 이해할 수 있는 형태로 전처리.
+        
         성적표 document 특징상 신문처럼 칸마다 세로로 layout되어있기 때문에 
         세로로 cols 값 대로 나누고, 한 줄 씩 묶어주는 함수
 
-        ## parameter ##
+        ## parameter
         ocr_data: upstage api를 통해 얻은 json값
         page_width: 페이지의 폭
         num_cols: 성적표가 세로로 나누어진 칸 수
@@ -33,12 +35,12 @@ class GroupXYLine(BaseNode):
         columns = defaultdict(list)
 
         # 열 분류
-        for entry in ocr_data:
-            x0 = entry["boundingBox"]["vertices"][0]["x"]
-            y0 = entry["boundingBox"]["vertices"][0]["y"]
+        for word in ocr_data:
+            x0 = word["vertices"]["x"]
+            y0 = word["vertices"]["y"]
             col_index = int(x0 // col_width)
             col_index = min(col_index, num_cols - 1)
-            columns[col_index].append((y0, x0, entry["text"]))
+            columns[col_index].append((y0, x0, word["text"]))
 
         # 좌 -> 우, 각 열 내부 y 정렬
         all_texts = []
