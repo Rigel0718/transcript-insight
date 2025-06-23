@@ -71,6 +71,28 @@ class CreateElementsNode(BaseNode):
 
             return {"elements": post_processed_elements}
 
+
+
+class CreateOCRElementNode(OCRJsonState):
+    '''
+    OCRParser 정보를 OCRElement로 검증
+    OCRElement: pydantic basemodel 
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    
+    def run(self, state: OCRJsonState) -> OCRJsonState:
+        post_processed_elements = []
+
+        for element in state['raw_elements']:
+            elem = None
+
+            
+        return state
+
+
+
 class ElementIntegration(BaseNode):
     '''
     최종적으로 정제시킨 Elements들을 합치는 Node
