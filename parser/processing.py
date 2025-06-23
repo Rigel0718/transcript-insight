@@ -1,5 +1,5 @@
 from .base import BaseNode
-from .state import ParseState
+from .state import ParseState, OCRJsonState
 import os
 
 class TableClassificationNode(BaseNode):
@@ -42,7 +42,7 @@ class ElementIntegration(BaseNode):
         return state
 
 
-class StructureExtractor(BaseNode):
+class StructureExtractor(OCRJsonState):
     '''
     LLM을 활용해서 OCR데이터를 구조화시키는 Node
     '''
