@@ -7,7 +7,7 @@ messages:
       (the OCR result of a Korean university transcript)
 
       ━━━━━━━━━━  TASK  ━━━━━━━━━━
-      Return one JSON object:
+      Return one JSON object exactly:
 
       {{
         "y_top": {{ y_top }},
@@ -15,40 +15,39 @@ messages:
       }}
 
       where
-      • {{y_top}}     =  y of the very first semester header  
-                        (regex /\\d{{4}}년도\\s+\\d학기/).
+      • {{y_top}}     =  the **smallest y** among lines whose stripped text
+                        matches the semester-header pattern.
 
       • {{y_bottom}}  =  y of the **first line that is *not* a course line
                         and appears *after* the last course line** on the page.
-                        (No keyword list is allowed; decide purely by pattern.)
 
-      ━━━━━━━━━━  RULES  ━━━━━━━━━━
-      1. **Course line pattern**  
-        A line is a *course line* if, and only if, it satisfies *all* of:
-        1.1  It occurs *after* a semester header.  
-        1.2  Its last token is a numeric credit  (e.g. 1.0, 2.0, 3.0).  
-        1.3  One of its tokens matches a Korean letter-grade code  
-              (A+, A0, B+, B0, C+, C0, D+, D0, P, F, etc.).  
+      ━━━━━━━━━━  PATTERNS  ━━━━━━━━━━
+      1. **Semester header**  
+        A line is a header if its stripped text satisfies either rule:  
+        a) Regex  `/^\d{{4}}\s*년도.*\d학기/`  
+        b) Fallback: text contains both “년도” and “학기”.  
 
-        Any line that fails one or more of the above is **not** a course line.
+      2. **Course line**  – must satisfy *all* of  
+        2.1  Occurs *after* at least one header.  
+        2.2  Last token is numeric credit (e.g. 1.0, 2.0, 3.0).  
+        2.3  Contains a Korean letter-grade token  
+              (A+, A0, B+, B0, C+, C0, D+, D0, P, F, AO, BO, CO, DO …).  
+        2.4  Has **4 tokens 이상** when split on whitespace  
+              (이수구분, 과목명, 성적, 학점).
 
-      2. **Semester header pattern**  
-        Regex /\\d{{4}}년도\\s+\\d학기/ .
+        If any condition fails, the line is **not** a course line.
 
-      3. **Detect boundaries**  
-        3.1  Identify every course line on the page, possibly spanning
-              several vertical columns that wrap left→right.  
-        3.2  Let {{last_course_y}} be the largest y among them.  
-        3.3  {{y_bottom}} is the y of the **next line in reading order**
-              (left→right, top→bottom across columns) whose y > {{last_course_y}}.
-              That line can be any content; you must not rely on keywords.
+      ━━━━━━━━━━  BOUNDARY LOGIC  ━━━━━━━━━━
+      1. Identify every header → compute {{y_top}} = min(y).  
+      2. Scan all lines left→right, top→bottom (across columns treated as
+        one continuous flow).  
+      3. Collect every line that matches the *course line* definition.  
+      4. Let {{last_course_y}} = max(y) of those course lines.  
+      5. {{y_bottom}} = y of the **next line in reading order** whose y >
+        {{last_course_y}} – regardless of its content.
 
-      4. **Page-wide logic**  
-        Treat the grade area as one continuous table across columns:
-        column breaks do **not** end the table.
-
-      5. **Output**  
-        Return only the JSON object shown above—no extra keys, no prose.
+      ━━━━━━━━━━  OUTPUT RULE  ━━━━━━━━━━
+      Return only the JSON object illustrated above – no prose, no extra keys.
 
 
 
