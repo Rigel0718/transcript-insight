@@ -7,7 +7,7 @@ messages:
       1. Group lines into separate semesters. Each semester should be represented as:
         {{
           "semester": "<semester title, e.g., '2016년도 1학기'>",
-          "grades": [<list of course entries>],
+          "grades": [<list of course lines as raw strings>],
           "metadata": {{<summary info such as total credits, GPA, percentile>}}
         }}
 
@@ -22,6 +22,8 @@ messages:
       5. You should rely on both the *contextual meaning* of the line and its *relative position* in the document flow to determine whether it is a course grade or a table summary.
 
       6. Do **not** include any coordinate or layout information (like x/y positions). Only return clean textual content in the structured format.
+
+      7. The document contains multiple visual **table-like blocks**, each grouped by **Y-axis boundaries**. Treat each block as a distinct logical unit.
 
       Return the final result as valid nested JSON, organizing the information as described.
 
