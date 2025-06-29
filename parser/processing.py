@@ -93,7 +93,7 @@ class CreateOCRElementNode(OCRJsonState):
 
 
 
-class ElementIntegration(BaseNode):
+class ElementIntegrationNode(BaseNode):
     '''
     최종적으로 정제시킨 Elements들을 합치는 Node
     '''
