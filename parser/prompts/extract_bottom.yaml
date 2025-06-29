@@ -27,7 +27,7 @@ messages:
         a) Regex  `/^\d{{4}}\s*년도.*\d학기/`  
         b) Fallback: text contains both “년도” and “학기”.  
 
-      2. **Course line**  – must satisfy *all* of  
+      2. **Course line**  - must satisfy *all* of  
         2.1  Occurs *after* at least one header.  
         2.2  Last token is numeric credit (e.g. 1.0, 2.0, 3.0).  
         2.3  Contains a Korean letter-grade token  
