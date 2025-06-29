@@ -170,7 +170,7 @@ class UpstageOCRNode(BaseNode):
         updata_words = []
         for word in data['pages'][0]['words']:
             confidence = word['boundingBox'].get('confidence', '0')
-            if float(confidence) <= 60:
+            if int(confidence) <= 60:
                 continue
             word_index = dict()
             word_index['id']=word['id']
