@@ -2,6 +2,7 @@ import requests
 import json
 import os
 import time
+import re
 from .base import BaseNode
 from .state import ParseState, OCRJsonState
 
@@ -139,6 +140,14 @@ class UpstageOCRNode(BaseNode):
         metadata['text']=data['text']
         return metadata
 
+    def _cleaning_text(text):
+        '''
+        OCR 과정에서 나오는 오류 해결
+        '''
+        text = re.sub(r'\b([A-D])O\b', r'\g<1>0', text) #'AO' → 'A0'
+        text = text.replace('|', 'I') # '|' → 'I'
+        return text
+
     def run(self, state: OCRJsonState):
         """
         주어진 입력 파일에 대해 문서 분석을 실행합니다.
@@ -163,7 +172,7 @@ class UpstageOCRNode(BaseNode):
                 word_index = dict()
                 word_index['id']=word['id']
                 word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
-                word_index['text']=word['text']
+                word_index['text']=self._cleaning_text(word['text'])
                 updata_words.append(word_index)
 
         duration = time.time() - start_time
