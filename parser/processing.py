@@ -132,14 +132,3 @@ class ElementsWorkingQueueNode(BaseNode):
     def run(self, state: ParseState) -> ParseState:
         return state
     
-
-class IntegrateElementNode(BaseNode):
-    '''
-    구조화된 Element들을 하나의 문서로 만들어서 LLM이 이해할 수 있는 형태로 통합하는 Node
-    '''
-    def __init__(self, verbose=False, **kwargs):
-        super().__init__(verbose=verbose, **kwargs)
-
-    
-    def run(self, state: ParseState) -> ParseState:
-        return state
