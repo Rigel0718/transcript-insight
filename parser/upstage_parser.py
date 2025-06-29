@@ -169,11 +169,13 @@ class UpstageOCRNode(BaseNode):
 
         updata_words = []
         for word in data['pages'][0]['words']:
-                word_index = dict()
-                word_index['id']=word['id']
-                word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
-                word_index['text']=self._cleaning_text(word['text'])
-                updata_words.append(word_index)
+            if word['boundingBox']['confidence'] <= 60:
+                continue
+            word_index = dict()
+            word_index['id']=word['id']
+            word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
+            word_index['text']=self._cleaning_text(word['text'])
+            updata_words.append(word_index)
 
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
