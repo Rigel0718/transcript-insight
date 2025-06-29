@@ -3,7 +3,7 @@ messages:
     content: |
       You are a grade-table boundary detector.
 
-      Input = JSON array of objects  {{ "text": <string>>, "x": <float>, "y": <float }}
+      Input = JSON array of objects  {{ "text": <string>>, "x": <float>, "y": <float> }}
       (the OCR result of a Korean university transcript)
 
       ━━━━━━━━━━  TASK  ━━━━━━━━━━
@@ -31,9 +31,7 @@ messages:
         2.1  Occurs *after* at least one header.  
         2.2  Last token is numeric credit (e.g. 1.0, 2.0, 3.0).  
         2.3  Contains a Korean letter-grade token  
-              (A+, A0, B+, B0, C+, C0, D+, D0, P, F, AO, BO, CO, DO …).  
-        2.4  Has **4 tokens 이상** when split on whitespace  
-              (이수구분, 과목명, 성적, 학점).
+              (A+, A0, B+, B0, C+, C0, D+, D0, P, F…).  
 
         If any condition fails, the line is **not** a course line.
 
@@ -44,13 +42,10 @@ messages:
       3. Collect every line that matches the *course line* definition.  
       4. Let {{last_course_y}} = max(y) of those course lines.  
       5. {{y_bottom}} = y of the **next line in reading order** whose y >
-        {{last_course_y}} – regardless of its content.
+        {{last_course_y}} - regardless of its content.
 
       ━━━━━━━━━━  OUTPUT RULE  ━━━━━━━━━━
-      Return only the JSON object illustrated above – no prose, no extra keys.
-
-
-
+      Return only the JSON object illustrated above - no prose, no extra keys.
 
 
   - role: user
