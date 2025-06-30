@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Dict, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Element(BaseModel):
@@ -23,3 +23,7 @@ class OCR_Element(BaseModel):
 
     def copy(self) -> OCR_Element:
         return self.model_copy(deep=True)
+    
+class TableBoundary(BaseModel):
+    y_top : int = Field(description='Top Y-position of the grade table section.')
+    y_bottom : int = Field(description='Bottom Y-position that marks the end of the grade table section.')
