@@ -17,7 +17,7 @@ class Element(BaseModel):
 
 class OCRElement(BaseModel):
     id: int = Field(..., description="Unique ID of the OCR element.")
-    vertices : Tuple[int, int] = Field(..., description='(x, y) Top-left coordinate of the OCR element.')
+    vertices : Dict[str, int] = Field(..., description='{x : ..., y : ... } Top-left coordinate of the OCR element.')
     text : str = Field(..., description='Recognized text content from the OCR element.')
 
     def copy(self) -> OCRElement:
