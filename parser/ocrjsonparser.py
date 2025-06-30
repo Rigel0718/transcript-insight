@@ -4,7 +4,7 @@ from .base import BaseNode
 from .utils import load_prompt_template
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import load_prompt, PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from collections import defaultdict
@@ -86,11 +86,14 @@ class GroupXYLine(BaseNode):
         return lines
 
 
-class OCRJsonExtractorNode(BaseNode):
+class OCRTableBoundaryDetectorNode(BaseNode):
 
     def __init__(self, verbose=False, llm: Optional[BaseChatModel] = None, **kwargs):
         '''
-        ocr된 정보들을 llm으로 구조화 시키는 노드
+        ocr 추출된 데이터의 좌표정보와 의미정보를 활용하여,
+        table의 boundary를 성적과 관련된 table의 경계부분을 추출하는 node
+
+        output : 
         '''
         super().__init__(verbose=verbose, **kwargs)
         self.llm =llm or self._init_llm() 
@@ -98,7 +101,7 @@ class OCRJsonExtractorNode(BaseNode):
     def _init_llm(self):
         llm = ChatOpenAI(
         temperature=0, 
-        model_name="gpt-4o-mini",  
+        model_name="gpt-4o",  
         )
         return llm
 
@@ -116,7 +119,7 @@ class OCRJsonExtractorNode(BaseNode):
             input_variables=['source']
         )
 
-        chain = prompt_templete | self.llm | StrOutputParser()
+        chain = prompt_templete | self.llm | JsonOutputParser()
 
         result = chain.invoke({'source' : source})
 
