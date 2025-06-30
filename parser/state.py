@@ -1,6 +1,6 @@
-from typing import TypedDict, Annotated, List, Dict
+from typing import TypedDict, Annotated, List, Dict, Tuple
 import operator
-from .element import Element, TableBoundary
+from .element import Element, TableBoundary, OCR_Element
 
 
 class ParseState(TypedDict):
@@ -22,11 +22,13 @@ class OCRJsonState(TypedDict):
     
     filepath: Annotated[str, "filepath"]
 
-    ocr_data: Annotated[List[Dict], operator.add]
+    ocr_data: Annotated[List[OCR_Element], operator.add]
 
     page_width: Annotated[int, 'page_width']
 
     elements: Annotated[List[Element], "elements"]
+
+    grouped_elements : Annotated[List[Tuple[str, int ,int]], "elements"]
 
     grade_table_boundary: Annotated[TableBoundary, 'output grade_table_boundary']
     

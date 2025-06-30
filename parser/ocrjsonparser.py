@@ -84,7 +84,7 @@ class GroupXYLine(BaseNode):
             min_y = min(t[2] for t in current_line_sorted)
             lines.append((merged_text, min_x, min_y))
 
-        return lines
+        return {'grouped_elements' : lines}
 
 
 class OCRTableBoundaryDetectorNode(BaseNode):
