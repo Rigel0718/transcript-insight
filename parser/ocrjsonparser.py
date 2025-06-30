@@ -1,6 +1,7 @@
 from collections import defaultdict
 from .state import OCRJsonState
 from .base import BaseNode
+from .utils import load_prompt_template
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import load_prompt, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -106,7 +107,7 @@ class OCRJsonExtractorNode(BaseNode):
     
         source=state['ocr_data']
 
-        templete = load_prompt(
+        templete = load_prompt_template(
             'prompts/ocr_json_extracter_prompt.yaml', encoding='utf-8'
         )
 
