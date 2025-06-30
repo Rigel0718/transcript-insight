@@ -152,8 +152,7 @@ class SplitByYBoundaryNode(BaseNode):
 
         table_boundary : TableBoundary = state['grade_table_boundary']
 
-        lines = state['ocr_data']
-        final = self.split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
-        
+        lines = state['grouped_elements']
+        result = self.split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
 
-        return {'elements' : final}
+        return {'result_element' : result}

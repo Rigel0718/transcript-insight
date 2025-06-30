@@ -31,4 +31,6 @@ class OCRJsonState(TypedDict):
     grouped_elements : Annotated[List[Tuple[str, int ,int]], "elements"]
 
     grade_table_boundary: Annotated[TableBoundary, 'output grade_table_boundary']
+
+    result_element : Annotated[str, "result_element"]
     
