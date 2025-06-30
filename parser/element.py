@@ -15,12 +15,12 @@ class Element(BaseModel):
         return self.model_copy(deep=True)
 
 
-class OCR_Element(BaseModel):
+class OCRElement(BaseModel):
     id: int = Field(..., description="Unique ID of the OCR element.")
     vertices : int = Field(..., description='Top-left coordinate of the OCR element.')
     text : str = Field(..., description='Recognized text content from the OCR element.')
 
-    def copy(self) -> OCR_Element:
+    def copy(self) -> OCRElement:
         return self.model_copy(deep=True)
 
 

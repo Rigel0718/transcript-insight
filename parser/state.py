@@ -1,6 +1,6 @@
 from typing import TypedDict, Annotated, List, Dict, Tuple
 import operator
-from .element import Element, TableBoundary, OCR_Element
+from .element import Element, TableBoundary, OCRElement
 
 
 class ParseState(TypedDict):
@@ -22,7 +22,7 @@ class OCRJsonState(TypedDict):
     
     filepath: Annotated[str, "filepath"]
 
-    ocr_data: Annotated[List[OCR_Element], operator.add]
+    ocr_data: Annotated[List[OCRElement], operator.add]
 
     page_width: Annotated[int, 'page_width']
 
