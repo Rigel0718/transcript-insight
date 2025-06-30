@@ -128,13 +128,29 @@ class OCRTableBoundaryDetectorNode(BaseNode):
         return {'grade_table_boundary' : result}
     
 
-    class SplitByYBoundaryNode(BaseNode):
-        '''
-        LLM을 통해 얻은 y boundary 값을 가지고 OCR 값을 분리하는 node
-        '''
-        def __init__(self, verbose=False, **kwargs):
-            super().__init__(verbose=verbose, **kwargs)
+class SplitByYBoundaryNode(BaseNode):
+    '''
+    LLM을 통해 얻은 y boundary 값을 가지고 OCR 값을 분리하는 node
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
 
+    
+    def run(self, state: OCRJsonState) -> OCRJsonState:
+        '''
+        state['grade_table_boundary']'s format : 
+
+        {
+            "y_top": { y_top },
+            "y_bottom": { y_bottom }
+        }
+        '''
+        table_boundary = state['grade_table_boundary']
+        y_top = table_boundary['y_top']
+        y_bottom = table_boundary['y_bottom']
+
+        ocr_data = state['ocr_data']
         
-        def run(self, state: OCRJsonState) -> OCRJsonState:
-            return state
+
+
+        return state
