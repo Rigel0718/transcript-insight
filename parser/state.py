@@ -1,6 +1,6 @@
 from typing import TypedDict, Annotated, List, Dict
 import operator
-from .element import Element
+from .element import Element, TableBoundary
 
 
 class ParseState(TypedDict):
@@ -28,5 +28,5 @@ class OCRJsonState(TypedDict):
 
     elements: Annotated[List[Element], "elements"]
 
-    grade_table_boundary: Annotated[List[Dict], 'output grade_table_boundary']
+    grade_table_boundary: Annotated[TableBoundary, 'output grade_table_boundary']
     
