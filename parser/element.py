@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from pydantic import BaseModel, Field
 
 
@@ -17,7 +17,7 @@ class Element(BaseModel):
 
 class OCRElement(BaseModel):
     id: int = Field(..., description="Unique ID of the OCR element.")
-    vertices : int = Field(..., description='Top-left coordinate of the OCR element.')
+    vertices : Tuple[int, int] = Field(..., description='(x, y) Top-left coordinate of the OCR element.')
     text : str = Field(..., description='Recognized text content from the OCR element.')
 
     def copy(self) -> OCRElement:
