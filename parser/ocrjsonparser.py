@@ -2,9 +2,10 @@ from collections import defaultdict
 from .state import OCRJsonState
 from .base import BaseNode
 from .utils import load_prompt_template
+from .element import TableBoundary
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import load_prompt, PromptTemplate
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser, PydanticOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from collections import defaultdict
@@ -120,8 +121,9 @@ class OCRTableBoundaryDetectorNode(BaseNode):
             template=templete,
             input_variables=['source']
         )
-
-        chain = prompt_templete | self.llm | JsonOutputParser()
+        parser = PydanticOutputParser(pydantic_object=TableBoundary)
+        
+        chain = prompt_templete | self.llm | parser
 
         result = chain.invoke({'source' : source})
 
@@ -135,22 +137,20 @@ class SplitByYBoundaryNode(BaseNode):
     def __init__(self, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
 
+    def split_by_y_bounds(lines, y_top, y_bottom):
+    # lines [(text, x, y)... ]
+        return {
+            "top": [r[0] for r in lines if r[2] < y_top],
+            "grade": [r[0] for r in lines if y_top <= r[2] < y_bottom],
+            "bottom": [r[0] for r in lines if r[2] >= y_bottom],
+        }
     
     def run(self, state: OCRJsonState) -> OCRJsonState:
-        '''
-        state['grade_table_boundary']'s format : 
 
-        {
-            "y_top": { y_top },
-            "y_bottom": { y_bottom }
-        }
-        '''
-        table_boundary = state['grade_table_boundary']
-        y_top = table_boundary['y_top']
-        y_bottom = table_boundary['y_bottom']
+        table_boundary : TableBoundary = state['grade_table_boundary']
 
-        ocr_data = state['ocr_data']
+        lines = state['ocr_data']
+        final = self.split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
         
 
-
-        return state
+        return {'elements' : final}
