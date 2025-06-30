@@ -125,7 +125,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
 
         result = chain.invoke({'source' : source})
 
-        return {'extracted_json' : result}
+        return {'grade_table_boundary' : result}
     
 
     class SplitByYBoundaryNode(BaseNode):

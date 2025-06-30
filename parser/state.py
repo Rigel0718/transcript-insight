@@ -28,5 +28,5 @@ class OCRJsonState(TypedDict):
 
     elements: Annotated[List[Element], "elements"]
 
-    extracted_json: Annotated[List[Dict], 'output jsondata']
+    grade_table_boundary: Annotated[List[Dict], 'output grade_table_boundary']
     
