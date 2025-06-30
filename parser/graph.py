@@ -1,9 +1,9 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
-from .ocrjsonparser  import GroupXYLine, OCRJsonExtractorNode
+from .ocrjsonparser  import GroupXYLine, OCRTableBoundaryDetectorNode
 from .processing import CreateElementsNode, TableClassificationNode, ElementIntegrationNode, ElementsWorkingQueueNode
 from .state import OCRJsonState, ParseState
 from .route import need_ocr_tool
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 import os
 from langgraph.checkpoint.memory import MemorySaver
@@ -16,7 +16,7 @@ def ocr_json_graph() -> CompiledStateGraph:
 
     group_xy_line_node = GroupXYLine(verbose=True)
 
-    ocr_extract_json_node = OCRJsonExtractorNode(verbose=True)
+    ocr_extract_json_node = OCRTableBoundaryDetectorNode(verbose=True)
 
     ocr_json_workflow = StateGraph(OCRJsonState)
 
@@ -26,9 +26,9 @@ def ocr_json_graph() -> CompiledStateGraph:
 
     ocr_json_workflow.add_edge('upstage_ocr_parser', 'group_by_xy')
     ocr_json_workflow.add_edge('group_by_xy', 'ocr_extract_llm')
-    ocr_json_workflow.add_edge('ocr_extract_llm', END)
 
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
+    ocr_json_workflow.set_finish_point('ocr_extract_llm')
     
     return ocr_json_workflow.compile(checkpointer=MemorySaver())
 
