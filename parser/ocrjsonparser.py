@@ -114,9 +114,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
     
         source=state['ocr_data']
 
-        templete = load_prompt_template(
-            'prompts/ocr_json_extracter_prompt.yaml', encoding='utf-8'
-        )
+        templete = load_prompt_template('prompts/ocr_json_extracter_prompt.yaml')
 
         prompt_templete = PromptTemplate(
             template=templete,
