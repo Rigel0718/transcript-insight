@@ -3,7 +3,7 @@ messages:
     content: |
       You are a grade-table boundary detector.
 
-      Input = JSON array of objects  {{ "text": <string>>, "x": <float>, "y": <float> }}
+      Input = tuple array of objects  ( "text": <string>>, "x": <int>, "y": <int> )
       (the OCR result of a Korean university transcript)
 
       ━━━━━━━━━━  TASK  ━━━━━━━━━━
