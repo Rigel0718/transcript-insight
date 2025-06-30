@@ -93,7 +93,11 @@ class OCRTableBoundaryDetectorNode(BaseNode):
         ocr 추출된 데이터의 좌표정보와 의미정보를 활용하여,
         table의 boundary를 성적과 관련된 table의 경계부분을 추출하는 node
 
-        output : 
+        output format: 
+            {
+                "y_top": { y_top },
+                "y_bottom": { y_bottom }
+            }
         '''
         super().__init__(verbose=verbose, **kwargs)
         self.llm =llm or self._init_llm() 
