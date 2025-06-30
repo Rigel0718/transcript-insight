@@ -128,3 +128,15 @@ class OCRTableBoundaryDetectorNode(BaseNode):
         result = chain.invoke({'source' : source})
 
         return {'extracted_json' : result}
+    
+
+    class SplitByYBoundaryNode(BaseNode):
+        '''
+        LLM을 통해 얻은 y boundary 값을 가지고 OCR 값을 분리하는 node
+        '''
+        def __init__(self, verbose=False, **kwargs):
+            super().__init__(verbose=verbose, **kwargs)
+
+        
+        def run(self, state: OCRJsonState) -> OCRJsonState:
+            return state
