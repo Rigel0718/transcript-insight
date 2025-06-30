@@ -148,11 +148,26 @@ class SplitByYBoundaryNode(BaseNode):
             "bottom": [r[0] for r in lines if r[2] >= y_bottom],
         }
     
+    def format_table_sections(sections: dict) -> str:
+        top_text = "\n".join(sections["top"])
+        grade_text = "\n".join(sections["grade"])
+        bottom_text = "\n".join(sections["bottom"])
+
+        return (
+            "━━━━━━━━━━[Top Section]━━━━━━━━━━\n"
+            f"{top_text}\n\n"
+            "━━━━━━━━━━[Grade Table]━━━━━━━━━━\n"
+            f"{grade_text}\n\n"
+            "━━━━━━━━━━[Other Table]━━━━━━━━━━\n"
+            f"{bottom_text}"
+        )
+
     def run(self, state: OCRJsonState) -> OCRJsonState:
 
         table_boundary : TableBoundary = state['grade_table_boundary']
 
         lines = state['grouped_elements']
         result = self.split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
+        integrated_result = self.format_table_sections(result)
 
-        return {'result_element' : result}
+        return {'result_element' : integrated_result}
