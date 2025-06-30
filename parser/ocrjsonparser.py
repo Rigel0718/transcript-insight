@@ -140,8 +140,9 @@ class SplitByYBoundaryNode(BaseNode):
     def split_by_y_bounds(lines, y_top, y_bottom):
     # lines [(text, x, y)... ]
         return {
-            "top": [r[0] for r in lines if r[2] < y_top],
-            "grade": [r[0] for r in lines if y_top <= r[2] < y_bottom],
+            # -3을 하는 이유는 llm이 간혹가다가 의미에 포함되는 것을 경계로 삼아서 정보 손실이 되는 경우가 있기 때문에 
+            "top": [r[0] for r in lines if r[2] < (y_top-3)],
+            "grade": [r[0] for r in lines if y_top <= r[2] < (y_bottom-3)], 
             "bottom": [r[0] for r in lines if r[2] >= y_bottom],
         }
     
