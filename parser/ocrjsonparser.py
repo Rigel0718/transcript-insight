@@ -4,6 +4,8 @@ from .base import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import load_prompt, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.language_models.chat_models import BaseChatModel
+from typing import Optional
 from collections import defaultdict
 
 
@@ -85,18 +87,22 @@ class GroupXYLine(BaseNode):
 
 class OCRJsonExtractorNode(BaseNode):
 
-    def __init__(self, verbose=False, **kwargs):
+    def __init__(self, verbose=False, llm: Optional[BaseChatModel] = None, **kwargs):
         '''
         ocr된 정보들을 llm으로 구조화 시키는 노드
         '''
         super().__init__(verbose=verbose, **kwargs)
+        self.llm =llm or self._init_llm() 
 
-    def run(self, state: OCRJsonState):
-        
+    def _init_llm(self):
         llm = ChatOpenAI(
         temperature=0, 
         model_name="gpt-4o-mini",  
         )
+        return llm
+
+    def run(self, state: OCRJsonState):
+        
     
         source=state['ocr_data']
 
@@ -109,7 +115,7 @@ class OCRJsonExtractorNode(BaseNode):
             input_variables=['source']
         )
 
-        chain = prompt_templete | llm | StrOutputParser()
+        chain = prompt_templete | self.llm | StrOutputParser()
 
         result = chain.invoke({'source' : source})
 
