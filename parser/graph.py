@@ -16,19 +16,19 @@ def ocr_json_graph() -> CompiledStateGraph:
 
     group_xy_line_node = GroupXYLine(verbose=True)
 
-    ocr_extract_json_node = OCRTableBoundaryDetectorNode(verbose=True)
+    ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True)
 
     ocr_json_workflow = StateGraph(OCRJsonState)
 
     ocr_json_workflow.add_node('upstage_ocr_parser', upstage_ocr_node)
     ocr_json_workflow.add_node('group_by_xy', group_xy_line_node)
-    ocr_json_workflow.add_node('ocr_extract_llm', ocr_extract_json_node)
+    ocr_json_workflow.add_node('extract_boundary_agent', ocr_extract_boundary_node)
 
     ocr_json_workflow.add_edge('upstage_ocr_parser', 'group_by_xy')
-    ocr_json_workflow.add_edge('group_by_xy', 'ocr_extract_llm')
+    ocr_json_workflow.add_edge('group_by_xy', 'extract_boundary_agent')
 
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
-    ocr_json_workflow.set_finish_point('ocr_extract_llm')
+    ocr_json_workflow.set_finish_point('extract_boundary_agent')
     
     return ocr_json_workflow.compile(checkpointer=MemorySaver())
 
