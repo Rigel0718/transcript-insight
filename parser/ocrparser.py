@@ -115,15 +115,15 @@ class OCRTableBoundaryDetectorNode(BaseNode):
     
         source=state['ocr_data']
 
-        templete = load_prompt_template('prompts/ocr_json_extracter_prompt.yaml')
+        template = load_prompt_template('prompts/ocr_json_extracter_prompt.yaml')
 
-        prompt_templete = PromptTemplate(
-            template=templete,
+        prompt_template = PromptTemplate(
+            template=template,
             input_variables=['source']
         )
         parser = PydanticOutputParser(pydantic_object=TableBoundary)
         
-        chain = prompt_templete | self.llm | parser
+        chain = prompt_template | self.llm | parser
 
         result = chain.invoke({'source' : source})
 

@@ -3,6 +3,7 @@ from .state import ParseState, OCRParseState
 from .element import Element
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.prompts import PromptTemplate
 from typing import Optional
 from .utils import get_chat_prompt_yaml
 
@@ -23,6 +24,11 @@ class TableClassificationNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
+        template = get_chat_prompt_yaml('prompt/parsed_result_checker_prompt.yaml')
+        prompt_template = PromptTemplate(
+            template=template,
+            input_variables=['source']
+        )
         return state
 
 
