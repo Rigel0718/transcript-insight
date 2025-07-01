@@ -1,5 +1,5 @@
 from .base import BaseNode
-from .state import ParseState, OCRJsonState
+from .state import ParseState, OCRParseState
 from .element import Element
 import os
 
@@ -73,7 +73,7 @@ class CreateElementsNode(BaseNode):
 
 
 
-class CreateOCRElementNode(OCRJsonState):
+class CreateOCRElementNode(OCRParseState):
     '''
     OCRParser 정보를 OCRElement로 검증
     OCRElement: pydantic basemodel 
@@ -82,7 +82,7 @@ class CreateOCRElementNode(OCRJsonState):
         super().__init__(verbose=verbose, **kwargs)
 
     
-    def run(self, state: OCRJsonState) -> OCRJsonState:
+    def run(self, state: OCRParseState) -> OCRParseState:
         post_processed_elements = []
 
         for element in state['raw_elements']:
@@ -105,7 +105,7 @@ class ElementIntegrationNode(BaseNode):
         return state
 
 
-class StructureExtractor(OCRJsonState):
+class StructureExtractor(OCRParseState):
     '''
     LLM을 활용해서 OCR데이터를 구조화시키는 Node
     '''
@@ -113,7 +113,7 @@ class StructureExtractor(OCRJsonState):
         super().__init__(verbose=verbose, **kwargs)
 
     
-    def run(self, state: ParseState) -> ParseState:
+    def run(self, state: OCRParseState) -> OCRParseState:
         return state
 
     
