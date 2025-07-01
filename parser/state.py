@@ -22,11 +22,15 @@ class OCRJsonState(TypedDict):
     
     filepath: Annotated[str, "filepath"]
 
+    element_dir : Annotated[str, "element_dir"]
+
+    image_file_path : Annotated[str, "image_file_path"]
+
     ocr_data: Annotated[List[OCRElement], operator.add]
 
     page_width: Annotated[int, 'page_width']
 
-    elements: Annotated[List[Element], "elements"]
+    element: Annotated[Element, "document parsered element"]
 
     grouped_elements : Annotated[List[Tuple[str, int ,int]], "elements"]
 

@@ -181,12 +181,12 @@ class UpstageOCRNode(BaseNode):
         start_time = time.time()
         filepath = state['filepath']
         basedir = os.path.dirname(filepath)
-        element_dir = os.path.join(basedir, f"element_{state['element_index']}")
+        element_dir = os.path.join(basedir, f"element_{state['element_id']}")
         os.makedirs(element_dir, exist_ok=True)
         state['element_dir'] = element_dir
 
         self.log(f"Start Parsing: {element_dir}")
-        image_file_path = self._save_to_png(state['base64_encoding'], element_dir)
+        image_file_path = self._save_to_png(state['base64_encoding'], element_dir, state['element_id'])
         ocr_json_file_path = self._document_ocr_via_upstage(image_file_path)
         state['image_file_path'] = image_file_path
 
