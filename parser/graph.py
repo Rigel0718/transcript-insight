@@ -1,5 +1,5 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
-from .ocrjsonparser  import GroupXYLine, OCRTableBoundaryDetectorNode
+from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
 from .processing import CreateElementsNode, TableClassificationNode, ElementIntegrationNode, ElementsWorkingQueueNode
 from .state import OCRJsonState, ParseState
 from .route import need_ocr_tool
@@ -9,7 +9,7 @@ import os
 from langgraph.checkpoint.memory import MemorySaver
 
 # TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
-def ocr_json_graph() -> CompiledStateGraph:
+def ocr_grade_extractor_graph() -> CompiledStateGraph:
     upstage_ocr_node = UpstageOCRNode(
         api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
     )
@@ -42,7 +42,7 @@ def transcript_extract_graph() ->CompiledStateGraph:
 
     elements_working_queue_node = ElementsWorkingQueueNode(verbose=True)
 
-    ocr_json_tool_node = ocr_json_graph()
+    ocr_json_tool_node = ocr_grade_extractor_graph()
 
     integrate_elements_node = ElementIntegrationNode(verbose=True)
     
