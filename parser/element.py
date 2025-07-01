@@ -27,3 +27,7 @@ class OCRElement(BaseModel):
 class TableBoundary(BaseModel):
     y_top : int = Field(description='Top Y-position of the grade table section.')
     y_bottom : int = Field(description='Bottom Y-position that marks the end of the grade table section.')
+
+class CheckParsedResult(BaseModel):
+    YES: str = Field(description='Return "yes" when the parsed output meets the minimal table‑structure requirements.')
+    NO : str  = Field(decimal_places='Return "no" when the parsed output does not satisfy those requirements.')

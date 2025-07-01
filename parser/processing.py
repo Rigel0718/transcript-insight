@@ -1,8 +1,9 @@
 from .base import BaseNode
 from .state import ParseState, OCRParseState
-from .element import Element
+from .element import Element ,CheckParsedResult
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser, PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from typing import Optional
 from .utils import get_chat_prompt_yaml
@@ -29,6 +30,15 @@ class TableClassificationNode(BaseNode):
             template=template,
             input_variables=['source']
         )
+        parser = PydanticOutputParser(pydantic_object=CheckParsedResult)
+        
+        chain = prompt_template | self.llm | parser
+
+        for elem in state['elements']:
+            if elem['category'] == 'table':
+                source = elem['content']
+                result = chain.invoke({'source' : source})
+        
         return state
 
 
