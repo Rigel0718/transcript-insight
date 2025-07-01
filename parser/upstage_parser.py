@@ -3,6 +3,9 @@ import json
 import os
 import time
 import re
+import base64
+import io
+from PIL import Image
 from .base import BaseNode
 from .state import ParseState, OCRJsonState
 
@@ -148,6 +151,25 @@ class UpstageOCRNode(BaseNode):
         text = text.replace('|', 'I') # '|' → 'I'
         return text
 
+    def _save_to_png(self, base64_encoding, dirname, index):
+        # base64 디코딩
+        image_data = base64.b64decode(base64_encoding)
+
+        # 바이트 데이터를 이미지로 변환
+        image = Image.open(io.BytesIO(image_data))
+
+        # basename_prefix를 사용하여 이미지 파일명 생성
+        image_filename = (
+            f"grade_element_{index}.png"
+        )
+        image_path = os.path.join(dirname, image_filename)
+        abs_image_path = os.path.abspath(image_path)
+
+        # 이미지 저장
+        image.save(abs_image_path)
+        return abs_image_path
+    
+
     def run(self, state: OCRJsonState):
         """
         주어진 입력 파일에 대해 문서 분석을 실행합니다.
@@ -158,16 +180,22 @@ class UpstageOCRNode(BaseNode):
     
         start_time = time.time()
         filepath = state['filepath']
-        self.log(f"Start Parsing: {filepath}")
+        basedir = os.path.dirname(filepath)
+        element_dir = os.path.join(basedir, f"element_{state['element_index']}")
+        os.makedirs(element_dir, exist_ok=True)
+        state['element_dir'] = element_dir
 
-        parsed_document_json_file_path = self._document_ocr_via_upstage(filepath)
+        self.log(f"Start Parsing: {element_dir}")
+        image_file_path = self._save_to_png(state['base64_encoding'], element_dir)
+        ocr_json_file_path = self._document_ocr_via_upstage(image_file_path)
+        state['image_file_path'] = image_file_path
 
-        with open(parsed_document_json_file_path, 'r') as f:
+        with open(ocr_json_file_path, 'r') as f:
             data = json.load(f)
 
         metadata = self._metadata_ocr_json(data)
 
-        updata_words = []
+        update_words = []
         for word in data['pages'][0]['words']:
             confidence = word['boundingBox'].get('confidence', '0')
             if int(confidence) <= 60:
@@ -176,9 +204,9 @@ class UpstageOCRNode(BaseNode):
             word_index['id']=word['id']
             word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
             word_index['text']=self._cleaning_text(word['text'])
-            updata_words.append(word_index)
+            update_words.append(word_index)
 
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
 
-        return {'metadata': [metadata], 'ocr_data': updata_words, 'page_width': metadata['size']['width']}
+        return {'metadata': [metadata], 'ocr_data': update_words, 'page_width': metadata['size']['width']}
