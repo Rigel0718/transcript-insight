@@ -20,7 +20,7 @@ class ParseState(TypedDict):
 class OCRJsonState(TypedDict):
     "OCR로 Jsondata를 추출하는 sub graph의 state"
     
-    filepath: Annotated[str, "filepath"]
+    filepath: Annotated[str, "base_filepath"]
 
     element_dir : Annotated[str, "element_dir"]
 
@@ -30,9 +30,13 @@ class OCRJsonState(TypedDict):
 
     page_width: Annotated[int, 'page_width']
 
-    element: Annotated[Element, "document parsered element"]
+    metadata: Annotated[
+        List[Dict], operator.add
+    ]
 
-    grouped_elements : Annotated[List[Tuple[str, int ,int]], "elements"]
+    element: Annotated[Element, "originaldocument parsered element"]
+
+    grouped_elements : Annotated[List[Tuple[str, int ,int]], "rulebased_elements"]
 
     grade_table_boundary: Annotated[TableBoundary, 'output grade_table_boundary']
 
