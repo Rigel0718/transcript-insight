@@ -1,15 +1,26 @@
 from .base import BaseNode
 from .state import ParseState, OCRParseState
 from .element import Element
-import os
+from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from typing import Optional
+from .utils import get_chat_prompt_yaml
 
 class TableClassificationNode(BaseNode):
     '''
     Parsing된 elements의 table중 OCR할 element 분류
     '''
-    def __init__(self, verbose=False, **kwargs):
+    def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
+        self.llm = llm or self._init_llm(llm)
 
+
+    def _init_llm(self):
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0,
+        )
+        return llm 
     
     def run(self, state: ParseState) -> ParseState:
         return state
