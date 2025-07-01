@@ -1,5 +1,5 @@
 from collections import defaultdict
-from .state import OCRJsonState
+from .state import OCRParseState
 from .base import BaseNode
 from .utils import load_prompt_template
 from .element import TableBoundary
@@ -17,7 +17,7 @@ class GroupXYLine(BaseNode):
         super().__init__(verbose=verbose, **kwargs)
 
 
-    def run(state: OCRJsonState):
+    def run(state: OCRParseState):
         '''
         # function 
         - RuleBase로 OCR 좌표를 이용하여 layout을 LLM이 이해할 수 있는 형태로 전처리.
@@ -110,7 +110,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
         )
         return llm
 
-    def run(self, state: OCRJsonState):
+    def run(self, state: OCRParseState):
         
     
         source=state['ocr_data']
@@ -162,7 +162,7 @@ class SplitByYBoundaryNode(BaseNode):
             f"{bottom_text}"
         )
 
-    def run(self, state: OCRJsonState) -> OCRJsonState:
+    def run(self, state: OCRParseState) -> OCRParseState:
 
         table_boundary : TableBoundary = state['grade_table_boundary']
 

@@ -1,7 +1,7 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
 from .processing import CreateElementsNode, TableClassificationNode, ElementIntegrationNode, ElementsWorkingQueueNode
-from .state import OCRJsonState, ParseState
+from .state import OCRParseState, ParseState
 from .route import need_ocr_tool
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -18,7 +18,7 @@ def ocr_grade_extractor_graph() -> CompiledStateGraph:
 
     ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True)
 
-    ocr_json_workflow = StateGraph(OCRJsonState)
+    ocr_json_workflow = StateGraph(OCRParseState)
 
     ocr_json_workflow.add_node('upstage_ocr_parser', upstage_ocr_node)
     ocr_json_workflow.add_node('group_by_xy', group_xy_line_node)

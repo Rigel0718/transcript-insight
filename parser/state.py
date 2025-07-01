@@ -17,8 +17,8 @@ class ParseState(TypedDict):
     unstructured_elements: Annotated[str, 'unstrutured_element']
 
 
-class OCRJsonState(TypedDict):
-    "OCR로 Jsondata를 추출하는 sub graph의 state"
+class OCRParseState(TypedDict):
+    "OCR로 구조화된 데이터를 추출하는 sub graph의 state"
     
     filepath: Annotated[str, "base_filepath"]
 
