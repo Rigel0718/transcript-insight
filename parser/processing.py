@@ -38,7 +38,8 @@ class TableClassificationNode(BaseNode):
             if elem['category'] == 'table':
                 source = elem['content']
                 result = chain.invoke({'source' : source})
-        
+                if result == 'YES':
+                    state['needs_ocr_elements'] + elem
         return state
 
 
