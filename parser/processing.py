@@ -8,7 +8,7 @@ from langchain_core.prompts import PromptTemplate
 from typing import Optional
 from .utils import get_chat_prompt_yaml
 
-class TableClassificationNode(BaseNode):
+class TableValidationNode(BaseNode):
     '''
     Parsing된 elements의 table중 OCR할 element 분류
     '''

@@ -1,6 +1,6 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
-from .processing import CreateElementsNode, TableClassificationNode, ElementIntegrationNode, ElementsWorkingQueueNode
+from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode, ElementsWorkingQueueNode
 from .state import OCRParseState, ParseState
 from .route import need_ocr_tool
 from langgraph.graph import StateGraph
@@ -38,7 +38,7 @@ def transcript_extract_graph() ->CompiledStateGraph:
     )
     preprocessing_elements_node = CreateElementsNode(verbose=True)
 
-    grader_table_elements_node = TableClassificationNode(verbose=True)
+    grader_table_elements_node = TableValidationNode(verbose=True)
 
     elements_working_queue_node = ElementsWorkingQueueNode(verbose=True)
 
