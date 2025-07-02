@@ -114,6 +114,13 @@ class ElementIntegrationNode(BaseNode):
 
     
     def run(self, state: ParseState) -> ParseState:
-        return state
+        text_blocks = []
+
+        for elem in state['elements']:
+            content = elem.get('content', '').strip()
+            if content:
+                text_blocks.append(content)
+        result = "\n\n".join(text_blocks)
+        return {'final_result' : result}
 
     
