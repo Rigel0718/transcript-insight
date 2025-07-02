@@ -9,7 +9,6 @@ class Element(BaseModel):
     markdown: str = ""
     base64_encoding: Optional[str] = None
     id: Optional[int] = None
-    coordinates: Optional[List[Dict]] = None
     ocr_need : bool = False
 
     def copy(self) -> Element:
