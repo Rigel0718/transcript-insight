@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Literal
 from pydantic import BaseModel, Field
 
 
@@ -29,5 +29,9 @@ class TableBoundary(BaseModel):
     y_bottom : int = Field(description='Bottom Y-position that marks the end of the grade table section.')
 
 class CheckParsedResult(BaseModel):
-    YES: str = Field(description='Return "yes" when the parsed output meets the minimal table‑structure requirements.')
-    NO : str  = Field(decimal_places='Return "no" when the parsed output does not satisfy those requirements.')
+    decision: Literal["YES", "NO"] = Field(..., description=(
+            'Return **"YES"** if the parsed output is NOT sufficiently structured '
+            'and therefore needs additional OCR processing. '
+            'Return **"NO"** if the structure is good enough for an LLM to understand '
+            'without further parsing.'
+        ))
