@@ -3,6 +3,7 @@ from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
 from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode, ElementsWorkingQueueNode
 from .state import OCRParseState, ParseState
 from .route import need_ocr_tool
+from .base import BaseNode
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 import os
@@ -32,17 +33,35 @@ def ocr_grade_extractor_graph() -> CompiledStateGraph:
     
     return ocr_json_workflow.compile(checkpointer=MemorySaver())
 
+
+
+class OCRSubGraphNode(BaseNode):
+    '''
+    element에서 ocrparser가 필요하다면 ocr_subgraph를 실행시키는 node
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    def run(self, state: ParseState):
+        for elem in state['elements']:
+            if elem['need_ocr'] :
+                self.log(f'START OCR sub graph element table number{elem['id']}')
+                ocr_graph = ocr_grade_extractor_graph()
+                result = ocr_graph.invoke({'element' : elem})
+                elem['content'] = result['result_element']
+        return state
+
+
+
 def transcript_extract_graph() ->CompiledStateGraph:
     upstage_document_parse_node = UpstageParseNode(
         api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
     )
     preprocessing_elements_node = CreateElementsNode(verbose=True)
 
-    grader_table_elements_node = TableValidationNode(verbose=True)
+    table_elements_validation_node = TableValidationNode(verbose=True)
 
-    elements_working_queue_node = ElementsWorkingQueueNode(verbose=True)
-
-    ocr_json_tool_node = ocr_grade_extractor_graph()
+    ocr_subgraph_node = OCRSubGraphNode(verbose=True)
 
     integrate_elements_node = ElementIntegrationNode(verbose=True)
     
@@ -50,20 +69,18 @@ def transcript_extract_graph() ->CompiledStateGraph:
 
     upstage_document_parser_workflow.add_node('upstage_document_parse_node', upstage_document_parse_node)
     upstage_document_parser_workflow.add_node('preprocessing_elements_node', preprocessing_elements_node)
-    upstage_document_parser_workflow.add_node('grader_table_elements_node', grader_table_elements_node)
-    upstage_document_parser_workflow.add_node('ocr_json_tool_node', ocr_json_tool_node)
+    upstage_document_parser_workflow.add_node('table_elements_validation_node', table_elements_validation_node)
+    upstage_document_parser_workflow.add_node('ocr_subgraph_node', ocr_subgraph_node)
     upstage_document_parser_workflow.add_node('integrate_elements_node', integrate_elements_node)
-    upstage_document_parser_workflow.add_node('elements_working_queue_node', elements_working_queue_node)
 
     upstage_document_parser_workflow.add_edge('upstage_document_parse_node', 'preprocessing_elements_node')
-    upstage_document_parser_workflow.add_edge('preprocessing_elements_node','grader_table_elements_node')
-    upstage_document_parser_workflow.add_edge('grader_table_elements_node', 'elements_working_queue_node')
+    upstage_document_parser_workflow.add_edge('preprocessing_elements_node','table_elements_validation_node')
     upstage_document_parser_workflow.add_conditional_edges(
-        'elements_working_queue_node',
+        'table_elements_validation_node',
         need_ocr_tool,
-        {False: 'integrate_elements_node', True: 'ocr_json_tool_node'}
+        {False: 'integrate_elements_node', True: 'ocr_subgraph_node'}
     )
-    upstage_document_parser_workflow.add_edge('ocr_json_tool_node','elements_working_queue_node')
+    upstage_document_parser_workflow.add_edge('ocr_subgraph_node','integrate_elements_node')
 
     upstage_document_parser_workflow.set_entry_point('upstage_document_parse_node')
     upstage_document_parser_workflow.set_finish_point('integrate_elements_node')
