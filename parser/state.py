@@ -10,7 +10,7 @@ class ParseState(TypedDict):
         List[Dict], operator.add
     ]  # parsing metadata (api, model, usage)
 
-    raw_elements: Annotated[List[Dict], operator.add]  # raw elements from Upstage
+    elements_from_parser: Annotated[List[Dict], operator.add]  # raw elements from Upstage
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
 
