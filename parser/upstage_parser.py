@@ -7,7 +7,8 @@ import base64
 import io
 from PIL import Image
 from .base import BaseNode
-from .state import ParseState, OCRJsonState
+from .state import ParseState, OCRParseState
+from .element import OCRElement
 
 
 
@@ -170,7 +171,7 @@ class UpstageOCRNode(BaseNode):
         return abs_image_path
     
 
-    def run(self, state: OCRJsonState):
+    def run(self, state: OCRParseState):
         """
         주어진 입력 파일에 대해 문서 분석을 실행합니다.
 
@@ -197,14 +198,17 @@ class UpstageOCRNode(BaseNode):
 
         update_words = []
         for word in data['pages'][0]['words']:
-            confidence = word['boundingBox'].get('confidence', '0')
-            if int(confidence) <= 60:
+            confidence = word.get('confidence', '0')
+            if float(confidence) <= 0.6:
                 continue
-            word_index = dict()
-            word_index['id']=word['id']
-            word_index['vertices']=word['boundingBox']['vertices'][0] # 좌측상단 좌표만 추출
-            word_index['text']=self._cleaning_text(word['text'])
-            update_words.append(word_index)
+            elem = None
+            elem = OCRElement(
+                id=word['id'],
+                vertices=word['boundingBox']['vertices'][0], # 좌측상단 좌표만 추출
+                text=self._cleaning_text(word['text'])
+            )
+            
+            update_words.append(elem)
 
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
