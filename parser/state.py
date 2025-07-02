@@ -14,7 +14,7 @@ class ParseState(TypedDict):
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
 
-    needs_ocr_elements : Annotated[List[Element], 'needs_ocr_elements', operator.add]
+    needs_ocr_elements_id : Annotated[List[str], 'needs_ocr_elements', operator.add]
 
 
 class OCRParseState(TypedDict):
