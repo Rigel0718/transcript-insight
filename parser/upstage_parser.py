@@ -94,7 +94,7 @@ class UpstageParseNode(BaseNode):
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
 
-        return {"metadata": [metadata], "elements_from_parser": [data["elements"]]}
+        return {"metadata": [metadata], "elements_from_parser": [data["elements"]], "original_document_parser_filepath": parsed_document_json_file_path}
 
 
 #TODO Upstage OCR 기능 추가하기. -> 위에 Document Parsing과 OCR 기능을 상속 받을 수 있는 기초 클래스를 생성도 추가.

@@ -6,6 +6,8 @@ from .element import Element, TableBoundary, OCRElement
 class ParseState(TypedDict):
     filepath: Annotated[str, "filepath"]  # 원본 파일 경로
 
+    original_document_parser_filepath : Annotated[str, 'original_document_parser_filepath']
+
     metadata: Annotated[
         List[Dict], operator.add
     ]  # parsing metadata (api, model, usage)
