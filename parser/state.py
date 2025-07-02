@@ -14,8 +14,6 @@ class ParseState(TypedDict):
 
     elements: Annotated[List[Element], "elements"]  # Final cleaned elements
 
-    unstructured_elements: Annotated[str, 'unstrutured_element']
-
     needs_ocr_elements : Annotated[List[Element], 'needs_ocr_elements', operator.add]
 
 
