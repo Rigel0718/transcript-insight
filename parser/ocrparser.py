@@ -154,9 +154,9 @@ class SplitByYBoundaryNode(BaseNode):
         bottom_text = "\n".join(sections["bottom"])
 
         return (
-            "━━━━━━━━━━[Top Section]━━━━━━━━━━\n"
+            "━━━━━━━━━━[Grade Table Head Section]━━━━━━━━━━\n"
             f"{top_text}\n\n"
-            "━━━━━━━━━━[Grade Table]━━━━━━━━━━\n"
+            "━━━━━━━━━━[Grade Table Main Section]━━━━━━━━━━\n"
             f"{grade_text}\n\n"
             "━━━━━━━━━━[Other Table]━━━━━━━━━━\n"
             f"{bottom_text}"
