@@ -14,7 +14,7 @@ class TableValidationNode(BaseNode):
     '''
     def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
-        self.llm = llm or self._init_llm(llm)
+        self.llm = llm or self._init_llm()
 
 
     def _init_llm(self):
