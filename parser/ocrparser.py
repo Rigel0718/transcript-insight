@@ -115,12 +115,8 @@ class OCRTableBoundaryDetectorNode(BaseNode):
     
         source=state['ocr_data']
 
-        template = load_prompt_template('prompts/ocr_json_extracter_prompt.yaml')
+        prompt_template = load_prompt_template('prompts/ocr_json_extracter_prompt.yaml')
 
-        prompt_template = PromptTemplate(
-            template=template,
-            input_variables=['source']
-        )
         parser = PydanticOutputParser(pydantic_object=TableBoundary)
         
         chain = prompt_template | self.llm | parser
@@ -137,9 +133,9 @@ class SplitByYBoundaryNode(BaseNode):
     def __init__(self, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
 
-    def split_by_y_bounds(lines, y_top, y_bottom):
-    # lines [(text, x, y)... ]
-    # -3을 하는 이유는 llm이 간혹가다가 의미에 포함되는 것을 경계로 삼아서 정보 손실이 되는 경우가 있기 때문에 
+    def _split_by_y_bounds(lines, y_top, y_bottom):
+        # lines [(text, x, y)... ]
+        # -3을 하는 이유는 llm이 간혹가다가 의미에 포함되는 것을 경계로 삼아서 정보 손실이 되는 경우가 있기 때문에 
         y_top = y_top-3
         y_bottom = y_bottom-3
         return {
@@ -148,7 +144,7 @@ class SplitByYBoundaryNode(BaseNode):
             "bottom": [r[0] for r in lines if r[2] >= y_bottom],
         }
     
-    def format_table_sections(sections: dict) -> str:
+    def _format_table_sections(sections: dict) -> str:
         top_text = "\n".join(sections["top"])
         grade_text = "\n".join(sections["grade"])
         bottom_text = "\n".join(sections["bottom"])
@@ -167,7 +163,7 @@ class SplitByYBoundaryNode(BaseNode):
         table_boundary : TableBoundary = state['grade_table_boundary']
 
         lines = state['grouped_elements']
-        result = self.split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
-        integrated_result = self.format_table_sections(result)
+        result = self._split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
+        integrated_result = self._format_table_sections(result)
 
         return {'result_element' : integrated_result}
