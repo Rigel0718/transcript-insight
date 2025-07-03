@@ -25,21 +25,18 @@ class TableValidationNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
-        template = get_chat_prompt_yaml('prompt/parsed_result_checker_prompt.yaml')
-        prompt_template = PromptTemplate(
-            template=template,
-            input_variables=['source']
-        )
+        prompt_template = get_chat_prompt_yaml('prompt/parsed_result_checker_prompt.yaml')
+        
         parser = PydanticOutputParser(pydantic_object=CheckParsedResult)
         
         chain = prompt_template | self.llm | parser
 
         for elem in state['elements']:
-            if elem['category'] == 'table':
-                source = elem['content']
-                result = chain.invoke({'source' : source})
-                if result == 'YES':
-                    elem['ocr_need'] = True
+            if elem.category == 'table':
+                source = elem.content
+                result : CheckParsedResult = chain.invoke({'source' : source})
+                if result.decision == 'YES':
+                    elem.ocr_need = True
                     state['needs_ocr_elements'] + elem['id']
             else :
                 continue
