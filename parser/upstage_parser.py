@@ -112,7 +112,7 @@ class UpstageOCRNode(BaseNode):
         super().__init__(verbose=verbose, **kwargs)
         self.api_key = api_key
 
-    def _document_ocr_via_upstage(self, input_file_path : str):
+    def _document_ocr_via_upstage(self, input_file_path,  dirname, index):
         url = "https://api.upstage.ai/v1/document-digitization"
         headers = {"Authorization": f"Bearer {self.api_key}"}
 
@@ -120,15 +120,19 @@ class UpstageOCRNode(BaseNode):
         data = {"model": 'ocr'}
         response = requests.post(url, headers=headers, files=files, data=data)
 
+        ocr_filename = (
+            f"grade_element_{index}_ocr_.json"
+        )
+        ocr_file_path = os.path.join(dirname, ocr_filename)
+
         if response.status_code == 200:
             # 분석 결과를 저장할 JSON 파일 경로 생성
-            output_file_path = os.path.splitext(input_file_path)[0]+ '_ocr_' + ".json"
 
             # 분석 결과를 JSON 파일로 저장
-            with open(output_file_path, "w") as f:
+            with open(ocr_file_path, "w") as f:
                 json.dump(response.json(), f, ensure_ascii=False, indent=2)
 
-            return output_file_path
+            return ocr_file_path
         else:
             # API 요청이 실패한 경우 예외 발생
             raise ValueError(f"Unexpected status code: {response.status_code}")
@@ -188,7 +192,7 @@ class UpstageOCRNode(BaseNode):
 
         self.log(f"Start Parsing: {element_dir}")
         image_file_path = self._save_to_png(state['base64_encoding'], element_dir, state['element_id'])
-        ocr_json_file_path = self._document_ocr_via_upstage(image_file_path)
+        ocr_json_file_path = self._document_ocr_via_upstage(image_file_path, element_dir, state['element_id'])
         state['image_file_path'] = image_file_path
 
         with open(ocr_json_file_path, 'r') as f:
