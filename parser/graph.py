@@ -44,11 +44,11 @@ class OCRSubGraphNode(BaseNode):
 
     def run(self, state: ParseState):
         for elem in state['elements']:
-            if elem['need_ocr'] :
+            if elem.ocr_need :
                 self.log(f'START OCR sub graph element table number{elem['id']}')
                 ocr_graph = ocr_grade_extractor_graph()
-                result = ocr_graph.invoke({'element' : elem})
-                elem['content'] = result['result_element']
+                result = ocr_graph.invoke({'element' : elem, 'filepath': state['filepath'], 'element_id' : elem.id})
+                elem.content = result['result_element']
         return state
 
 
