@@ -25,6 +25,8 @@ class OCRParseState(TypedDict):
     
     filepath: Annotated[str, "base_filepath"]
 
+    base64_encoding : Annotated[str, "base64_encoding"]
+
     element_dir : Annotated[str, "element_dir"]
 
     image_file_path : Annotated[str, "image_file_path"]
