@@ -42,12 +42,12 @@ class GroupXYLine(BaseNode):
         columns = defaultdict(list)
 
         # 열 분류
-        for word in ocr_data:
-            x0 = word["vertices"]["x"]
-            y0 = word["vertices"]["y"]
+        for ocr_elem in ocr_data:
+            x0 = ocr_elem.vertices['x']
+            y0 = ocr_elem.vertices['y']
             col_index = int(x0 // col_width)
             col_index = min(col_index, num_cols - 1)
-            columns[col_index].append((y0, x0, word["text"]))
+            columns[col_index].append((y0, x0, ocr_elem.text))
 
         # 열 순서대로 정렬
         all_texts = []
