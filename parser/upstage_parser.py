@@ -217,4 +217,4 @@ class UpstageOCRNode(BaseNode):
         duration = time.time() - start_time
         self.log(f"Finished Parsing in {duration:.2f} seconds")
 
-        return {'metadata': [metadata], 'ocr_data': update_words, 'page_width': metadata['size']['width']}
+        return {'metadata': [metadata], 'ocr_data': update_words, 'page_width': metadata['size']['width'], 'ocr_json_file_path' : ocr_json_file_path}

@@ -37,6 +37,8 @@ class OCRParseState(TypedDict):
         List[Dict], operator.add
     ]
 
+    ocr_json_file_path : Annotated[str, "ocr_json_file_path"]
+
     element: Annotated[Element, "originaldocument parsered element"]
 
     grouped_elements : Annotated[List[Tuple[str, int ,int]], "rulebased_elements"]
