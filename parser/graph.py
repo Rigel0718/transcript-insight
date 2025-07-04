@@ -1,6 +1,6 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
-from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode, ElementsWorkingQueueNode
+from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode
 from .state import OCRParseState, ParseState
 from .route import need_ocr_tool
 from .base import BaseNode
