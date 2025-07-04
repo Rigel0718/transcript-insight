@@ -8,6 +8,8 @@ from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 import os
 from langgraph.checkpoint.memory import MemorySaver
+import uuid
+from langchain_core.runnables import RunnableConfig  
 
 # TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
 def ocr_grade_extractor_graph() -> CompiledStateGraph:
@@ -31,7 +33,7 @@ def ocr_grade_extractor_graph() -> CompiledStateGraph:
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
     ocr_json_workflow.set_finish_point('extract_boundary_agent')
     
-    return ocr_json_workflow.compile(checkpointer=MemorySaver())
+    return ocr_json_workflow.compile()
 
 
 
@@ -43,18 +45,24 @@ class OCRSubGraphNode(BaseNode):
         super().__init__(verbose=verbose, **kwargs)
 
     def run(self, state: ParseState):
+        
+        random_id = str(uuid.uuid4())
+
+        config = RunnableConfig(recursion_limit=5, configurable={"thread_id": '1'}) 
         self.log(f'OCRSubGraphNode START')
         for elem in state['elements']:
             if elem.ocr_need :
                 self.log(f"START OCR sub graph element table number {elem.id}")
                 ocr_graph = ocr_grade_extractor_graph()
-                result = ocr_graph.invoke(
+                result : OCRParseState = ocr_graph.invoke(
+                    input=
                         {
                         'element' : elem, 
-                        'filepath': state['filepath'], 
+                        'grade_image_filepath': state['filepath'], 
                         'element_id' : elem.id, 
                         'base64_encoding': elem.base64_encoding
-                        }
+                        },
+                    config=config
                     )
                 elem.content = result['result_element']
         self.log(f'OCRSubGraphNode END')

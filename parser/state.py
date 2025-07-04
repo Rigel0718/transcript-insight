@@ -23,11 +23,13 @@ class ParseState(TypedDict):
 class OCRParseState(TypedDict):
     "OCR로 구조화된 데이터를 추출하는 sub graph의 state"
     
-    filepath: Annotated[str, "base_filepath"]
+    grade_image_filepath: Annotated[str, "base_filepath"]
 
     base64_encoding : Annotated[str, "base64_encoding"]
 
     element_dir : Annotated[str, "element_dir"]
+
+    element_id : Annotated[str, "element_id"]
 
     image_file_path : Annotated[str, "image_file_path"]
 

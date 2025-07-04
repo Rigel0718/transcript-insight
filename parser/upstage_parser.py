@@ -81,7 +81,8 @@ class UpstageParseNode(BaseNode):
         filepath = state['filepath']
         self.log(f"Start Parsing: {filepath}")
 
-        parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
+        # parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
+        parsed_document_json_file_path = '../example_data/test_example/grade.json'
 
         with open(parsed_document_json_file_path, 'r') as f:
             data = json.load(f)
@@ -184,7 +185,8 @@ class UpstageOCRNode(BaseNode):
         """
     
         start_time = time.time()
-        filepath = state['filepath']
+        filepath = state['grade_image_filepath']
+        print(state)
         basedir = os.path.dirname(filepath)
         element_dir = os.path.join(basedir, f"element_{state['element_id']}")
         os.makedirs(element_dir, exist_ok=True)
