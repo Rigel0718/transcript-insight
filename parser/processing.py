@@ -30,18 +30,18 @@ class TableValidationNode(BaseNode):
 
         chain = prompt_template | self.llm.with_structured_output(CheckParsedResult)
         for elem in state['elements']:
-            print(elem.id)
             if elem.category == 'table':
-                print(elem.id)
+                print('table_id  :' ,elem.id)
                 source = elem.content
                 result : CheckParsedResult = chain.invoke({'source' : source})
                 if result.decision == 'YES':
                     elem.ocr_need = True
-                    state['needs_ocr_elements'] + elem.id
+                    state['needs_ocr_elements_id'] = state['needs_ocr_elements_id'] + [str(elem.id)]
+                    print(state['needs_ocr_elements_id'])
             else :
                 continue
         self.log(f'TableValidationNode END')
-        return {'elements' : state['elements']}
+        return state
 
 
 
@@ -98,8 +98,8 @@ class CreateElementsNode(BaseNode):
             if elem is not None:
                 post_processed_elements.append(elem)
 
-            self.log(f'CreateElementsNode END')
-            return {"elements": post_processed_elements}
+        self.log(f'CreateElementsNode END')
+        return {"elements": post_processed_elements}
 
 
 
