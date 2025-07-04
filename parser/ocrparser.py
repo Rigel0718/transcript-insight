@@ -17,7 +17,7 @@ class GroupXYLine(BaseNode):
         super().__init__(verbose=verbose, **kwargs)
 
 
-    def run(state: OCRParseState):
+    def run(self, state: OCRParseState):
         '''
         # function 
         - RuleBase로 OCR 좌표를 이용하여 layout을 LLM이 이해할 수 있는 형태로 전처리.
@@ -32,7 +32,7 @@ class GroupXYLine(BaseNode):
         - num_cols: 성적표가 세로로 나누어진 칸 수
         - y_threshold: ocr결과에서 같은 줄이라고 볼 수 있는 y값의 오차범위
         '''
-
+        self.log(f'GroupXYLineNode START')
         ocr_data = state['ocr_data']
         page_width = state['page_width']
         num_cols = 3
@@ -83,7 +83,7 @@ class GroupXYLine(BaseNode):
             min_x = min(t[0] for t in current_line_sorted)
             min_y = min(t[2] for t in current_line_sorted)
             lines.append((merged_text, min_x, min_y))
-
+        self.log(f'GroupXYLineNode END')
         return {'grouped_elements' : lines}
 
 
@@ -112,7 +112,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
 
     def run(self, state: OCRParseState):
         
-    
+        self.log('OCRTableBoundaryDetectorNode START')
         source=state['ocr_data']
 
         prompt_template = load_prompt_template('prompts/boundary_detector.yaml')
@@ -123,6 +123,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
 
         result = chain.invoke({'source' : source})
 
+        self.log('OCRTableBoundaryDetectorNode END')
         return {'grade_table_boundary' : result}
     
 
@@ -159,11 +160,12 @@ class SplitByYBoundaryNode(BaseNode):
         )
 
     def run(self, state: OCRParseState) -> OCRParseState:
-
+        self.log('SplitByYBoundaryNode START')
         table_boundary : TableBoundary = state['grade_table_boundary']
 
         lines = state['grouped_elements']
         result = self._split_by_y_bounds(lines, table_boundary.y_top, table_boundary.y_bottom)
         integrated_result = self._format_table_sections(result)
-
+        self.log('SplitByYBoundaryNode END')
+        
         return {'result_element' : integrated_result}

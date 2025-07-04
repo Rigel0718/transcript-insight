@@ -25,8 +25,8 @@ class TableValidationNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
-        prompt_template = get_chat_prompt_yaml('prompt/parsed_result_checker_prompt.yaml')
-        
+        prompt_template = get_chat_prompt_yaml('prompts/parsed_result_checker_prompt.yaml')
+        self.log(f'TableValidationNode Start')
         parser = PydanticOutputParser(pydantic_object=CheckParsedResult)
         
         chain = prompt_template | self.llm | parser
@@ -40,6 +40,7 @@ class TableValidationNode(BaseNode):
                     state['needs_ocr_elements'] + elem['id']
             else :
                 continue
+        self.log(f'TableValidationNode END')
         return state
 
 
@@ -55,6 +56,7 @@ class CreateElementsNode(BaseNode):
         self.newline = "\n" if add_newline else ""
     
     def run(self, state: ParseState) -> ParseState:
+        self.log(f'CreateElementsNode Start')
         post_processed_elements = []
 
         for element in state["elements_from_parser"]:
@@ -96,7 +98,7 @@ class CreateElementsNode(BaseNode):
             if elem is not None:
                 post_processed_elements.append(elem)
 
-
+            self.log(f'CreateElementsNode END')
             return {"elements": post_processed_elements}
 
 
@@ -111,6 +113,7 @@ class ElementIntegrationNode(BaseNode):
 
     
     def run(self, state: ParseState) -> ParseState:
+        self.log('ElementIntegrationNode START')
         text_blocks = []
 
         for elem in state['elements']:
@@ -118,6 +121,7 @@ class ElementIntegrationNode(BaseNode):
             if content:
                 text_blocks.append(content)
         result = "\n\n".join(text_blocks)
+        self.log('ElementIntegrationNode END')
         return {'final_result' : result}
 
     

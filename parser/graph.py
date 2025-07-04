@@ -43,6 +43,7 @@ class OCRSubGraphNode(BaseNode):
         super().__init__(verbose=verbose, **kwargs)
 
     def run(self, state: ParseState):
+        self.log(f'OCRSubGraphNode START')
         for elem in state['elements']:
             if elem.ocr_need :
                 self.log(f"START OCR sub graph element table number {elem.id}")
@@ -56,6 +57,7 @@ class OCRSubGraphNode(BaseNode):
                         }
                     )
                 elem.content = result['result_element']
+        self.log(f'OCRSubGraphNode END')
         return {"elements": state["elements"]}
 
 
