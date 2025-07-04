@@ -6,7 +6,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser, PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from typing import Optional
-from .utils import get_chat_prompt_yaml
+from .utils import load_prompt_template
 
 class TableValidationNode(BaseNode):
     '''
@@ -25,23 +25,23 @@ class TableValidationNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
-        prompt_template = get_chat_prompt_yaml('prompts/parsed_result_checker_prompt.yaml')
+        prompt_template = load_prompt_template('prompts/parsed_result_checker_prompt.yaml')
         self.log(f'TableValidationNode Start')
-        parser = PydanticOutputParser(pydantic_object=CheckParsedResult)
-        
-        chain = prompt_template | self.llm | parser
 
+        chain = prompt_template | self.llm.with_structured_output(CheckParsedResult)
         for elem in state['elements']:
+            print(elem.id)
             if elem.category == 'table':
+                print(elem.id)
                 source = elem.content
                 result : CheckParsedResult = chain.invoke({'source' : source})
                 if result.decision == 'YES':
                     elem.ocr_need = True
-                    state['needs_ocr_elements'] + elem['id']
+                    state['needs_ocr_elements'] + elem.id
             else :
                 continue
         self.log(f'TableValidationNode END')
-        return state
+        return {'elements' : state['elements']}
 
 
 
@@ -117,7 +117,7 @@ class ElementIntegrationNode(BaseNode):
         text_blocks = []
 
         for elem in state['elements']:
-            content = elem.get('content', '').strip()
+            content = (elem.content or "").strip()
             if content:
                 text_blocks.append(content)
         result = "\n\n".join(text_blocks)
