@@ -12,5 +12,4 @@ def get_chat_prompt_yaml(file_path):
 def load_prompt_template(prompt_filename: str) -> ChatPromptTemplate:
     # prompt_path = os.path.join(base_dir, "prompts", prompt_filename)
     prompt_yaml = get_chat_prompt_yaml(prompt_filename)
-    print(prompt_yaml)
     return ChatPromptTemplate.from_messages(prompt_yaml)

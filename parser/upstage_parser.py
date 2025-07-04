@@ -138,7 +138,7 @@ class UpstageOCRNode(BaseNode):
             # API 요청이 실패한 경우 예외 발생
             raise ValueError(f"Unexpected status code: {response.status_code}")
     
-    def _metadata_ocr_json(data):
+    def _metadata_ocr_json(self, data):
         #단일 페이지라고 가정
         metadata = dict()
         # data['pages'][0]['words'][0]['boundingBox']['vertices'][0]  => x,y 좌측 상단 좌표
@@ -149,7 +149,7 @@ class UpstageOCRNode(BaseNode):
         metadata['text']=data['text']
         return metadata
 
-    def _cleaning_text(text):
+    def _cleaning_text(self, text):
         '''
         OCR 과정에서 나오는 오류 해결
         '''
@@ -186,7 +186,6 @@ class UpstageOCRNode(BaseNode):
     
         start_time = time.time()
         filepath = state['grade_image_filepath']
-        print(state)
         basedir = os.path.dirname(filepath)
         element_dir = os.path.join(basedir, f"element_{state['element_id']}")
         os.makedirs(element_dir, exist_ok=True)
