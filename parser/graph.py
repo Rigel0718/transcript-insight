@@ -1,5 +1,5 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
-from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode
+from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode, SplitByYBoundaryNode
 from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode
 from .state import OCRParseState, ParseState
 from .route import need_ocr_tool
@@ -20,18 +20,22 @@ def ocr_grade_extractor_graph() -> CompiledStateGraph:
     group_xy_line_node = GroupXYLine(verbose=True)
 
     ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True)
+    
+    grade_table_integrated_node = SplitByYBoundaryNode(verbose=True)
 
     ocr_json_workflow = StateGraph(OCRParseState)
 
     ocr_json_workflow.add_node('upstage_ocr_parser', upstage_ocr_node)
     ocr_json_workflow.add_node('group_by_xy', group_xy_line_node)
     ocr_json_workflow.add_node('extract_boundary_agent', ocr_extract_boundary_node)
+    ocr_json_workflow.add_node('grade_table_integrated_node', grade_table_integrated_node)
 
     ocr_json_workflow.add_edge('upstage_ocr_parser', 'group_by_xy')
     ocr_json_workflow.add_edge('group_by_xy', 'extract_boundary_agent')
+    ocr_json_workflow.add_edge('extract_boundary_agent','grade_table_integrated_node')
 
     ocr_json_workflow.set_entry_point('upstage_ocr_parser')
-    ocr_json_workflow.set_finish_point('extract_boundary_agent')
+    ocr_json_workflow.set_finish_point('grade_table_integrated_node')
     
     return ocr_json_workflow.compile()
 
