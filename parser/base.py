@@ -1,14 +1,16 @@
 from .state import ParseState
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar, Dict
 
+T = TypeVar("T", bound=dict)
 
-class BaseNode(ABC):
+class BaseNode(ABC, Generic[T]):
     def __init__(self, verbose=False, **kwargs):
         self.name = self.__class__.__name__
         self.verbose = verbose
 
     @abstractmethod
-    def run(self, state: ParseState) -> ParseState:
+    def run(self, state: T) -> T:
         pass
 
     def log(self, message: str, **kwargs):
@@ -17,5 +19,5 @@ class BaseNode(ABC):
             for key, value in kwargs.items():
                 print(f"  {key}: {value}")
 
-    def __call__(self, state: ParseState) -> ParseState:
+    def __call__(self, state: T) -> T:
         return self.run(state)
