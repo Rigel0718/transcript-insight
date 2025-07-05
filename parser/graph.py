@@ -2,7 +2,6 @@ from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode, SplitByYBoundaryNode
 from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode
 from .state import OCRParseState, ParseState
-from .route import need_ocr_tool
 from .base import BaseNode
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -72,6 +71,12 @@ class OCRSubGraphNode(BaseNode):
         self.log(f'OCRSubGraphNode END')
         return {"elements": state["elements"]}
 
+
+# Route node    
+def need_ocr_tool(state: ParseState) -> str:
+    if len(state.get("needs_ocr_elements_id", [])) > 0:
+        return True
+    return False
 
 
 def transcript_extract_graph() ->CompiledStateGraph:
