@@ -79,10 +79,7 @@ class UpstageParseNode(BaseNode):
     
         start_time = time.time()
         filepath = state['filepath']
-        self.log(f"Start Parsing: {filepath}")
-
-        # parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
-        parsed_document_json_file_path = '../example_data/test_example/grade.json'
+        parsed_document_json_file_path = self._parse_document_via_upstage(filepath)
 
         with open(parsed_document_json_file_path, 'r') as f:
             data = json.load(f)
@@ -93,13 +90,7 @@ class UpstageParseNode(BaseNode):
             'usage' : data.pop('usage'),
         }
 
-        duration = time.time() - start_time
-        self.log(f"Finished Parsing in {duration:.2f} seconds")
-
         return {"metadata": [metadata], "elements_from_parser": data["elements"], "original_document_parser_filepath": parsed_document_json_file_path}
-
-
-#TODO Upstage OCR 기능 추가하기. -> 위에 Document Parsing과 OCR 기능을 상속 받을 수 있는 기초 클래스를 생성도 추가.
 
 
 class UpstageOCRNode(BaseNode):
@@ -184,7 +175,6 @@ class UpstageOCRNode(BaseNode):
         :return: 분석 결과가 저장된 JSON 파일의 경로
         """
     
-        start_time = time.time()
         filepath = state['grade_image_filepath']
         basedir = os.path.dirname(filepath)
         element_dir = os.path.join(basedir, f"element_{state['element_id']}")
@@ -214,8 +204,5 @@ class UpstageOCRNode(BaseNode):
             )
             
             update_words.append(elem)
-
-        duration = time.time() - start_time
-        self.log(f"Finished Parsing in {duration:.2f} seconds")
 
         return {'metadata': [metadata], 'ocr_data': update_words, 'page_width': metadata['size']['width'], 'ocr_json_file_path' : ocr_json_file_path}
