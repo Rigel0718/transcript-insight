@@ -13,12 +13,12 @@ from langchain_core.runnables import RunnableConfig
 # TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
 def ocr_grade_extractor_graph() -> CompiledStateGraph:
     upstage_ocr_node = UpstageOCRNode(
-        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
+        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True, track_time=True
     )
 
     group_xy_line_node = GroupXYLine(verbose=True)
 
-    ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True)
+    ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True, track_time=True)
     
     grade_table_integrated_node = SplitByYBoundaryNode(verbose=True)
 
@@ -52,7 +52,6 @@ class OCRSubGraphNode(BaseNode):
         random_id = str(uuid.uuid4())
 
         config = RunnableConfig(recursion_limit=5, configurable={"thread_id": '1'}) 
-        self.log(f'OCRSubGraphNode START')
         for elem in state['elements']:
             if elem.ocr_need :
                 self.log(f"START OCR sub graph element table number {elem.id}")
@@ -68,7 +67,6 @@ class OCRSubGraphNode(BaseNode):
                     config=config
                     )
                 elem.content = result['result_element']
-        self.log(f'OCRSubGraphNode END')
         return {"elements": state["elements"]}
 
 
@@ -85,7 +83,7 @@ def transcript_extract_graph() ->CompiledStateGraph:
     )
     preprocessing_elements_node = CreateElementsNode(verbose=True)
 
-    table_elements_validation_node = TableValidationNode(verbose=True)
+    table_elements_validation_node = TableValidationNode(verbose=True, track_time=True)
 
     ocr_subgraph_node = OCRSubGraphNode(verbose=True)
 

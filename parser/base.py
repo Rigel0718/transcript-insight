@@ -22,11 +22,12 @@ class BaseNode(ABC, Generic[T]):
 
     def __call__(self, state: T) -> T:
         if self.track_time:
-            self.log(f"===<START>===")
+            self.log(f"====< START >====")
             start = time.time()
             result = self.run(state)
             duration = time.time() - start
             self.log(f" Finished in {duration:.2f} second")
+            self.log(f"====< END >====")
             return result
         else :
             return self.run(state)
