@@ -2,7 +2,6 @@ FROM python:3.10
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# 앱 코드 복사
 COPY . /app
 WORKDIR /app
 
