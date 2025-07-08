@@ -42,6 +42,26 @@ async def parse_pdf(file: UploadFile = File(...)):
     finally:
         await file.close()
 
+    try:
+        graph = transcript_extract_graph()
+        input_state = {'file_path': temp_path}
+        result_state = graph.invoke(input=input_state)
+    except Exception as e:  
+        # if pipeline processing fails, clean up and return an error
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        raise HTTPException(status_code=500, detail=f"PDF processing fail:{e}")
     
-    result = transcript_extract_graph().invoke({"filepath": temp_path})
-    return {"result": result["final_result"]}
+    if isinstance(result_state, dict):
+        final_text=result_state.get('final_result')
+    else:
+        final_text = getattr(result_state,'final_resilt', None)
+        if final_text is None and hasattr(result_state, '__getitem__'):
+            final_text = result_state.get('final_result', None)
+
+    if not final_text:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        raise HTTPException(status_code=500, detail="No final result produced by the pipeline.")
+    
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    
+    return PDFProcessResponse(final_result=final_text)
