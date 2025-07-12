@@ -49,9 +49,7 @@ class OCRSubGraphNode(BaseNode):
 
     def run(self, state: ParseState):
         
-        random_id = str(uuid.uuid4())
-
-        config = RunnableConfig(recursion_limit=5, configurable={"thread_id": '1'}) 
+        config = RunnableConfig(recursion_limit=5) 
         for elem in state['elements']:
             if elem.ocr_need :
                 self.log(f"START OCR sub graph element table number {elem.id}")

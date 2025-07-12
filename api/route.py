@@ -28,7 +28,8 @@ async def parse_pdf(file: UploadFile = File(...)):
     
     # Save the uploaded file to a secure temporary dir.
     temp_dir = tempfile.mkdtemp()
-    temp_path = os.path.join(temp_dir, f'{uuid.uuid4()}.pdf')
+    temp_user_id = uuid.uuid4()
+    temp_path = os.path.join(temp_dir, f'{temp_user_id}.pdf')
 
     try:
         file_contents = await file.read()
@@ -44,8 +45,9 @@ async def parse_pdf(file: UploadFile = File(...)):
 
     try:
         graph = transcript_extract_graph()
+        config = {"configurable": {"thread_id": str(temp_user_id)}}
         input_state = {'file_path': temp_path}
-        result_state = graph.invoke(input=input_state)
+        result_state = graph.invoke(input=input_state, config=config)
     except Exception as e:  
         # if pipeline processing fails, clean up and return an error
         shutil.rmtree(temp_dir, ignore_errors=True)
