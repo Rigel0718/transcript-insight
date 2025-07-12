@@ -10,10 +10,8 @@ st.set_page_config(
 )
 
 # --- Backend API URL ---
-# Assumes the FastAPI backend is running on the default port 8000
 FASTAPI_URL = "http://127.0.0.1:8000/upload/"
 
-# --- UI Components ---
 st.title("📄 Transcript Insight")
 st.markdown(
     "Upload a PDF of a transcript, and this tool will extract the key information."
@@ -24,7 +22,6 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    # This block executes when a file is uploaded
 
     # Show a spinner while processing
     with st.spinner("Processing your document... please wait."):
@@ -32,7 +29,7 @@ if uploaded_file is not None:
             # Prepare the file for the POST request
             files = {"file": (uploaded_file.name, uploaded_file, "application/pdf")}
 
-            # Send the file to the FastAPI backend
+            # FastAPI backend
             response = requests.post(FASTAPI_URL, files=files, timeout=300) # 5-minute timeout
 
             # Check the response from the backend
