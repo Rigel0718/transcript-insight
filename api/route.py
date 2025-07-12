@@ -46,7 +46,7 @@ async def parse_pdf(file: UploadFile = File(...)):
     try:
         graph = transcript_extract_graph()
         config = {"configurable": {"thread_id": str(temp_user_id)}}
-        input_state = {'file_path': temp_path}
+        input_state = {'filepath': temp_path}
         result_state = graph.invoke(input=input_state, config=config)
     except Exception as e:  
         # if pipeline processing fails, clean up and return an error
