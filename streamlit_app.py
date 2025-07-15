@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # --- Backend API URL ---
-FASTAPI_URL = "http://127.0.0.1:8000/upload/"
+FASTAPI_URL = "http://api:8000/upload/"
 
 st.title("📄 Transcript Insight")
 st.markdown(
