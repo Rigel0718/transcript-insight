@@ -17,3 +17,9 @@ The project uses Docker to containerize the backend and frontend applications. T
 -   The Streamlit frontend runs on port 8501.
 
 The frontend communicates with the backend to process and analyze transcripts.
+
+## Parser
+
+The parser uses a graph-based approach to analyze transcripts. It leverages the Upstage API for OCR and document parsing, and it includes a subgraph for handling OCR on specific elements.
+
+![ParseGraph](images/ParseGraph.png)
