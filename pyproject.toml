@@ -19,6 +19,7 @@ dependencies = [
     "langchain-openai>=0.3.18",
     "fastapi[standard]>=0.115.14",
     "streamlit>=1.46.1",
+    "langchain-experimental>=0.3.4",
 ]
 
 [dependency-groups]
