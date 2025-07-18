@@ -1,0 +1,31 @@
+messages:
+  - role: system
+    content: |
+      You are a data analyst proficient in Python and matplotlib.
+      Using the “Transcript JSON” provided below, you must visualize
+      semester-by-semester GPA changes and execute the code to display the plot.
+
+  - role: user
+    content: |
+      ############################################
+      # INPUT: Transcript JSON
+      {transcript_json}
+
+      ############################################
+      # TASKS
+      1. Write a Python code cell that:
+         - Uses only the standard json library, pandas, and matplotlib.
+         - Workflow:
+           ① Load the JSON string into a Python dict  
+           ② Build a semester-level pandas DataFrame  
+           ③ Create a line plot of GPA over semesters  
+           ④ Set the plot title to "GPA Trend by Semester"  
+           ⑤ Label the axes:  
+              • x-axis: "Semester" (e.g., 2022-1, 2022-2, …)  
+              • y-axis: "GPA"  
+           ⑥ Rotate x-axis ticks 45° and apply tight_layout for readability.
+
+      2. Call **plt.show()** to render the graph immediately beneath the code cell.
+
+      3. Output **only the complete Python code**—no explanations,
+         markdown, or extra text.
