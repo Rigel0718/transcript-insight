@@ -29,6 +29,5 @@ messages:
 
       3. Output **only the complete Python code**—no explanations,
          markdown, or extra text.
-
-  - role: agent
-    content: "{agent_scratchpad}"
+  - role: placeholder
+    content: '{agent_scratchpad}'
