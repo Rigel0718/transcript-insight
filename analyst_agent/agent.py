@@ -3,7 +3,7 @@ from langchain_experimental.utilities import PythonREPL
 from typing import Annotated
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_openai import ChatOpenAI
-
+from utils import load_prompt_template
 
 @tool
 def python_repl_tool(
@@ -23,6 +23,7 @@ def python_repl_tool(
     
 
 def visualize_semester_chart():
+    prompt = load_prompt_template('prompts/semester_chart_visualize.yaml')
     llm   = ChatOpenAI(model="gpt-4o", temperature=0)
     tools = [python_repl_tool]
     agent = create_tool_calling_agent(llm=llm,tools=tools,prompt=prompt)
@@ -34,4 +35,3 @@ def visualize_semester_chart():
         max_iterations=1
     )
     return agent_executor
-    ...
