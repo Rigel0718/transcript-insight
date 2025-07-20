@@ -1,6 +1,9 @@
 from langchain.tools import tool
 from langchain_experimental.utilities import PythonREPL
-from typing import List, Dict, Annotated
+from typing import Annotated
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain_openai import ChatOpenAI
+
 
 @tool
 def python_repl_tool(
@@ -17,3 +20,18 @@ def python_repl_tool(
         print(f"Failed to execute. Error: {repr(e)}")
     finally:
         return result
+    
+
+def visualize_semester_chart():
+    llm   = ChatOpenAI(model="gpt-4o", temperature=0)
+    tools = [python_repl_tool]
+    agent = create_tool_calling_agent(llm=llm,tools=tools,prompt=prompt)
+    agent_executor = AgentExecutor.from_agent_and_tools(
+        agent=agent,
+        tools=tools,
+        verbos=True,
+        handle_parsing_errors=True,
+        max_iterations=1
+    )
+    return agent_executor
+    ...
