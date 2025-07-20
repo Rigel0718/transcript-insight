@@ -23,7 +23,7 @@ def python_repl_tool(
     
 
 def visualize_semester_chart_agent():
-    prompt = load_prompt_template('prompts/semester_chart_visualize.yaml')
+    prompt = load_prompt_template('prompts/visualize_semester_chart.yaml')
     llm   = ChatOpenAI(model="gpt-4o", temperature=0)
     tools = [python_repl_tool]
     agent = create_tool_calling_agent(llm=llm,tools=tools,prompt=prompt)
