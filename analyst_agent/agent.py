@@ -35,3 +35,18 @@ def visualize_semester_chart_agent():
         max_iterations=1
     )
     return agent_executor
+
+
+def visualize_ratio_category_agent():
+    prompt = load_prompt_template('prompts/visualize_ratio_category.yaml')
+    llm   = ChatOpenAI(model="gpt-4o", temperature=0)
+    tools = [python_repl_tool]
+    agent = create_tool_calling_agent(llm=llm,tools=tools,prompt=prompt)
+    agent_executor = AgentExecutor.from_agent_and_tools(
+        agent=agent,
+        tools=tools,
+        verbos=True,
+        handle_parsing_errors=True,
+        max_iterations=1
+    )
+    return agent_executor
