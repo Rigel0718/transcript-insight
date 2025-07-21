@@ -2,7 +2,7 @@ from analyst_agent.agent import visualize_semester_chart_agent, visualize_ratio_
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from utils import load_prompt_template
+from .utils import load_prompt_template
 
 def run_analysis(transcript: str):
     """

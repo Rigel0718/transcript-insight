@@ -5,12 +5,13 @@ import os
 import tempfile, uuid
 import shutil
 from analyst_agent.run import run_analysis
+from typing import Union, Dict
 
 router = APIRouter()
 
 
 class PDFProcessResponse(BaseModel):
-    final_result: str
+    final_result: Union[str, Dict]
 
 class Transcript(BaseModel):
     transcript: str

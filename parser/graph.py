@@ -10,7 +10,6 @@ from langgraph.checkpoint.memory import MemorySaver
 import uuid
 from langchain_core.runnables import RunnableConfig  
 
-# TODO ocr_json_graph -> chain form으로 만들어서 tool처럼 사용할 수 있도록 구현하기.
 def ocr_grade_extractor_graph() -> CompiledStateGraph:
     upstage_ocr_node = UpstageOCRNode(
         api_key=os.environ["UPSTAGE_API_KEY"], verbose=True, track_time=True
