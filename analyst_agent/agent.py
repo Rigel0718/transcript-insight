@@ -7,14 +7,14 @@ import io
 import sys
 from contextlib import redirect_stdout
 import matplotlib.pyplot as plt
-import base64
 
 @tool
 def python_repl_tool(
     code: Annotated[str, "The python code to execute to generate your chart."],
 ):
     """
-    Use this tool to execute Python code. It will execute the code and return the chart as a base64 encoded string.
+    Use this tool to execute Python code. Automatically detects whether matplotlib is used.
+    Supports both visualization and regular code. Stdout is captured and returned.
     """
     plt.clf()
     
@@ -25,12 +25,7 @@ def python_repl_tool(
         except Exception as e:
             return f"Failed to execute. Error: {repr(e)}\n{f.getvalue()}"
     
-    img_buffer = io.BytesIO()
-    plt.savefig(img_buffer, format='png')
-    img_buffer.seek(0)
-    img_base64 = base64.b64encode(img_buffer.read()).decode('utf-8')
-    
-    return img_base64
+    return f.getvalue()
     
 
 def visualize_semester_chart_agent():
