@@ -18,7 +18,9 @@ class ParseState(TypedDict):
 
     needs_ocr_elements_id : Annotated[List[str], 'needs_ocr_elements', operator.add]
 
-    final_result : Annotated[str, 'final_result']
+    transcript_text : Annotated[str, 'text_result']
+
+    final_result : Annotated[str, 'final_json_result']
 
 class OCRParseState(TypedDict):
     "OCR로 구조화된 데이터를 추출하는 sub graph의 state"

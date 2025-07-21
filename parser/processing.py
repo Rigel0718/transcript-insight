@@ -5,6 +5,8 @@ from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
+from langchain_core.output_parsers import JsonOutputParser
+
 
 class TableValidationNode(BaseNode):
     '''
@@ -114,6 +116,28 @@ class ElementIntegrationNode(BaseNode):
             if content:
                 text_blocks.append(content)
         result = "\n\n".join(text_blocks)
-        return {'final_result' : result}
-
+        return {'transcript_text' : result}
     
+class ExtractJsonNode(BaseNode):
+    '''
+    도출된 transcript text를 json구조형태로 추출하는 Node
+    '''
+    def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+        self.llm = llm or self._init_llm()
+        
+    def _init_llm(self):
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0,
+        )
+        return llm 
+    
+    def run(self, state: ParseState) -> ParseState:
+        extract_prompt = load_prompt_template('prompts/extractor_json.yaml')
+        chain = extract_prompt | self.llm | JsonOutputParser()
+
+        transcript_text = state['transcript_text']
+        result_json = chain.invoke({'transcript_text': transcript_text})
+        
+        return {'final_result': result_json}
