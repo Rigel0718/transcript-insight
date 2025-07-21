@@ -9,17 +9,18 @@ import os
 from langgraph.checkpoint.memory import MemorySaver
 import uuid
 from langchain_core.runnables import RunnableConfig  
+from queue import Queue
 
-def ocr_grade_extractor_graph() -> CompiledStateGraph:
+def ocr_grade_extractor_graph(queue: Queue=None) -> CompiledStateGraph:
     upstage_ocr_node = UpstageOCRNode(
-        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True, track_time=True
+        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True, track_time=True, queue=queue
     )
 
-    group_xy_line_node = GroupXYLine(verbose=True)
+    group_xy_line_node = GroupXYLine(verbose=True, queue=queue)
 
-    ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True, track_time=True)
+    ocr_extract_boundary_node = OCRTableBoundaryDetectorNode(verbose=True, track_time=True, queue=queue)
     
-    grade_table_integrated_node = SplitByYBoundaryNode(verbose=True)
+    grade_table_integrated_node = SplitByYBoundaryNode(verbose=True, queue=queue)
 
     ocr_json_workflow = StateGraph(OCRParseState)
 
@@ -52,7 +53,7 @@ class OCRSubGraphNode(BaseNode):
         for elem in state['elements']:
             if elem.ocr_need :
                 self.log(f"START OCR sub graph element table number {elem.id}")
-                ocr_graph = ocr_grade_extractor_graph()
+                ocr_graph = ocr_grade_extractor_graph(queue=self.queue)
                 result : OCRParseState = ocr_graph.invoke(
                     input=
                         {
@@ -74,19 +75,19 @@ def need_ocr_tool(state: ParseState) -> str:
     return False
 
 
-def transcript_extract_graph() ->CompiledStateGraph:
+def transcript_extract_graph(queue: Queue=None) ->CompiledStateGraph:
     upstage_document_parse_node = UpstageParseNode(
-        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True
+        api_key=os.environ["UPSTAGE_API_KEY"], verbose=True, queue=queue
     )
-    preprocessing_elements_node = CreateElementsNode(verbose=True)
+    preprocessing_elements_node = CreateElementsNode(verbose=True, queue=queue)
 
-    table_elements_validation_node = TableValidationNode(verbose=True, track_time=True)
+    table_elements_validation_node = TableValidationNode(verbose=True, track_time=True, queue=queue)
 
-    ocr_subgraph_node = OCRSubGraphNode(verbose=True)
+    ocr_subgraph_node = OCRSubGraphNode(verbose=True, queue=queue)
 
-    integrate_elements_node = ElementIntegrationNode(verbose=True)
+    integrate_elements_node = ElementIntegrationNode(verbose=True, queue=queue)
 
-    extract_json_node = ExtractJsonNode(verbose=True)
+    extract_json_node = ExtractJsonNode(verbose=True, queue=queue)
     
     upstage_document_parser_workflow = StateGraph(ParseState)
 

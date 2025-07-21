@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket
 from parser.graph import transcript_extract_graph
 from pydantic    import BaseModel
 import os
@@ -6,15 +6,28 @@ import tempfile, uuid
 import shutil
 from analyst_agent.run import run_analysis
 from typing import Union, Dict
+import asyncio
+from queue import Queue
+import json
+from threading import Thread
+from .connection_manager import manager
 
 router = APIRouter()
-
 
 class PDFProcessResponse(BaseModel):
     final_result: Union[str, Dict]
 
 class Transcript(BaseModel):
     transcript: str
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except Exception as e:
+        manager.disconnect(websocket)
 
 @router.post("/upload/")
 async def parse_pdf(file: UploadFile = File(...)):
@@ -49,10 +62,30 @@ async def parse_pdf(file: UploadFile = File(...)):
         await file.close()
 
     try:
-        graph = transcript_extract_graph()
+        q = Queue()
+        graph = transcript_extract_graph(queue=q)
         config = {"configurable": {"thread_id": str(temp_user_id)}}
         input_state = {'filepath': temp_path}
-        result_state = graph.invoke(input=input_state, config=config)
+        
+        result_state = {}
+        def run_graph():
+            result = graph.invoke(input=input_state, config=config)
+            result_state.update(result)
+
+        thread = Thread(target=run_graph)
+        thread.start()
+
+        while thread.is_alive() or not q.empty():
+            if not q.empty():
+                event = q.get()
+                await manager.broadcast(json.dumps(event))
+            else:
+                await asyncio.sleep(0.1)
+        
+        await manager.broadcast(json.dumps({"event": "eof"}))
+
+        thread.join()
+
     except Exception as e:  
         # if pipeline processing fails, clean up and return an error
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -79,3 +112,4 @@ def analyze_transcript(transcript: Transcript):
     Analyzes the transcript and returns a report and visualizations.
     """
     return run_analysis(transcript.transcript)
+
