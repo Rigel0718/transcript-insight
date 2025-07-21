@@ -1,6 +1,6 @@
 from .upstage_parser import UpstageOCRNode, UpstageParseNode
 from .ocrparser  import GroupXYLine, OCRTableBoundaryDetectorNode, SplitByYBoundaryNode
-from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode
+from .processing import CreateElementsNode, TableValidationNode, ElementIntegrationNode, ExtractJsonNode
 from .state import OCRParseState, ParseState
 from .base import BaseNode
 from langgraph.graph import StateGraph
@@ -86,6 +86,8 @@ def transcript_extract_graph() ->CompiledStateGraph:
     ocr_subgraph_node = OCRSubGraphNode(verbose=True)
 
     integrate_elements_node = ElementIntegrationNode(verbose=True)
+
+    extract_json_node = ExtractJsonNode(verbose=True)
     
     upstage_document_parser_workflow = StateGraph(ParseState)
 
@@ -94,6 +96,7 @@ def transcript_extract_graph() ->CompiledStateGraph:
     upstage_document_parser_workflow.add_node('table_elements_validation_node', table_elements_validation_node)
     upstage_document_parser_workflow.add_node('ocr_subgraph_node', ocr_subgraph_node)
     upstage_document_parser_workflow.add_node('integrate_elements_node', integrate_elements_node)
+    upstage_document_parser_workflow.add_node('extract_json_node', extract_json_node)
 
     upstage_document_parser_workflow.add_edge('upstage_document_parse_node', 'preprocessing_elements_node')
     upstage_document_parser_workflow.add_edge('preprocessing_elements_node','table_elements_validation_node')
@@ -103,8 +106,9 @@ def transcript_extract_graph() ->CompiledStateGraph:
         {False: 'integrate_elements_node', True: 'ocr_subgraph_node'}
     )
     upstage_document_parser_workflow.add_edge('ocr_subgraph_node','integrate_elements_node')
+    upstage_document_parser_workflow.add_edge('integrate_elements_node','extract_json_node')
 
     upstage_document_parser_workflow.set_entry_point('upstage_document_parse_node')
-    upstage_document_parser_workflow.set_finish_point('integrate_elements_node')
+    upstage_document_parser_workflow.set_finish_point('extract_json_node')
     
     return upstage_document_parser_workflow.compile(checkpointer=MemorySaver())
