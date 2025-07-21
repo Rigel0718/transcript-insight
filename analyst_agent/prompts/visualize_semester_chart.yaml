@@ -25,7 +25,7 @@ messages:
               • y-axis: "GPA"  
            6. Rotate x-axis ticks 45° and apply tight_layout for readability.
 
-      2. Call **plt.show()** to render the graph immediately beneath the code cell.
+      2. Rotate x-axis ticks 45° and apply tight_layout for readability.
 
       3. Output **only the complete Python code**—no explanations,
          markdown, or extra text.

@@ -4,12 +4,16 @@ from pydantic    import BaseModel
 import os
 import tempfile, uuid
 import shutil
+from analyst_agent.run import run_analysis
 
 router = APIRouter()
 
 
 class PDFProcessResponse(BaseModel):
     final_result: str
+
+class Transcript(BaseModel):
+    transcript: str
 
 @router.post("/upload/")
 async def parse_pdf(file: UploadFile = File(...)):
@@ -67,3 +71,10 @@ async def parse_pdf(file: UploadFile = File(...)):
     shutil.rmtree(temp_dir, ignore_errors=True)
     
     return PDFProcessResponse(final_result=final_text)
+
+@router.post("/analyze")
+def analyze_transcript(transcript: Transcript):
+    """
+    Analyzes the transcript and returns a report and visualizations.
+    """
+    return run_analysis(transcript.transcript)

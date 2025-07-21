@@ -37,7 +37,7 @@ messages:
            7. Label each bar with the exact credit value using matplotlib  
            8. Call **plt.tight_layout()** to ensure the layout fits nicely.
 
-      2. Call **plt.show()** to render the graph immediately beneath the code cell.
+      2. Call **plt.tight_layout()** to ensure the layout fits nicely.
 
       3. Output **only the complete Python code**—no explanations,
          markdown, or extra text.
