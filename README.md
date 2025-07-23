@@ -22,4 +22,4 @@ The frontend communicates with the backend to process and analyze transcripts.
 
 The parser uses a graph-based approach to analyze transcripts. It leverages the Upstage API for OCR and document parsing, and it includes a subgraph for handling OCR on specific elements.
 
-![ParseGraph](images/ParseGraph.png)
+![ParserGraph](images/ParserGraph.png)
