@@ -98,7 +98,7 @@ if st.session_state.final_text is not None:
     st.success("Processing complete!")
     st.subheader("Extracted Information:")
     if isinstance(st.session_state.final_text, dict):
-        st.json(st.session_state.final_text, expanded=False) 
+        st.json(st.session_state.final_text, expanded=True) 
     else:
         st.text_area("Result", str(st.session_state.final_text), height=400)
 

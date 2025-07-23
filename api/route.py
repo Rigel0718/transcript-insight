@@ -18,7 +18,7 @@ class PDFProcessResponse(BaseModel):
     final_result: Union[str, Dict]
 
 class Transcript(BaseModel):
-    transcript: str
+    transcript: Union[str, Dict]
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
