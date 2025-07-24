@@ -1,10 +1,9 @@
 import streamlit as st
-import requests
+import httpx
 import base64
 import asyncio
 import websockets
 import json
-from threading import Thread
 
 # --- App Configuration ---
 st.set_page_config(
@@ -56,6 +55,34 @@ async def listen_to_websocket(placeholder):
     except websockets.exceptions.ConnectionClosed:
         pass
 
+async def process_file(uploaded_file, status_placeholder):
+    async def upload_and_get_result():
+        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f"{FASTAPI_URL}/upload/", files=files, timeout=300)
+        
+        if response.status_code == 200:
+            result = response.json()
+            st.session_state.final_text = result.get("final_result")
+        else:
+            response.raise_for_status()
+
+    try:
+        await asyncio.gather(
+            listen_to_websocket(status_placeholder),
+            upload_and_get_result()
+        )
+    except httpx.RequestError as e:
+        st.error(f"Could not connect to the backend. Please ensure it's running. Error: {e}")
+        st.session_state.final_text = None
+    except httpx.HTTPStatusError as e:
+        error_detail = e.response.json().get("detail", "An unknown error occurred.")
+        st.error(f"Error from server (Code: {e.response.status_code}): {error_detail}")
+        st.session_state.final_text = None
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+        st.session_state.final_text = None
+
 if uploaded_file is not None:
     # If a new file is uploaded, reset the session state
     if uploaded_file.name != st.session_state.uploaded_file_name:
@@ -66,54 +93,37 @@ if uploaded_file is not None:
     if st.session_state.final_text is None:
         status_placeholder = st.empty()
         with st.spinner("Processing your document... please wait."):
-            try:
-                files = {"file": (uploaded_file.name, uploaded_file, "application/pdf")}
-                
-                def run_listen():
-                    asyncio.run(listen_to_websocket(status_placeholder))
-
-                listener_thread = Thread(target=run_listen)
-                listener_thread.start()
-
-                response = requests.post(f"{FASTAPI_URL}/upload/", files=files, timeout=300)
-                
-                listener_thread.join()
-
-                if response.status_code == 200:
-                    result = response.json()
-                    st.session_state.final_text = result.get("final_result")
-                else:
-                    error_detail = response.json().get("detail", "An unknown error occurred.")
-                    st.error(f"Error from server (Code: {response.status_code}): {error_detail}")
-                    st.session_state.final_text = None # Ensure it's None on error
-
-            except requests.exceptions.RequestException as e:
-                st.error(f"Could not connect to the backend. Please ensure it's running. Error: {e}")
-                st.session_state.final_text = None # Ensure it's None on error
-            except Exception as e:
-                st.error(f"An unexpected error occurred: {e}")
-                st.session_state.final_text = None # Ensure it's None on error
+            asyncio.run(process_file(uploaded_file, status_placeholder))
 
 if st.session_state.final_text is not None:
     st.success("Processing complete!")
     st.subheader("Extracted Information:")
     if isinstance(st.session_state.final_text, dict):
-        st.json(st.session_state.final_text, expanded=True) 
+        st.json(st.session_state.final_text, expanded=False) 
     else:
         st.text_area("Result", str(st.session_state.final_text), height=400)
 
     if st.button("Analyze Transcript"):
         with st.spinner("Analyzing the transcript..."):
-            try:
-                response = requests.post(f"{FASTAPI_URL}/analyze", json={"transcript": st.session_state.final_text})
-                if response.status_code == 200:
-                    st.session_state.analysis_results = response.json()
-                else:
-                    st.error("Failed to analyze the transcript. Please try again.")
+            
+            async def analyze():
+                try:
+                    async with httpx.AsyncClient() as client:
+                        response = await client.post(f"{FASTAPI_URL}/analyze", json={"transcript": st.session_state.final_text}, timeout=300)
+                    if response.status_code == 200:
+                        st.session_state.analysis_results = response.json()
+                    else:
+                        st.error("Failed to analyze the transcript. Please try again.")
+                        st.session_state.analysis_results = None
+                except httpx.RequestError as e:
+                    st.error(f"Could not connect to the backend. Please ensure it's running. Error: {e}")
                     st.session_state.analysis_results = None
-            except requests.exceptions.RequestException as e:
-                st.error(f"Could not connect to the backend. Please ensure it's running. Error: {e}")
-                st.session_state.analysis_results = None
+                except Exception as e:
+                    st.error(f"An unexpected error occurred: {e}")
+                    st.session_state.analysis_results = None
+            
+            asyncio.run(analyze())
+
 
 if st.session_state.analysis_results is not None:
     st.header("Report")
@@ -122,4 +132,3 @@ if st.session_state.analysis_results is not None:
     st.header("Visualizations")
     for img_base64 in st.session_state.analysis_results.get("visualizations", []):
         st.image(base64.b64decode(img_base64))
-
