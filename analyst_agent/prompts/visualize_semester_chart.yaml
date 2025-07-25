@@ -23,14 +23,24 @@ messages:
               • GPA must be in float format  
            3. Sort semesters chronologically if needed  
            4. Create a line plot of GPA over semesters using matplotlib  
-           5. Set the plot title to "GPA Trend by Semester"  
-           6. Label the axes:  
+           5. Set the plot title to "GPA Trend by Semester"
+           6. Set matplotlib font to **NanumGothic** for Korean text:
+              ```python
+              import matplotlib.pyplot as plt
+              import matplotlib.font_manager as fm
+
+              font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+              font_name = fm.FontProperties(fname=font_path).get_name()
+              plt.rcParams['font.family'] = font_name
+              plt.rcParams['axes.unicode_minus'] = False
+              ```  
+           7. Label the axes:  
               • x-axis: "Semester"  
               • y-axis: "GPA"  
-           7. Rotate x-axis ticks 45°  
-           8. Apply `plt.tight_layout()`  
-           9. Save the plot using `plt.savefig("gpa_trend_by_semester.png")` in **given File_Path**.
-           10. Do **not** use `plt.show()` or seaborn
+           8. Rotate x-axis ticks 45°  
+           9. Apply `plt.tight_layout()`  
+           10. Save the plot using `plt.savefig("gpa_trend_by_semester.png")` in **given File_Path**.
+           11. Do **not** use `plt.show()` or seaborn
 
       2. Output **only the complete Python code**—no explanations,
          markdown, or extra text.

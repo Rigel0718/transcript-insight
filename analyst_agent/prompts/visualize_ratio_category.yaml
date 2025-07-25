@@ -37,7 +37,7 @@ messages:
            6. Set the plot title to "Credit Distribution by Course Category"  
            7. Label each bar with the exact credit value using matplotlib  
            8. Call **plt.tight_layout()** to ensure the layout fits nicely  
-           9. Finally, save the figure as `"output.png"` using `plt.savefig("output.png")`in **given File_Path**.
+           9. Finally, save the figure as `"category_ratio.png"` using `plt.savefig("category_ratio.png")`in **given File_Path**.
 
       2. Output **only the complete Python code**—no explanations,
          markdown, or extra text.
