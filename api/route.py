@@ -20,14 +20,15 @@ class PDFProcessResponse(BaseModel):
 class Transcript(BaseModel):
     transcript: Union[str, Dict]
 
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+@router.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    await manager.connect(websocket, session_id)
     try:
         while True:
-            await asyncio.Future()
+            # 연결이 끊겼는지 감지하기 위해 receive_text()를 호출
+            data = await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        manager.disconnect(session_id)
 
 @router.post("/upload/{session_id}")
 async def parse_pdf(session_id: str, file: UploadFile = File(...)):
