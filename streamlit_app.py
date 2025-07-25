@@ -5,6 +5,9 @@ import asyncio
 import websockets
 import json
 import uuid
+import os
+import shutil
+from pathlib import Path
 
 # --- App Configuration ---
 st.set_page_config(
@@ -15,6 +18,8 @@ st.set_page_config(
 
 # --- Backend API URL ---
 FASTAPI_URL = "http://localhost:8000"
+CLIENT_DATA_DIR = Path("client_data")
+CLIENT_DATA_DIR.mkdir(exist_ok=True)
 
 st.title("📄 Transcript Insight")
 st.markdown(
@@ -22,12 +27,18 @@ st.markdown(
 )
 
 # --- Session State Initialization ---
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 if 'final_text' not in st.session_state:
     st.session_state.final_text = None
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
 if 'uploaded_file_name' not in st.session_state:
     st.session_state.uploaded_file_name = None
+
+# --- Session Directory Setup ---
+session_dir = CLIENT_DATA_DIR / st.session_state.session_id
+session_dir.mkdir(exist_ok=True)
 
 uploaded_file = st.file_uploader(
     "Choose a PDF file", type="pdf", help="Please upload a valid PDF file."
@@ -57,11 +68,16 @@ async def listen_to_websocket(placeholder, session_id):
         pass
 
 async def process_file(uploaded_file, status_placeholder):
-    session_id = str(uuid.uuid4())
+    session_id = st.session_state.session_id
+    
+    # Save the uploaded file to the session directory
+    file_path = session_dir / uploaded_file.name
+    with open(file_path, "wb") as f:
+        f.write(uploaded_file.getvalue())
+
     async def upload_and_get_result():
-        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
         async with httpx.AsyncClient() as client:
-            response = await client.post(f"{FASTAPI_URL}/upload/{session_id}", files=files, timeout=300)
+            response = await client.post(f"{FASTAPI_URL}/upload/{session_id}", timeout=300)
         
         if response.status_code == 200:
             result = response.json()
@@ -111,7 +127,7 @@ if st.session_state.final_text is not None:
             async def analyze():
                 try:
                     async with httpx.AsyncClient() as client:
-                        response = await client.post(f"{FASTAPI_URL}/analyze", json={"transcript": st.session_state.final_text}, timeout=300)
+                        response = await client.post(f"{FASTAPI_URL}/analyze/{st.session_state.session_id}", json={"transcript": st.session_state.final_text}, timeout=300)
                     if response.status_code == 200:
                         st.session_state.analysis_results = response.json()
                     else:
@@ -134,3 +150,17 @@ if st.session_state.analysis_results is not None:
     st.header("Visualizations")
     for img_base64 in st.session_state.analysis_results.get("visualizations", []):
         st.image(base64.b64decode(img_base64))
+
+# --- Clear Data Button ---
+if st.button("Clear Data and Start Over"):
+    if session_dir.exists():
+        shutil.rmtree(session_dir)
+    
+    # Reset all relevant session state variables
+    st.session_state.final_text = None
+    st.session_state.analysis_results = None
+    st.session_state.uploaded_file_name = None
+    st.session_state.session_id = str(uuid.uuid4()) # Generate a new session ID
+    
+    # Rerun the app to reflect the cleared state
+    st.rerun()
