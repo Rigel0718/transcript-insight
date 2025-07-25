@@ -1,19 +1,20 @@
 from fastapi import WebSocket
-from typing import List
+from typing import Dict
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: Dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, session_id: str):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections[session_id] = websocket
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, session_id: str):
+        self.active_connections.pop(session_id, None)
 
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
+    async def send_to(self, session_id: str, message: str):
+        websocket = self.active_connections.get(session_id)
+        if websocket:
+            await websocket.send_text(message)
 
 manager = ConnectionManager()
