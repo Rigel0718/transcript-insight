@@ -7,7 +7,7 @@ from typing import Union, Dict
 import json
 
 
-def run_analysis(transcript: Union[str, Dict]):
+def run_analysis(transcript: Union[str, Dict], session_id: str):
     """
     Runs the analysis on the transcript.
     """
