@@ -4,6 +4,7 @@ import base64
 import asyncio
 import websockets
 import json
+import uuid
 
 # --- App Configuration ---
 st.set_page_config(
@@ -14,7 +15,6 @@ st.set_page_config(
 
 # --- Backend API URL ---
 FASTAPI_URL = "http://localhost:8000"
-WEBSOCKET_URL = "ws://localhost:8000/ws"
 
 st.title("📄 Transcript Insight")
 st.markdown(
@@ -33,7 +33,8 @@ uploaded_file = st.file_uploader(
     "Choose a PDF file", type="pdf", help="Please upload a valid PDF file."
 )
 
-async def listen_to_websocket(placeholder):
+async def listen_to_websocket(placeholder, session_id):
+    WEBSOCKET_URL = f"ws://localhost:8000/ws/{session_id}"
     try:
         async with websockets.connect(WEBSOCKET_URL) as websocket:
             while True:
@@ -56,10 +57,11 @@ async def listen_to_websocket(placeholder):
         pass
 
 async def process_file(uploaded_file, status_placeholder):
+    session_id = str(uuid.uuid4())
     async def upload_and_get_result():
         files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
         async with httpx.AsyncClient() as client:
-            response = await client.post(f"{FASTAPI_URL}/upload/", files=files, timeout=300)
+            response = await client.post(f"{FASTAPI_URL}/upload/{session_id}", files=files, timeout=300)
         
         if response.status_code == 200:
             result = response.json()
@@ -69,7 +71,7 @@ async def process_file(uploaded_file, status_placeholder):
 
     try:
         await asyncio.gather(
-            listen_to_websocket(status_placeholder),
+            listen_to_websocket(status_placeholder, session_id),
             upload_and_get_result()
         )
     except httpx.RequestError as e:
