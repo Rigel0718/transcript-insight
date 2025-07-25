@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket
+from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket, WebSocketDisconnect
 from parser.graph import transcript_extract_graph
 from pydantic    import BaseModel
 import os
@@ -25,8 +25,8 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-    except Exception as e:
+            await asyncio.Future()
+    except WebSocketDisconnect:
         manager.disconnect(websocket)
 
 @router.post("/upload/")
