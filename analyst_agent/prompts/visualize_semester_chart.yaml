@@ -10,7 +10,8 @@ messages:
       ############################################
       # INPUT: Transcript JSON
       {transcript_json}
-
+      # File_Path : save directory
+      {file_path}
       ############################################
       # TASKS
       1. Write a Python code cell that:
@@ -28,7 +29,7 @@ messages:
               • y-axis: "GPA"  
            7. Rotate x-axis ticks 45°  
            8. Apply `plt.tight_layout()`  
-           9. Save the plot using `plt.savefig("gpa_trend_by_semester.png")`  
+           9. Save the plot using `plt.savefig("gpa_trend_by_semester.png")` in **given File_Path**.
            10. Do **not** use `plt.show()` or seaborn
 
       2. Output **only the complete Python code**—no explanations,
