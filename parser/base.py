@@ -17,27 +17,35 @@ class BaseNode(ABC, Generic[T]):
         pass
 
     def log(self, message: str, **kwargs):
-        if self.verbose:
-            print(f"[{self.name}] {message}")
-            for key, value in kwargs.items():
-                print(f"  {key}: {value}")
+        if not self.verbose:
+            return
+        print(f"[{self.name}] {message}")
+        for key, value in kwargs.items():
+            print(f"  {key}: {value}")
+
+    def emit_event(self, status: str, **extras):
+        if self.queue:
+            self.queue.put({
+                'name': self.name,
+                'status': status,
+                **extras
+            })
 
     def __call__(self, state: T) -> T:
-        if self.queue:
-            self.queue.put({"name": self.name, "status": "start"})
-
+        self.emit_event("start")
+        
         if self.track_time:
             self.log(f"====< START >====")
             start = time.time()
-            result = self.run(state)
+
+        result = self.run(state)
+        
+        if self.track_time:
             duration = time.time() - start
             self.log(f" Finished in {duration:.2f} second")
             self.log(f"====< END >====")
-            if self.queue:
-                self.queue.put({"name": self.name, "status": "end", "duration": f"{duration:.2f}"})
-            return result
-        else :
-            result = self.run(state)
-            if self.queue:
-                self.queue.put({"name": self.name, "status": "end"})
-            return result
+            self.emit_event("end", duration=f"{duration:.2f}")
+        else:
+            self.emit_event("end")
+
+        return result
