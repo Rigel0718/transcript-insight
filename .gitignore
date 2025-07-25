@@ -2,3 +2,4 @@ example_data/
 test_*
 .env
 __pycache__/
+client_data/
