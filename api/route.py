@@ -29,8 +29,8 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-@router.post("/upload/")
-async def parse_pdf(file: UploadFile = File(...)):
+@router.post("/upload/{session_id}")
+async def parse_pdf(session_id: str, file: UploadFile = File(...)):
     
     '''
     Accepts a PDF-file upload, processes it through the LangGraph pipeline,
@@ -46,7 +46,7 @@ async def parse_pdf(file: UploadFile = File(...)):
     
     # Save the uploaded file to a secure temporary dir.
     temp_dir = tempfile.mkdtemp()
-    temp_user_id = uuid.uuid4()
+    temp_user_id = session_id
     temp_path = os.path.join(temp_dir, f'{temp_user_id}.pdf')
 
     try:
@@ -78,33 +78,26 @@ async def parse_pdf(file: UploadFile = File(...)):
         while thread.is_alive() or not q.empty():
             if not q.empty():
                 event = q.get()
-                await manager.broadcast(json.dumps(event))
+                await manager.send_to(temp_user_id, json.dumps(event))
             else:
                 await asyncio.sleep(0.1)
         
-        await manager.broadcast(json.dumps({"event": "eof"}))
+        await manager.send_to(temp_user_id, json.dumps({"event": "eof"}))
 
         thread.join()
 
-    except Exception as e:  
+    finally:  
         # if pipeline processing fails, clean up and return an error
         shutil.rmtree(temp_dir, ignore_errors=True)
-        raise HTTPException(status_code=500, detail=f"PDF processing fail:{e}")
-    
-    if isinstance(result_state, dict):
-        final_text=result_state.get('final_result')
-    else:
-        final_text = getattr(result_state,'final_resilt', None)
-        if final_text is None and hasattr(result_state, '__getitem__'):
-            final_text = result_state.get('final_result', None)
+
+    final_text = result_state.get("final_result") if isinstance(result_state, dict) else None
 
     if not final_text:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-        raise HTTPException(status_code=500, detail="No final result produced by the pipeline.")
-    
-    shutil.rmtree(temp_dir, ignore_errors=True)
+        raise HTTPException(status_code=500, detail=f"PDF processing fail:{e}")
     
     return PDFProcessResponse(final_result=final_text)
+
+
 
 @router.post("/analyze")
 def analyze_transcript(transcript: Transcript):
