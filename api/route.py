@@ -2,7 +2,6 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket, WebSo
 from parser.graph import transcript_extract_graph
 from pydantic    import BaseModel
 import os
-import tempfile, uuid
 import shutil
 from analyst_agent.run import run_analysis
 from typing import Union, Dict
@@ -11,8 +10,11 @@ from queue import Queue
 import json
 from threading import Thread
 from .connection_manager import manager
+from pathlib import Path
 
 router = APIRouter()
+
+CLIENT_DATA_DIR = Path("client_data")
 
 class PDFProcessResponse(BaseModel):
     final_result: Union[str, Dict]
@@ -25,48 +27,33 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     await manager.connect(websocket, session_id)
     try:
         while True:
-            # 연결이 끊겼는지 감지하기 위해 receive_text()를 호출
-            data = await websocket.receive_text()
+            # Keep the connection alive
+            await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(session_id)
 
 @router.post("/upload/{session_id}")
-async def parse_pdf(session_id: str, file: UploadFile = File(...)):
+async def parse_pdf(session_id: str):
     
     '''
     Accepts a PDF-file upload, processes it through the LangGraph pipeline,
     and returns the extracted final result as Json(dict)
     '''
+    session_dir = CLIENT_DATA_DIR / session_id
+    if not session_dir.exists() or not any(session_dir.iterdir()):
+        raise HTTPException(status_code=404, detail="No file found for this session.")
 
-    # Validate file type (must be PDF).
-    file_name = file.filename or 'uploaded_file'
-    file_suffix = os.path.splitext(file_name)[1].lower()
+    # Find the first PDF file in the directory
+    pdf_path = next((p for p in session_dir.glob("*.pdf")), None)
 
-    if file_suffix != '.pdf' or file.content_type not in ('application/pdf', 'application/octet-stream'):
-        raise HTTPException(status_code=400, detail="Invalid file type, Please upload a PDF file")
-    
-    # Save the uploaded file to a secure temporary dir.
-    temp_dir = tempfile.mkdtemp()
-    temp_user_id = session_id
-    temp_path = os.path.join(temp_dir, f'{temp_user_id}.pdf')
-
-    try:
-        file_contents = await file.read()
-        with open(temp_path, 'wb') as f:
-            f.write(file_contents)
-
-    except Exception as e:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-        raise HTTPException(status_code=500, detail=f"Fail store the file: {e}")
-    
-    finally:
-        await file.close()
+    if not pdf_path:
+        raise HTTPException(status_code=400, detail="No PDF file found in the session directory.")
 
     try:
         q = Queue()
         graph = transcript_extract_graph(queue=q)
-        config = {"configurable": {"thread_id": str(temp_user_id)}}
-        input_state = {'filepath': temp_path}
+        config = {"configurable": {"thread_id": session_id}}
+        input_state = {'filepath': str(pdf_path)}
         
         result_state = {}
         def run_graph():
@@ -79,31 +66,28 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
         while thread.is_alive() or not q.empty():
             if not q.empty():
                 event = q.get()
-                await manager.send_to(temp_user_id, json.dumps(event))
+                await manager.send_to(session_id, json.dumps(event))
             else:
                 await asyncio.sleep(0.1)
         
-        await manager.send_to(temp_user_id, json.dumps({"event": "eof"}))
+        await manager.send_to(session_id, json.dumps({"event": "eof"}))
 
         thread.join()
 
-    finally:  
-        # if pipeline processing fails, clean up and return an error
-        shutil.rmtree(temp_dir, ignore_errors=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF processing failed: {e}")
 
     final_text = result_state.get("final_result") if isinstance(result_state, dict) else None
 
     if not final_text:
-        raise HTTPException(status_code=500, detail=f"PDF processing fail:{e}")
+        raise HTTPException(status_code=500, detail="PDF processing failed to produce a result.")
     
     return PDFProcessResponse(final_result=final_text)
 
-
-
-@router.post("/analyze")
-def analyze_transcript(transcript: Transcript):
+@router.post("/analyze/{session_id}")
+def analyze_transcript(transcript: Transcript, session_id: str):
     """
     Analyzes the transcript and returns a report and visualizations.
     """
-    return run_analysis(transcript.transcript)
+    return run_analysis(transcript.transcript, session_id)
 
