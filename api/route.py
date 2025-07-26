@@ -23,6 +23,14 @@ class PDFProcessResponse(BaseModel):
 class Transcript(BaseModel):
     transcript: Union[str, Dict]
 
+@router.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    await manager.connect(websocket, session_id)
+    try:
+        data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(session_id)
+
 
 @router.post("/upload/{session_id}")
 async def parse_pdf(session_id: str, file: UploadFile = File(...)):
