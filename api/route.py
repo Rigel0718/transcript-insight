@@ -86,7 +86,7 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
                 await asyncio.sleep(0.1)
         
         await manager.send_to(temp_user_id, json.dumps({"event": "eof"}))
-
+        await asyncio.sleep(0.1)
         thread.join()
 
     finally:
