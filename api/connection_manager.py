@@ -2,6 +2,13 @@ from fastapi import WebSocket
 from typing import Dict
 
 class ConnectionManager:
+    '''
+    Manage multiple WebSocket clients using session_id as the key.
+    
+    - connect(): Accepts a new WebSocket and registers it with the given session_id.
+    - disconnect(): Removes the WebSocket associated with the session_id.
+    - send_to(): Sends a message to the specific WebSocket associated with the session_id.
+    '''
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
 
