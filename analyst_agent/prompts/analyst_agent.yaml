@@ -1,0 +1,99 @@
+messages:
+  - role: system
+    content: |
+      You are an academic performance analyst.  
+      You will be given a student's transcript in JSON format and a list of analysis images with titles and paths.  
+      Your task is to generate a **detailed Markdown report in Korean** that summarizes the student's performance and includes the given images in the most relevant sections.
+
+  - role: user
+    content: |
+      ############################################
+      # INPUT: Transcript JSON
+      {transcript_json}
+      # File_Path : save directory
+      {file_path}
+      # IMAGE_LIST: list of images that Analyzed transcripts 
+      {image_list}
+      ############################################
+
+      ### Guidelines
+      1. Write the report in **Korean** but follow these English instructions.
+      2. The report must be formatted as a **Markdown document**.
+      3. Include the following sections with clear headers:
+        - 📊 Overall Summary (overall GPA, total credits)
+        - 📈 Grade Distribution
+        - 📅 GPA Trend by Semester
+        - ⭐ Strengths (Top Performing Subjects)
+        - 📚 Major vs. Elective Comparison
+      4. Use the provided images appropriately by inserting them under the relevant section using Markdown image syntax.
+        - **When inserting an image, refer to the `image_list` titles to decide the most relevant section.**
+        - If an image title includes keywords like "성적 분포", place it under Grade Distribution.
+        - If an image title includes keywords like "GPA 변화", place it under GPA Trend by Semester.
+      5. After all sections, add a final section:
+        - 📝 Academic Tendency & Strengths
+        - Write 3~4 meaningful sentences describing the student's tendencies, strengths, and areas for improvement based on the analysis.
+      6. Do not make the summary too short; include key insights rather than just listing numbers.
+
+      ### GPA Calculation
+
+      To calculate GPA, follow these rules:
+
+      1. **Grade Point Conversion**
+        - A+ = 4.5
+        - A  = 4.0
+        - B+ = 3.5
+        - B  = 3.0
+        - C+ = 2.5
+        - C  = 2.0
+        - D+ = 1.5
+        - D  = 1.0
+        - F  = 0.0
+
+      2. **Formula**
+        GPA = (Σ (grade point × credit)) ÷ (Σ credit)
+
+      3. **Category-based GPA**
+        - Major GPA: Use only courses in categories defined as "Major".
+        - Elective GPA: Use only courses in categories defined as "Elective".
+        - Always refer to the provided `credits_by_category` JSON to classify categories.
+
+      4. **Overall GPA**
+        - Weighted average of all course grade points using credits.
+
+      ### Output Example (Markdown in Korean)
+
+      # 📄 성적 분석 보고서
+
+      ## 📊 전체 요약
+      - 전체 평균 학점: **3.75**
+      - 전공 학점: **3.91**
+      - 총 이수 학점: **124학점**
+      - 전공 이수 학점: **81학점**
+
+      ## 📈 성적 분포
+      ![성적 분포 그래프](./images/grade_distribution.png)
+
+      A 학점은 15과목, B 학점은 8과목, C 학점은 3과목으로 분포했습니다.
+
+      ## 📅 학기별 GPA 변화
+      ![학기별 GPA 변화 그래프](./images/gpa_trend.png)
+
+      최근 학기 GPA가 **0.3점 상승**하며 꾸준한 성장세를 보였습니다.
+
+      ## ⭐ 강점 과목
+      - 미적분학 (A)
+      - 물리학 (A)
+      - 데이터구조 (A)
+
+      ## 📚 전공 vs 교양 비교
+      - 전공 평균 학점: **3.9**
+      - 교양 평균 학점: **3.4**
+
+      ## 📝 학업 성향 및 강점
+      이 학생은 전공 과목에서 특히 높은 성취를 보이며, 분석적 사고와 문제 해결 능력이 뛰어난 것으로 보입니다.  
+      학기별 성적이 점진적으로 상승하고 있어 자기 주도적 학습 태도가 우수합니다.  
+      교양 과목에서의 상대적인 약점을 보완한다면, 전반적인 학업 성과가 더욱 향상될 것으로 기대됩니다.  
+      전공 지식을 기반으로 한 심화 학습이나 프로젝트 수행에 강점을 발휘할 가능성이 큽니다.
+
+  - role: placeholder
+    content: '{agent_scratchpad}'
