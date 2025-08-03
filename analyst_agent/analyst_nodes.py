@@ -42,3 +42,22 @@ class DataFrameExtractorNode(BaseNode):
 
     def run(self, state: Text2ChartState):
         ...
+
+    class Text2ChartNode(BaseNode):
+        '''
+        재정의된 유저의 쿼리와 추출된 DataFrame으로 시각화 해주는 python code생성
+        '''
+
+        def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
+            super().__init__(verbose=verbose, **kwargs)
+            self.llm = llm or self._init_llm()
+
+        def _init_llm(self):
+            llm = ChatOpenAI(
+                model="gpt-4o",
+                temperature=0,
+            )
+            return llm 
+
+        def run(self, state: Text2ChartState):
+            ...
