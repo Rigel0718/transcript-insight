@@ -1,9 +1,9 @@
-from typing import TypedDict, Annotated
+from typing import TypedDict, Annotated, List
 import operator
 
 
 class Text2ChartState(TypedDict):
-    user_query: Annotated[str, "entered user_query"]
+    user_query: Annotated[List[str], "user queries in recieved order", operator.add]
 
     rewrite_query: Annotated[str, "rewrited query by the LLM"]
 
