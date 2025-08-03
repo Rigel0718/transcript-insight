@@ -2,6 +2,16 @@ from .base import BaseNode
 from .state import Text2ChartState
 
 
+class QueryReWrite(BaseNode):
+    '''
+    유저의 쿼리를 LLm을 활용하여 Agent가 이해할 수 있게 재 구성해주는 Node.
+    '''
+
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    def run(self, state: Text2ChartState):
+        ...
 
 class DataFrameExtractorNode(BaseNode):
     '''
