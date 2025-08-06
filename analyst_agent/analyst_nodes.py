@@ -82,4 +82,10 @@ class Text2ChartNode(BaseNode):
         input_dataframe = state['dataframe']
         input_values = {'user_query': input_query, 'dataframe': input_dataframe}
         chart_generation_code = chain.invoke(input_values)
-        return {'chart_generation_code': chart_generation_code}
+        ''' output foramt (json)
+        {{
+          "code": """차트 생성 Python 코드""",
+          "img_path": "./output/chart.png"
+        }}
+        '''
+        return {'chart_generation_code': chart_generation_code['code'], 'img_path': chart_generation_code['img_path']}
