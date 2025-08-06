@@ -83,7 +83,8 @@ class Text2ChartNode(BaseNode):
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['rewrite_query']
         input_dataframe = state['dataframe']
-        input_values = {'user_query': input_query, 'dataframe': input_dataframe}
+        code_error = state['code_error']
+        input_values = {'user_query': input_query, 'dataframe': input_dataframe, 'error_log': code_error}
         chart_generation_code = chain.invoke(input_values)
         ''' output foramt (json)
         {{
