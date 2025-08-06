@@ -49,7 +49,13 @@ class DataFrameExtractorNode(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        ...
+        prompt = load_prompt_template("prompts/dataframe_extractor.yaml")
+        chain = prompt | self.llm | StrOutputParser()
+        input_query = state['rewrite_query']
+        input_dataset = state['dataset']
+        input_values = {'user_query': input_query, 'dataset': input_dataset}
+        dataframe_extract_code = chain.invoke(input_values)
+        return {'code': dataframe_extract_code}
 
 
 class Text2ChartNode(BaseNode):
