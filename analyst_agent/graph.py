@@ -1,6 +1,6 @@
 from .analyst_nodes import CodeExecutorNode, Text2ChartNode, DataFrameExtractorNode, QueryReWrite
 from .state import Text2ChartState
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
 import os
 from langgraph.checkpoint.memory import MemorySaver  
@@ -20,10 +20,9 @@ def text2chart_graph(queue: Queue=None) -> CompiledStateGraph:
     text2chart_workflow.add_edge('query_rewrite', 'dataframe_extractor')
     text2chart_workflow.add_edge('dataframe_extractor', 'text2chart')
     text2chart_workflow.add_edge('text2chart', 'code_executor')
-    text2chart_workflow.add_conditional_edges('code_executor', check_code_validity , {"continue": 'text2chart', "rewrite": 'code_executor'})
+    text2chart_workflow.add_conditional_edges('code_executor', check_code_validity , {"continue": END, "rewrite": 'text2chart'})
     
     text2chart_workflow.set_entry_point('query_rewrite')
-    text2chart_workflow.set_finish_point('code_executor')
     return text2chart_workflow.compile(checkpointer=MemorySaver())
 
 
