@@ -56,7 +56,7 @@ class DataFrameExtractorNode(BaseNode):
         input_dataset = state['dataset']
         input_values = {'user_query': input_query, 'dataset': input_dataset}
         dataframe_extract_code = chain.invoke(input_values)
-        return {'code': dataframe_extract_code}
+        return {'dataframe_code': dataframe_extract_code}
 
 
 class Text2ChartNode(BaseNode):
