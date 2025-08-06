@@ -6,6 +6,10 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+import io
+import matplotlib.pyplot as plt
+from contextlib import redirect_stdout
+import traceback
 
 class QueryReWrite(BaseNode):
     '''
@@ -89,3 +93,30 @@ class Text2ChartNode(BaseNode):
         }}
         '''
         return {'chart_generation_code': chart_generation_code['code'], 'img_path': chart_generation_code['img_path']}
+
+
+class CodeExecutorNode(BaseNode):
+    '''
+    생성된 python code를 실행하고 결과를 반환하는 Node.
+    '''
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+
+    def run(self, state: Text2ChartState):
+        code = state['chart_generation_code']
+        output_stream = io.StringIO()
+        plt.clf()
+
+        with redirect_stdout(output_stream):
+            try:
+                exec(code, globals())
+                return {
+                    "code_output": output_stream.getvalue(),
+                    "code_error": None
+                }
+            except Exception as e:
+                error_trace = traceback.format_exc()
+                return {
+                    "code_output": output_stream.getvalue(),
+                    "code_error": f"{str(e)}\n{error_trace}"
+                }
