@@ -23,7 +23,7 @@ class QueryReWrite(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        prompt = load_prompt_template("analyst_agent.yaml")
+        prompt = load_prompt_template("prompts/query_rewrite.yaml")
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['query']
         input_dataset = state['dataset']
