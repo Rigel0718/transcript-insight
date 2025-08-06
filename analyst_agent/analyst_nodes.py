@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 
 class QueryReWrite(BaseNode):
     '''
@@ -24,7 +24,7 @@ class QueryReWrite(BaseNode):
 
     def run(self, state: Text2ChartState):
         prompt = load_prompt_template("prompts/query_rewrite.yaml")
-        chain = prompt | self.llm | JsonOutputParser()
+        chain = prompt | self.llm | StrOutputParser()
         input_query = state['query']
         input_dataset = state['dataset']
         input_values = {'query': input_query, 'dataset': input_dataset}
