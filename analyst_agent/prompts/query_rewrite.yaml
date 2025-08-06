@@ -7,7 +7,7 @@ message:
       현재 쿼리를 다음 단계로 전달하기 위한 **결정(command)** 을 내려주세요.
       
       Graph Flow: [Extract] → [Visualize] → [Execute] → END
-      
+
       </task>
 
       <instruction>
@@ -43,3 +43,15 @@ message:
       GENERATE_CHART (연간 매출 추이 그래프 필요)  
       END (날씨 대화 - 시각화 불필요)
       </output_format>
+  
+  - role: user
+    content: |
+      <dataset>
+      {dataset}
+      </dataset>
+      
+      <user_query>
+      {user_query}  
+      </user_query>
+
+      
