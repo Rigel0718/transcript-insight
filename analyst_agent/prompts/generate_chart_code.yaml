@@ -28,10 +28,10 @@ message:
 
       <output_format>
       **아래 JSON 형태로만** 응답하십시오. (텍스트 추가 금지)
-      {
+      {{
           "code": """차트 생성 Python 코드""",
           "img_path": "./output/chart.png"
-      }
+      }}
       </output_format>
 
   - role: user
