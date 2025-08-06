@@ -34,7 +34,7 @@ class QueryReWrite(BaseNode):
         input_dataset = state['dataset']
         input_values = {'query': input_query, 'dataset': input_dataset}
         result = chain.invoke(input_values)
-        return {'query': result}
+        return {'query': result, 'prev_node': 'START'}
 
 class DataFrameExtractorNode(BaseNode):
     '''
@@ -60,7 +60,7 @@ class DataFrameExtractorNode(BaseNode):
         input_dataset = state['dataset']
         input_values = {'user_query': input_query, 'dataset': input_dataset}
         dataframe_extract_code = chain.invoke(input_values)
-        return {'dataframe_code': dataframe_extract_code}
+        return {'dataframe_code': dataframe_extract_code, 'prev_node': 'query_rewrite'}
 
 
 class Text2ChartNode(BaseNode):
@@ -92,6 +92,10 @@ class Text2ChartNode(BaseNode):
           "img_path": "./output/chart.png"
         }}
         '''
+        if chart_generation_code['code'] == "None":
+            state['prev_node'] = 'text2chart'
+        else :
+            state['prev_node'] = 'code_executor'
         return {'chart_generation_code': chart_generation_code['code'], 'img_path': chart_generation_code['img_path']}
 
 
@@ -112,11 +116,13 @@ class CodeExecutorNode(BaseNode):
                 exec(code, globals())
                 return {
                     "code_output": output_stream.getvalue(),
-                    "code_error": None
+                    "code_error": None,
+                    "prev_node": 'text2chart'
                 }
             except Exception as e:
                 error_trace = traceback.format_exc()
                 return {
                     "code_output": output_stream.getvalue(),
-                    "code_error": f"{str(e)}\n{error_trace}"
+                    "code_error": f"{str(e)}\n{error_trace}",
+                    "prev_node": 'text2chart'
                 }
