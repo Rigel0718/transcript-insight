@@ -6,10 +6,9 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-import io
+import io, re, traceback, logging, warnings
 import matplotlib.pyplot as plt
 from contextlib import redirect_stdout
-import traceback
 
 class QueryReWrite(BaseNode):
     '''
@@ -102,27 +101,56 @@ class Text2ChartNode(BaseNode):
 class CodeExecutorNode(BaseNode):
     '''
     생성된 python code를 실행하고 결과를 반환하는 Node.
+    - Exception error 뿐 아니라 특정 Warning(폰트 누락 등)도 감지해 code_error 로 리턴
     '''
+
+    FONT_WARN_PATTERN = re.compile(r"(Glyph .* missing|findfont:.*Font family .* not found)", re.I)
+
     def __init__(self, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
 
     def run(self, state: Text2ChartState):
         code = state['chart_generation_code']
         output_stream = io.StringIO()
+        log_stream = io.StringIO()
+
+        logger = logging.getLogger("matplotlib.font_manager")
+        handler = logging.StreamHandler(log_stream)
+        logger.addHandler(handler)
+
         plt.clf()
 
         with redirect_stdout(output_stream):
-            try:
-                exec(code, globals())
-                return {
-                    "code_output": output_stream.getvalue(),
-                    "code_error": None,
-                    "prev_node": 'text2chart'
-                }
-            except Exception as e:
-                error_trace = traceback.format_exc()
-                return {
-                    "code_output": output_stream.getvalue(),
-                    "code_error": f"{str(e)}\n{error_trace}",
-                    "prev_node": 'text2chart'
-                }
+            with warnings.catch_warnings(record=True) as warning_list:
+                warnings.simplefilter("always")
+                try:
+                    exec(code, globals())
+
+                    warn_hit = any(
+                        self.FONT_WARN_PATTERN.search(str(warn.message)) for warn in warning_list
+                    )
+
+                    log_hit = self.FONT_WARN_PATTERN.search(log_stream.getvalue())
+
+                    if warn_hit or log_hit:
+                        error_msg = (log_stream.getvalue() or "") + "\n".join(str(warn.message) for warn in warning_list)
+                        return {
+                            "code_output": output_stream.getvalue(),
+                            "code_error": error_msg,
+                            "prev_node": 'code_executor'
+                        }
+                    else:
+                        return {
+                            "code_output": output_stream.getvalue(),
+                            "code_error": "None",
+                            "prev_node": 'code_executor'
+                        }
+                except Exception as e:
+                    error_trace = traceback.format_exc()
+                    return {
+                        "code_output": output_stream.getvalue(),
+                        "code_error": f"{str(e)}\n{error_trace}",
+                        "prev_node": 'text2chart'
+                    }
+                finally:
+                    logger.removeHandler(handler)
