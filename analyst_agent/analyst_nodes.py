@@ -25,7 +25,9 @@ class QueryReWrite(BaseNode):
     def run(self, state: Text2ChartState):
         prompt = load_prompt_template("analyst_agent.yaml")
         chain = prompt | self.llm | JsonOutputParser()
-        input_values = state['query']
+        input_query = state['query']
+        input_dataset = state['dataset']
+        input_values = {'query': input_query, 'dataset': input_dataset}
         result = chain.invoke(input_values)
         return {'query': result}
 
