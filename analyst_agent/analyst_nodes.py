@@ -1,3 +1,4 @@
+from pydantic import Json
 from .base import BaseNode
 from .state import Text2ChartState
 from langchain_openai import ChatOpenAI
@@ -75,4 +76,10 @@ class Text2ChartNode(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        ...
+        prompt = load_prompt_template("prompts/generate_chart_code.yaml")
+        chain = prompt | self.llm | JsonOutputParser()
+        input_query = state['rewrite_query']
+        input_dataframe = state['dataframe']
+        input_values = {'user_query': input_query, 'dataframe': input_dataframe}
+        chart_generation_code = chain.invoke(input_values)
+        return {'chart_generation_code': chart_generation_code}
