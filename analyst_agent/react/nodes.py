@@ -1,5 +1,5 @@
 import io, re, logging, time, warnings, traceback
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from contextlib import redirect_stdout
 import os
 import pandas as pd
@@ -42,7 +42,7 @@ class CodeExecutorNode(BaseNode):
         }
 
     def _create_exec_env(self, registry: Dict[str, Any], state: ReactReportState) -> Dict[str, Any]:
-        def register_df(df: pd.DataFrame, name: str, **metadata):
+        def register_df(df: pd.DataFrame, name: str, metadata: Optional[Dict[str, Any]] = None):
             assert isinstance(df, pd.DataFrame), "register_df expects a DataFrame"
             info = self._write_csv(df, name, state["artifact_dir"])
             registry["dataframes"][info["name"]] = {**info, "metadata": metadata or {}}
@@ -50,16 +50,16 @@ class CodeExecutorNode(BaseNode):
                 registry["primary_df"] = {"name": info["name"], "df_ref": df, "metadata": metadata or {}}
 
         def publish_df(df: pd.DataFrame, name: str):
-            register_df(df, name, df=df)
+            register_df(df, name)
 
-            env = {
-                "__builtins__": __builtins__,
-                "pd": pd,
-                "plt": plt,
-                "register_df": register_df,
-                "publish_df": publish_df,
-            }
-            return env
+        env = {
+            "__builtins__": __builtins__,
+            "pd": pd,
+            "plt": plt,
+            "register_df": register_df,
+            "publish_df": publish_df,
+        }
+        return env
 
     def run(self, state: AgentContextState) -> AgentContextState:
         gcodes = state['generated_codes']
@@ -129,7 +129,7 @@ class CodeExecutorNode(BaseNode):
             except Exception:
                 pass
         
-        # RESULT_DF 보정
+        # check local_env for RESULT_DF and register it as the primary result DataFrame.
         if "primary_df" not in registry and 'l_env' in locals() and isinstance(l_env, dict):
             if "RESULT_DF" in l_env:
                 try:
@@ -138,7 +138,7 @@ class CodeExecutorNode(BaseNode):
                 except Exception as e:
                     error_list.append(f"Failed to register RESULT_DF: {e}")
 
-        # locals() 스캔 (옵션)
+        # scanning is allowed, search l_env for the first pandas DataFrame (optional)
         if state["allow_scan_df"] and not registry["dataframes"] and 'l_env' in locals() and isinstance(l_env, dict):
             for k, v in l_env.items():
                 try:
