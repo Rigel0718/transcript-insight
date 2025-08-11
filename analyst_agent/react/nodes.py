@@ -41,7 +41,7 @@ class CodeExecutorNode(BaseNode):
             "schema": schema,
         }
 
-    def _fresh_exec_env(self, registry: Dict[str, Any], state: ReactReportState) -> Dict[str, Any]:
+    def _create_exec_env(self, registry: Dict[str, Any], state: ReactReportState) -> Dict[str, Any]:
         def register_df(df: pd.DataFrame, name: str, **metadata):
             assert isinstance(df, pd.DataFrame), "register_df expects a DataFrame"
             info = self._write_csv(df, name, state["artifact_dir"])
@@ -68,13 +68,6 @@ class CodeExecutorNode(BaseNode):
             return{
                 "phase": state["phase"] or "executing",
                 "attempts": state["attempts"] or {},
-                "generated_codes": [],
-                "df_handle": [],
-                "df_meta": [],
-                "csv_path": [],
-                "image_paths": [],
-                "last_stdout": "",
-                "last_stderr": "",
                 "last_error": "No code provided (generated_codes is empty)",
                 "errors": ["No code provided (generated_codes is empty)"],
             }
@@ -85,13 +78,6 @@ class CodeExecutorNode(BaseNode):
             return{
                 "phase": state["phase"] or "executing",
                 "attempts": state["attempts"] or {},
-                "generated_codes": [],
-                "df_handle": [],
-                "df_meta": [],
-                "csv_path": [],
-                "image_paths": [],
-                "last_stdout": "",
-                "last_stderr": "",
                 "last_error": "No code provided (generated_codes is empty)",
                 "errors": ["No code provided (generated_codes is empty)"],
             }
@@ -117,13 +103,14 @@ class CodeExecutorNode(BaseNode):
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 with warnings.catch (record=True) as warning_list:
                     warnings.simplefilter("always")
-                    g_env = self._fresh_exec_env(registry, state)
+                    g_env = self._create_exec_env(registry, state)
                     l_env: Dict[str, Any] = {}
                     try:
                         exec(code, g_env, l_env)
                     except Exception as e:
                         error_trace = traceback.format_exc()
-                        error_list.append(error_trace)
+                        error = f"{str(e)}\n{error_trace}"
+                        error_list.append(error)
                     
                     warn_hit = any(
                         self.FONT_WARN_PATTERN.search(str(warn.message)) for warn in warning_list
@@ -147,16 +134,16 @@ class CodeExecutorNode(BaseNode):
             if "RESULT_DF" in l_env:
                 try:
                     df = l_env["RESULT_DF"]
-                    self._fresh_exec_env(registry, cfg)["register_df"](df, "result")
+                    self._create_exec_env(registry, state)["register_df"](df, "result")
                 except Exception as e:
                     error_list.append(f"Failed to register RESULT_DF: {e}")
 
         # locals() 스캔 (옵션)
-        if cfg["allow_scan_df"] and not registry["dataframes"] and 'l_env' in locals() and isinstance(l_env, dict):
+        if state["allow_scan_df"] and not registry["dataframes"] and 'l_env' in locals() and isinstance(l_env, dict):
             for k, v in l_env.items():
                 try:
                     if isinstance(v, pd.DataFrame):
-                        self._fresh_exec_env(registry, cfg)["register_df"](v, f"auto_{k}")
+                        self._create_exec_env(registry, state)["register_df"](v, f"auto_{k}")
                         break
                 except Exception:
                     continue
