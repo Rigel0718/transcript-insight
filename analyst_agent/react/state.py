@@ -90,3 +90,8 @@ class ChartState(TypedDict, total=False):
     errors: Annotated[List[str], "List of all error messages encountered during the process"]
     attempts: Annotated[int, "Number of attempts to execute the chart code"]
     debug_font: Annotated[Dict, "Debug font information"]
+
+class RouterState(TypedDict, total=False):
+    prev_node: Annotated[str, "Previous node (e.g., 'df_exec'|'chart_exec'|...)"]
+    next_action: Annotated[str, "Routing key (e.g., 'to_df_gen'|'to_chart_gen'|'finish')"]
+    want_chart: Annotated[bool, "Whether a chart is needed (False if only CSV is requested)"]
