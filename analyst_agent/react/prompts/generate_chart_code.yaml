@@ -26,20 +26,23 @@ message:
       4. **주석("#")·설명문 없이** 순수 Python 코드만 출력합니다.  
       5. **폰트 설정 코드(plt.rcParams, font_manager 등)는 작성하지 않습니다.** 실행기가 자동으로 처리합니다.  
       6. 저장은 반드시 **save_chart(file_name=..., dpi=...)** 를 호출해 수행합니다.  
-         - `file_name` 은 그래프 제목 또는 의미 있는 파일명(확장자 포함, 예: `"sales_by_month.png"`).  
-         - `dpi` 는 정수(예: `170`), 필요 시 명시합니다.  
-      7. 제목은 영어로 설정하고, 축 레이블·범례는 원본 언어(한글이면 그대로)로 사용합니다.  
-      8. `plt.style.use('seaborn')` 는 사용하지 않습니다. (스타일 변경으로 인한 부작용 방지)  
-      9. 여러 줄 문자열에서 **unterminated string literal** 오류가 없도록 주의합니다.  
-      10. 코드 실행 중 발생할 수 있는 예외(컬럼 누락, 타입 불일치, 빈 데이터 등)는 **try-except** 로 처리합니다.  
-      11. 화면 표시용 **plt.show()는 호출하지 않습니다.** 저장은 `save_chart(...)` 만 사용합니다.
-      </instruction>
+        - `file_name` 은 (`chart_name`)으로 사용합니다. (확장자 포함, 예: `"sales_by_month.png"`).  
+        - `dpi` 는 정수(예: `170`), 필요 시 명시합니다.  
+      7. 제목(`chart_name`)은 **영어**로, 축 레이블·범례는 원본 언어(한글이면 그대로)로 사용합니다.  
+      8. 제목(`chart_name`)은 차트의 핵심 내용을 간결히 요약한 문구로 작성합니다. (예: `"Monthly Sales Trends"`)  
+      9. 설명(`chart_desc`)은 차트의 목적과 주요 특징, 데이터 해석 포인트를 **한글**로 간결히 작성합니다. (예: `"월별 매출 변화를 시각화하여 계절별 판매 경향을 파악"`)  
+      10. `plt.style.use('seaborn')` 는 사용하지 않습니다. (스타일 변경으로 인한 부작용 방지)  
+      11. 여러 줄 문자열에서 **unterminated string literal** 오류가 없도록 주의합니다.  
+      12. 코드 실행 중 발생할 수 있는 예외(컬럼 누락, 타입 불일치, 빈 데이터 등)는 **try-except** 로 처리합니다.  
+      13. 화면 표시용 **plt.show()는 호출하지 않습니다.** 저장은 `save_chart(...)` 만 사용합니다.
 
       <output_format>
       **아래 JSON 형태로만** 응답하십시오. (텍스트 추가 금지)
       {
           "code": """차트 생성 Python 코드""",
-          "img_path": "{{artifact_dir}}/{{file_name}}"  # 예: ./artifacts/sales_by_month.png
+          "chart_name": "차트 제목 (영어)",
+          "img_path": "{{artifact_dir}}/{{chart_name}}"  # 예: ./artifacts/sales_by_month.png
+          "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
       }
       </output_format>
 
