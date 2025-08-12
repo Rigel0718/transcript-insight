@@ -59,3 +59,17 @@ class AgentContextState(TypedDict):
     last_stderr: Annotated[str, "Captured standard error from the last execution"]
     last_error: Annotated[str, "Summary or message of the last error encountered"]
     errors: Annotated[List[str], "List of all error messages encountered during the process"]
+
+class DataFrameState(TypedDict, total=False):
+    # Code / Input
+    df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"]
+    # Results / Artifacts
+    df_handle: Annotated[List[str], "List of registered DataFrame names"]
+    df_meta: Annotated[List[Dict], "Metadata for each DataFrame (schema/shape/columns, etc.)", operator.add]
+    csv_path: Annotated[List[str], "List of saved CSV file paths", operator.add]
+    # Execution logs / Errors
+    stdout: Annotated[str, "Standard output from the last DataFrame execution"]
+    stderr: Annotated[str, "Standard error output from the last DataFrame execution"]
+    attempts: Annotated[int, "Number of attempts to execute the DataFrame code"]
+    last_error: Annotated[str, "Error message from the last DataFrame execution"]
+    errors: Annotated[List[str], "List of all error messages encountered during the process"]
