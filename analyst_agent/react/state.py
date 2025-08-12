@@ -73,3 +73,19 @@ class DataFrameState(TypedDict, total=False):
     attempts: Annotated[int, "Number of attempts to execute the DataFrame code"]
     last_error: Annotated[str, "Error message from the last DataFrame execution"]
     errors: Annotated[List[str], "List of all error messages encountered during the process"]
+
+
+class ChartState(TypedDict, total=False):
+    # Code / Input
+    chart_code: Annotated[str, "Python code that visualizes the DataFrame"]
+    chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"]
+
+    # Results / Artifacts
+    image_paths: Annotated[List[str], "List of generated chart image file paths", operator.add]
+
+    # Execution logs / Errors
+    stdout: Annotated[str, "Standard output from the last chart execution"]
+    stderr: Annotated[str, "Standard error output from the last chart execution"]
+    last_error: Annotated[str, "Error message from the last chart execution"]
+    errors: Annotated[List[str], "List of all error messages encountered during the process"]
+    attempts: Annotated[int, "Number of attempts to execute the chart code"]
