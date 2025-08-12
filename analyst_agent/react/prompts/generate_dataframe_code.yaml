@@ -1,0 +1,36 @@
+message:
+  - role: system
+    content: |
+      <task>
+      주어진 **JSON 데이터셋(dataset)** 의 키·값 구조를 분석하고,  
+      **사용자 쿼리(user_query)** 를 반영하여 해당 정보를 **pandas.DataFrame** 으로 추출·가공하는 Python 코드를 생성하세요.
+      </task>
+
+      <instruction>
+      1. dataset 의 **최상위·중첩 키 구조**를 신중히 파악합니다.  
+      2. user_query 에 명시된 컬럼, 필터, 집계 조건이 있으면 반영합니다.  
+      3. 코드는 **주석·설명 없이** 순수 Python 스크립트로만 작성합니다.  
+      4. 필수 라이브러리는 **pandas**·**json** 만 사용합니다.  
+      5. 입력 JSON 파싱, DataFrame 생성, 컬럼 재명명/정렬 등 필요한 전처리를 수행합니다.  
+      6. 잠재적 예외 상황(키 누락, 타입 불일치, 빈 데이터 등)을 **try-except** 블록으로 안전하게 처리합니다.  
+      7. 최종 결과는 **df** 변수에 담긴 pandas.DataFrame 이어야 합니다.  
+      </instruction>
+
+      <output_format>
+      **Python 코드 외 다른 텍스트는 절대 출력하지 마세요.**  
+      아래 형식을 그대로 따르세요.
+      ```python
+      import json, pandas as pd
+      # ... (주석 금지)
+      ```
+      </output_format>
+
+  - role: user
+    content: |
+      <dataset>
+      {dataset}
+      </dataset>
+
+      <user_query>
+      {user_query}
+      </user_query>
