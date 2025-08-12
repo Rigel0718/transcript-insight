@@ -1,6 +1,6 @@
 import io, re, logging, time, warnings, traceback
 from typing import Dict, Any, Optional
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -98,10 +98,10 @@ class CodeExecutorNode(BaseNode):
         
         registry: Dict[str, Any] = {"dataframes": {}, "images": []}
         error_list: List[str] = []
-
+        last_error_msg = ""
         try:
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
-                with warnings.catch (record=True) as warning_list:
+                with warnings.catch_warnings(record=True) as warning_list:
                     warnings.simplefilter("always")
                     g_env = self._create_exec_env(registry, state)
                     l_env: Dict[str, Any] = {}
