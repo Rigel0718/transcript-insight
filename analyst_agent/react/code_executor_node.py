@@ -1,11 +1,13 @@
 import io, re, logging, time, warnings, traceback
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from contextlib import redirect_stdout, redirect_stderr
 import os
 import pandas as pd
+import matplotlib.font_manager as fm
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-from .state import DataFrameState, ChartState
-from ..base import BaseNode
+from analyst_agent.react.state import DataFrameState, ChartState
+from analyst_agent.react.base import BaseNode
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):
@@ -177,88 +179,61 @@ class ChartCodeExecutorNode(BaseNode):
     def _abs(*paths: str) -> str:
         return os.path.abspath(os.path.join(*paths))
 
-    def _auto_apply_korean_font(self) -> Dict[str, str]:
-        """
-        우선순위:
-        0) /usr/share/.../NanumGothic.ttf (하드 경로)
-        1) 'NanumGothic' 패밀리명
-        2) FONT_CANDIDATES (이름 → 경로 순서)
-        3) 'DejaVu Sans' (fallback)
-        성공 시 rcParams에 적용. 반환: {"family": <적용이름>, "path": <경로 or "">}
-        """
+    def _auto_apply_korean_font(self) -> dict[str, str]:
         chosen = {"family": "NanumGothic", "path": ""}
 
-        # 0) Hard path lookup
-        hard = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-        if os.path.exists(hard):
-            try:
-                fam = fm.FontProperties(fname=hard).get_name()
-                plt.rcParams["font.family"] = fam
-                plt.rcParams["axes.unicode_minus"] = False
-                chosen["family"], chosen["path"] = fam, hard
-                return chosen
-            except Exception:
-                pass
+        def _apply_by_path(path: str) -> bool:
+            if os.path.exists(path):
+                try:
+                    # ttf register
+                    fm.fontManager.addfont(path)
+                    fam = fm.FontProperties(fname=path).get_name()
+                    fm._rebuild()
+                    # rcParams update
+                    mpl.rcParams["font.family"] = fam
+                    mpl.rcParams["font.sans-serif"] = [fam]
+                    mpl.rcParams["axes.unicode_minus"] = False
+                    chosen["family"], chosen["path"] = fam, path
+                    return True
+                except Exception:
+                    return False
+            return False
 
-        # 1) Family name lookup
-        try:
-            fm.findfont("NanumGothic", fallback_to_default=False)
-            plt.rcParams["font.family"] = "NanumGothic"
-            plt.rcParams["axes.unicode_minus"] = False
-            chosen["family"] = "NanumGothic"
+        # 0) hard path
+        if _apply_by_path("/usr/share/fonts/truetype/nanum/NanumGothic.ttf"):
             return chosen
-        except Exception:
-            pass
 
-        # 2) Candidate rotation
+        # 1) candidate paths
         for fam, paths in self.FONT_CANDIDATES.items():
+            for p in paths:
+                if _apply_by_path(p):
+                    return chosen
+
+        # 2) system registered font name (if possible)
+        for fam in ("NanumGothic", "Noto Sans CJK KR", "DejaVu Sans"):
             try:
-                fm.findfont(fam, fallback_to_default=False)
-                plt.rcParams["font.family"] = fam
-                plt.rcParams["axes.unicode_minus"] = False
-                chosen["family"] = fam
+                fm.findfont(fam, fallback_to_default=(fam == "DejaVu Sans"))
+                mpl.rcParams["font.family"] = fam
+                mpl.rcParams["font.sans-serif"] = [fam]
+                mpl.rcParams["axes.unicode_minus"] = False
+                chosen["family"], chosen["path"] = fam, ""
                 return chosen
             except Exception:
-                pass
+                continue
 
-            # Path rotation
-            for p in paths:
-                if os.path.exists(p):
-                    try:
-                        fam_name = fm.FontProperties(fname=p).get_name()
-                        plt.rcParams["font.family"] = fam_name
-                        plt.rcParams["axes.unicode_minus"] = False
-                        chosen["family"], chosen["path"] = fam_name, p
-                        return chosen
-                    except Exception:
-                        continue
-
-        # 3) Fallback
-        try:
-            fm.findfont("DejaVu Sans", fallback_to_default=True)
-            plt.rcParams["font.family"] = "DejaVu Sans"
-            plt.rcParams["axes.unicode_minus"] = False
-            chosen["family"] = "DejaVu Sans"
-        except Exception:
-            plt.rcParams["axes.unicode_minus"] = False
-
+        # 3) final fallback
+        mpl.rcParams["font.family"] = "DejaVu Sans"
+        mpl.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+        mpl.rcParams["axes.unicode_minus"] = False
+        chosen["family"] = "DejaVu Sans"
         return chosen
 
-    def _create_exec_env_for_chart(self, registry, artifact_dir: str, applied_font: Dict[str, str], enforce: bool):
-        def _reapply_font():
-            if enforce:
-                self._auto_apply_korean_font()
-                plt.rcParams["axes.unicode_minus"] = False
-
+    def _create_exec_env_for_chart(self, registry, artifact_dir: str, applied_font: dict):
         def save_chart(fig: plt.Figure = None, filename=None, dpi=170):
-            # 저장 직전에 한 번 더 강제 적용(중간에 코드가 폰트를 바꿨더라도 덮어씀)
-            _reapply_font()
-
             ts = int(time.time())
             name = filename or f"chart_{ts}.png"
-            out_dir = artifact_dir
-            os.makedirs(out_dir, exist_ok=True)
-            path = os.path.join(out_dir, name)
+            os.makedirs(artifact_dir, exist_ok=True)
+            path = os.path.join(artifact_dir, name)
             if fig is None:
                 plt.savefig(path, dpi=dpi, bbox_inches="tight")
             else:
@@ -266,56 +241,12 @@ class ChartCodeExecutorNode(BaseNode):
             registry["images"].append(path)
             return path
 
-        def use_korean_font(name_or_force: bool | str | None = None, *, path: str | None = None) -> str:
-            """
-            사용법:
-            use_korean_font(True)                      # NanumGothic 우선 강제(실패 시 자동 폴백)
-            use_korean_font("NanumGothic")             # 특정 패밀리명 적용
-            use_korean_font(path="/.../NanumGothic.ttf")  # 특정 파일 경로 적용
-            use_korean_font()                          # 자동 후보 탐색
-            반환: 적용된 폰트 패밀리명(없으면 "")
-            """
-            # True인 경우: NanumGothic 우선 강제 시도 → 실패 시 자동 폴백
-            if name_or_force is True:
-                hard = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-                if os.path.exists(hard):
-                    try:
-                        fam = fm.FontProperties(fname=hard).get_name()
-                        plt.rcParams["font.family"] = fam
-                        plt.rcParams["axes.unicode_minus"] = False
-                        return fam
-                    except Exception:
-                        pass
-                return self._auto_apply_korean_font().get("family", "")
-
-            # Family name
-            if isinstance(name_or_force, str):
-                try:
-                    fm.findfont(name_or_force, fallback_to_default=False)
-                    plt.rcParams["font.family"] = name_or_force
-                    plt.rcParams["axes.unicode_minus"] = False
-                    return name_or_force
-                except Exception:
-                    return self._auto_apply_korean_font().get("family", "")
-            # path
-            if path:
-                try:
-                    fam = fm.FontProperties(fname=path).get_name()
-                    plt.rcParams["font.family"] = fam
-                    plt.rcParams["axes.unicode_minus"] = False
-                    return fam
-                except Exception:
-                    return self._auto_apply_korean_font().get("family", "")
-
-            # No arguments: Auto search
-            return self._auto_apply_korean_font().get("family", "")
-
         return {
             "__builtins__": __builtins__,
             "pd": pd,
             "plt": plt,
             "save_chart": save_chart,
-            "use_korean_font": use_korean_font,
+            "use_korean_font": lambda: applied_font.get("family", ""),
             "_applied_font": dict(applied_font),
         }
 
@@ -334,12 +265,11 @@ class ChartCodeExecutorNode(BaseNode):
         try:
             plt.clf()
             plt.close("all")
-            enforce = bool(state.get("enforce_korean_font", True))
-            applied = {}
-            if enforce:
-                applied = self._auto_apply_korean_font(state)
-                plt.rcParams["axes.unicode_minus"] = False
-            g_env = self._create_exec_env_for_chart(registry, state, applied, enforce=True)
+            # korean font
+            applied = self._auto_apply_korean_font()
+            plt.rcParams["axes.unicode_minus"] = False
+            artifact_dir = state["artifact_dir"]
+            g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
             l_env: Dict[str, Any] = {}
 
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
@@ -366,8 +296,48 @@ class ChartCodeExecutorNode(BaseNode):
                 "last_error": last_err if errors else "",
                 "errors": (state.get("errors") or []) + errors,
                 "attempts": attempts,
+                "debug_font": applied,
             }
         finally:
             logger.removeHandler(handler)
             try: plt.close("all")
             except: pass
+
+if __name__ == "__main__":
+    import sys
+    import os 
+    from inspect import cleandoc
+    sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../..")))    
+    chart_node = ChartCodeExecutorNode(verbose=True)
+    chart_code = cleandoc("""
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.DataFrame({
+    "과목": ["수학", "영어", "국어", "과학"],
+    "점수": [88, 92, 81, 95]
+})
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.bar(df["과목"], df["점수"])
+ax.set_title("과목별 점수")
+ax.set_xlabel("과목")
+ax.set_ylabel("점수")
+fig.tight_layout()
+
+# 실행기가 주입하는 헬퍼
+save_chart(filename="bar_example.png", dpi=170)
+""")
+    chart_state : ChartState = {
+    "chart_code": chart_code,
+    "artifact_dir": "./artifacts_test",
+    "chart_intent":{},
+    "image_paths": [],
+    "attempts": 0,
+    "last_stdout": "",
+    "last_stderr": "",
+    "last_error": "",
+    "errors": [],
+}
+    chart_result = chart_node.run(state=chart_state)
+    print(chart_result)

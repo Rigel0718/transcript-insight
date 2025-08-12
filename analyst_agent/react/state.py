@@ -89,3 +89,4 @@ class ChartState(TypedDict, total=False):
     last_error: Annotated[str, "Error message from the last chart execution"]
     errors: Annotated[List[str], "List of all error messages encountered during the process"]
     attempts: Annotated[int, "Number of attempts to execute the chart code"]
+    debug_font: Annotated[Dict, "Debug font information"]
