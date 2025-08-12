@@ -26,6 +26,7 @@ class CodeExecutorNode(BaseNode):
     def _write_csv(self, df: pd.DataFrame, name: str, artifact_dir: str) -> Dict[str, Any]:
         ts = int(time.time())
         safe_name = self._safe_name(name)
+        os.makedirs(self._abs(artifact_dir), exist_ok=True)
         path = self._abs(artifact_dir, f"{ts}_{safe_name}.csv")
         df.to_csv(path, index=True, encoding="utf-8-sig")
         try:
