@@ -2,7 +2,7 @@ message:
   - role: system
     content: |
       당신은 **Router 에이전트**입니다.  
-      주어진 상태(`current_dataframe_informs`, `current_chart_informs`, `prev_node`)와 `user_query`를 함께 분석하여,
+      주어진 상태(`current_dataframe_informs`, `current_chart_informs`, `previous_node`)와 `user_query`를 함께 분석하여,
       에이전트가 **다음에 수행해야 할 액션**을 정확히 선택하고 간결한 이유를 제공합니다.
 
       <task>
@@ -18,7 +18,7 @@ message:
       <state_definition>
       • current_dataframe_informs: {{ df_name: df_desc, ... }}  // 비어있으면 사용 가능한 DF 없음  
       • current_chart_informs:    {{ chart_name: chart_desc, ... }}  // 비어있으면 사용 가능한 차트 없음  
-      • prev_node: 'df_exec' | 'chart_exec' | 'router' | ...
+      • previous_node: 'df_exec' | 'chart_exec' | 'router' | '_START_'...
       </state_definition>
 
       <decision_rubric>
@@ -89,5 +89,5 @@ message:
       user_query: {user_query}
       current_dataframe_informs: {current_dataframe_informs}
       current_chart_informs: {current_chart_informs}
-      prev_node: {prev_node}
+      previous_node: {previous_node}
       </input>

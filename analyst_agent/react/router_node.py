@@ -35,9 +35,10 @@ class RouterNode(BaseNode):
         input_values = {
             'user_query': user_query, 
             'current_dataframe_informs': current_dataframe_informs, 
-            'current_chart_informs': current_chart_informs
+            'current_chart_informs': current_chart_informs,
+            'previous_node': state['previous_node']
             }
         
         result: RouteDecision = chain.invoke(input_values)
-        return {'next_action': result.action, 'prev_node': 'router'}
+        return {'next_action': result.action, 'previous_node': 'router'}
 
