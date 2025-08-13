@@ -1,9 +1,10 @@
-from typing import TypedDict, Annotated, List, Dict, Literal, Optional
+from typing import TypedDict, Annotated, List, Dict, Tuple
 import operator
 
 
 class DataFrameState(TypedDict, total=False):
     # Code / Input
+    user_query: Annotated[str, "Original user query or question"]
     df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"]
     # Results / Artifacts
     df_handle: Annotated[List[str], "List of registered DataFrame names"]
@@ -19,12 +20,13 @@ class DataFrameState(TypedDict, total=False):
 
 class ChartState(TypedDict, total=False):
     # Code / Input
+    user_query: Annotated[str, "Original user query or question"]
     chart_code: Annotated[str, "Python code that visualizes the DataFrame"]
     chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"]
 
     # Results / Artifacts
     image_paths: Annotated[List[str], "List of generated chart image file paths", operator.add]
-    chart_desc: Annotated[str, "Short description or summary of the chart (purpose, main insights, etc.)"]
+    chart_info: Annotated[Tuple[str, str], "(chart_name, chart_desc)"]
 
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last chart execution"]

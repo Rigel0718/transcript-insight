@@ -38,12 +38,12 @@ message:
 
       <output_format>
       **아래 JSON 형태로만** 응답하십시오. (텍스트 추가 금지)
-      {
+      {{
           "code": """차트 생성 Python 코드""",
           "chart_name": "차트 제목 (영어)",
           "img_path": "{{artifact_dir}}/{{chart_name}}"  # 예: ./artifacts/sales_by_month.png
           "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
-      }
+      }}
       </output_format>
 
   - role: user

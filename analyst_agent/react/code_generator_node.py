@@ -1,10 +1,10 @@
-from ..base import BaseNode
-from ..react.state import AgentContextState
+from analyst_agent.react.base import BaseNode
+from analyst_agent.react.state import ChartState, DataFrameState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 
 class DataFrameCodeGeneratorNode(BaseNode):
     '''
@@ -23,14 +23,15 @@ class DataFrameCodeGeneratorNode(BaseNode):
         )
         return llm 
 
-    def run(self, state: AgentContextState):
+    def run(self, state: DataFrameState) -> DataFrameState:
         prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
-        chain = prompt | self.llm | StrOutputParser()
-        input_query = state['rewrite_query']
+        chain = prompt | self.llm | JsonOutputParser()
+        input_query = state['user_query']
         input_dataset = state['dataset']
         input_values = {'user_query': input_query, 'dataset': input_dataset}
         dataframe_extract_code = chain.invoke(input_values)
-        return {'dataframe_code': dataframe_extract_code, 'previous_node': 'dataframe_extractor'}
+        state['dataframe_code'] = dataframe_extract_code['code']
+        return state
 
 
 class ChartCodeGeneratorNode(BaseNode):
@@ -49,22 +50,28 @@ class ChartCodeGeneratorNode(BaseNode):
         )
         return llm 
 
-    def run(self, state: AgentContextState):
+    def run(self, state: ChartState) -> ChartState:
         prompt = load_prompt_template("prompts/generate_chart_code.yaml")
         chain = prompt | self.llm | JsonOutputParser()
-        input_query = state['rewrite_query']
+        input_query = state['user_query']
         input_dataframe = state['dataframe']
-        code_error = state['code_error']
+        code_error = state['last_error']
         input_values = {'user_query': input_query, 'dataframe': input_dataframe, 'error_log': code_error}
         chart_generation_code = chain.invoke(input_values)
         ''' output foramt (json)
         {{
           "code": """차트 생성 Python 코드""",
-          "img_path": "./output/chart.png"
+          "chart_name": "차트 제목 (영어)",
+          "img_path": "{{artifact_dir}}/{{chart_name}}"  # 예: ./artifacts/sales_by_month.png
+          "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
         }}
         '''
+        chart_info = (chart_generation_code['chart_name'], chart_generation_code['chart_desc'])
         if chart_generation_code['code'] == "None":
-            state['prev_node'] = 'text2chart'
+            state['previous_node'] = 'text2chart'
         else :
-            state['prev_node'] = 'code_executor'
-        return {'chart_generation_code': chart_generation_code['code'], 'img_path': chart_generation_code['img_path']}
+            state['previous_node'] = 'code_executor'
+        state['chart_code'] = chart_generation_code['code']
+        state['img_path'] = chart_generation_code['img_path']
+        state['chart_info'] = chart_info
+        return state
