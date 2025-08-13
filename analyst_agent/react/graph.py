@@ -9,9 +9,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from queue import Queue
 
 
-def chart_code_react_agent(verbose: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    chart_code_generator_node = ChartCodeGeneratorNode(verbose=verbose, queue=queue)
-    chart_code_executor_node = ChartCodeExecutorNode(verbose=verbose, queue=queue)
+def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
+    chart_code_generator_node = ChartCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue)
+    chart_code_executor_node = ChartCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
     
     chart_code_agent_workflow = StateGraph(ChartState)
     chart_code_agent_workflow.add_node('chart_code_generator', chart_code_generator_node)
@@ -22,9 +22,9 @@ def chart_code_react_agent(verbose: bool = False, queue: Queue=None) -> Compiled
     chart_memory = MemorySaver()
     return chart_code_agent_workflow.compile(checkpointer=chart_memory)
 
-def df_code_react_agent(verbose: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    dataframe_code_generator_node = DataFrameCodeGeneratorNode(verbose=verbose, queue=queue)
-    dataframe_code_executor_node = DataFrameCodeExecutorNode(verbose=verbose, queue=queue)
+def df_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
+    dataframe_code_generator_node = DataFrameCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue)
+    dataframe_code_executor_node = DataFrameCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
     
     dataframe_code_agent_workflow = StateGraph(DataFrameState)
     dataframe_code_agent_workflow.add_node('dataframe_code_generator', dataframe_code_generator_node)
@@ -36,10 +36,10 @@ def df_code_react_agent(verbose: bool = False, queue: Queue=None) -> CompiledSta
     return dataframe_code_agent_workflow.compile(checkpointer=dataframe_memory)
 
 
-def react_code_agent(verbose: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    router_node = RouterNode(verbose=verbose, queue=queue)
-    dataframe_code_agent = df_code_react_agent(verbose=verbose, queue=queue)
-    chart_code_agent = chart_code_react_agent(verbose=verbose, queue=queue)
+def react_code_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
+    router_node = RouterNode(verbose=verbose, track_time=track_time, queue=queue)
+    dataframe_code_agent = df_code_react_agent(verbose=verbose, track_time=track_time, queue=queue)
+    chart_code_agent = chart_code_react_agent(verbose=verbose, track_time=track_time, queue=queue)
     
     react_code_agent_workflow = StateGraph(AgentContextState)
     react_code_agent_workflow.add_node('router', router_node)
@@ -67,6 +67,7 @@ def check_code_validity (state: Dict[str, Any]) -> str:
     else:
         print ("---[ERROR] CODE REWRITE---")
         return "regenerate"
+
 
 def check_next_action(state: Dict[str, Any]) -> str:
     '["to_gen_df", "to_gen_chart", "finish"]'

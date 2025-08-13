@@ -40,5 +40,6 @@ class RouterNode(BaseNode):
             }
         
         result: RouteDecision = chain.invoke(input_values)
+        self.log(message=result.action)
         return {'next_action': result.action, 'previous_node': 'router'}
 

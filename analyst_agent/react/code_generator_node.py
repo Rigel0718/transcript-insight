@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from .utils import load_prompt_template
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 
 class DataFrameCodeGeneratorNode(BaseNode):
     '''
@@ -27,10 +27,12 @@ class DataFrameCodeGeneratorNode(BaseNode):
         prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['user_query']
-        input_dataset = state['dataset']
-        input_values = {'user_query': input_query, 'dataset': input_dataset}
-        dataframe_extract_code = chain.invoke(input_values)
-        state['dataframe_code'] = dataframe_extract_code['code']
+        self.log(message=input_query)
+        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': state['last_error']}
+        result = chain.invoke(input_values)
+        state['dataframe_code'] = result['code']
+        state['df_info'] = result['df_info']
+        self.log(message=str(result['df_info']))
         return state
 
 

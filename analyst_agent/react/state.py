@@ -10,6 +10,7 @@ class DataFrameState(TypedDict, total=False):
     # Results / Artifacts
     df_handle: Annotated[List[str], "List of registered DataFrame names"]
     df_meta: Annotated[List[Dict], "Metadata for each DataFrame (schema/shape/columns, etc.)", operator.add]
+    df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
     csv_path: Annotated[List[str], "List of saved CSV file paths", operator.add]
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last DataFrame execution"]

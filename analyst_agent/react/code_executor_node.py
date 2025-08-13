@@ -68,7 +68,7 @@ class DataFrameCodeExecutorNode(BaseNode):
 
     def _create_exec_env_for_df(self, registry, state, debug_on: bool=False):
 
-        def register_df(df: pd.DataFrame, name: str):
+        def save_df(df: pd.DataFrame, name: str):
 
             info = self._write_csv(df, name, state["artifact_dir"])
             if debug_on:
@@ -84,7 +84,7 @@ class DataFrameCodeExecutorNode(BaseNode):
         return {
             "__builtins__": __builtins__,
             "pd": pd, 
-            "register_df": register_df
+            "save_df": save_df
             }
 
 
@@ -135,7 +135,7 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
             attempts = (state['attempts'] or 0) + 1
-
+            self.log(message=stdout_stream.getvalue())
             return {
                 "df_handle": df_handles,
                 "df_meta": df_metas,
