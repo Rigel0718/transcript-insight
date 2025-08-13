@@ -5,6 +5,7 @@ import operator
 class DataFrameState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"]
+    dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"]
     df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"]
     # Results / Artifacts
     df_handle: Annotated[List[str], "List of registered DataFrame names"]
@@ -21,6 +22,7 @@ class DataFrameState(TypedDict, total=False):
 class ChartState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"]
+    dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"]
     chart_code: Annotated[str, "Python code that visualizes the DataFrame"]
     chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"]
 
@@ -39,7 +41,7 @@ class ChartState(TypedDict, total=False):
 
 class AgentContextState(TypedDict, total=False):
     user_query: Annotated[str, "Original user query or question"]
-    dataset: Annotated[Dict | str, "Input dataset (as a dictionary or serialized string)"]
+    dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"]
     artifact_dir: Annotated[str, "Directory path for storing generated artifacts (CSV, images, etc.)"]
     work_dir: Annotated[str, "Working directory path for temporary or intermediate files"]
     allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False

@@ -1,4 +1,4 @@
-message:
+messages:
   - role: system
     content: |
       당신은 **Router 에이전트**입니다.  

@@ -1,4 +1,4 @@
-message:
+messages:
   - role: system
     content: |
       <task>
