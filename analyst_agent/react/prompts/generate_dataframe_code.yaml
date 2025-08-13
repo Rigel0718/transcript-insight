@@ -3,33 +3,70 @@ messages:
     content: |
       <task>
       주어진 **JSON 데이터셋(dataset)** 의 키·값 구조를 분석하고,  
-      **사용자 쿼리(user_query)** 를 반영하여 해당 정보를 **pandas.DataFrame** 으로 추출·가공하는 Python 코드를 생성하세요.
+      **사용자 쿼리(user_query)** 를 반영하여 해당 정보를 **pandas.DataFrame** 으로 추출·가공하는 **Python 코드**를 생성하세요.
+      생성 결과는 아래 **출력 스키마(JSON)** 를 준수해야 합니다.
       </task>
 
       <instruction>
-      1. dataset 의 **최상위·중첩 키 구조**를 신중히 파악합니다.  
-      2. user_query 에 명시된 컬럼, 필터, 집계 조건이 있으면 반영합니다.  
-      3. 코드는 **주석·설명 없이** 순수 Python 스크립트로만 작성합니다.  
-      4. 필수 라이브러리는 **pandas**·**json** 만 사용합니다.  
-      5. 입력 JSON 파싱, DataFrame 생성, 컬럼 재명명/정렬 등 필요한 전처리를 수행합니다.  
-      6. 잠재적 예외 상황(키 누락, 타입 불일치, 빈 데이터 등)을 **try-except** 블록으로 안전하게 처리합니다.  
-      7. 최종 결과는 **df** 변수에 담긴 pandas.DataFrame 이어야 합니다.  
+      1) **구조 파악**: dataset의 최상위/중첩 키 구조를 정확히 파악합니다.  
+      2) **요구 반영**: user_query에 명시된 컬럼 선택, 필터링, 정렬, 집계 조건을 충실히 반영합니다.  
+      3) **라이브러리 제한**: **pandas**, **json**만 사용합니다. (그 외 사용 금지)  
+      4) **견고성**: 키 누락, 타입 불일치, 빈 리스트/객체 등 예외 가능성을 고려해 **try-except**로 안전하게 처리합니다.  
+      5) **변수명 고정**: 최종 **pandas.DataFrame** 객체는 반드시 변수명 **`RESULT_DF`** 에 담아야 합니다.   
+      6) **주석/출력 금지**: 코드에는 주석, print, 로깅, 파일 I/O를 포함하지 않습니다.  
+      7) **성능 배려**: 대용량 가능성을 고려해 불필요한 전체 스캔, 중복 변환을 피하고 선택적 파싱을 우선합니다.
+      8) 저장은 반드시 **save_df(df: pd.DataFrame, df_name: str)** 를 호출해 수행합니다. (그 외 출력/저장/프린트 금지) 
       </instruction>
 
+      <df_name_rules>
+      - **df_name**은 **데이터프레임 구조(의미/주요 컬럼/집계 대상)** 와 **user_query의 의도**를 종합해 짓습니다.
+      - 형식: **snake_case**, 영문/숫자/밑줄만 사용, 길이 **최대 50자**.
+      - 중복적 표현은 피하고, 요약적으로 **무엇을, 어떻게** 담았는지 드러냅니다.
+        예) sales_by_region_monthly, student_scores_filtered, call_logs_2024_q2_summary
+      </df_name_rules>
+
+      <output_schema>
+      생성 결과는 반드시 다음 **JSON** 형태여야 합니다.
+      - **df_info**: [df_name, df_desc]  (튜플 의미의 2원 리스트)
+        - **df_name**: 위 규칙을 따르는 데이터프레임 이름
+        - **df_desc**: dataframe의 내용/전처리/필터/집계 요약 설명 (한두 문장)
+      - **df_code**: 실행 가능한 순수 Python 코드 (주석/출력 없음)
+      </output_schema>
+
       <output_format>
-      **Python 코드 외 다른 텍스트는 절대 출력하지 마세요.**  
-      아래 형식을 그대로 따르세요.
-      ```python
-      import json, pandas as pd
-      # ... (주석 금지)
-      ```
+      유일한 출력으로 **아래 JSON만** 반환하세요. (코드펜스, 여분 텍스트 금지)
+      {
+        "df_info": ["<df_name>", "<df_desc>"],
+        "df_code": "<여기에 순수 Python 코드 문자열>"
+      }
       </output_format>
+
+      <code_requirements>
+      - 반드시 아래 시그니처를 가정합니다:
+        {{ "def save_df(df: pd.DataFrame, df_name: str): ..." }}
+      - 코드 내부 요구사항:
+        1. dataset(JSON 문자열)을 파싱하여 적절히 중첩을 풀고 **RESULT_DF** 변수에 DataFrame을 생성
+        2. user_query의 조건(선택, 필터, 정렬, 집계 등) 적용
+        3. 필요 시 컬럼명 리네이밍/정렬
+        4. 마지막 줄에 **save_df(dataframe, df_name)** 호출
+      - 주의: **df_name**은 코드 상단에서 문자열 변수로 설정하고, **df_desc**는 코드가 아니라 JSON의 **df_info**에만 서술합니다.
+      </code_requirements>
+
+      <context>
+      - dataset은 JSON 문자열로 주어집니다.
+      - user_query는 자연어 설명이며, 가능한 범위 내에서 합리적으로 해석합니다.
+      - 다단계 중첩(JSON)일 경우 dict/list 탐색으로 안전하게 접근하세요.
+      </context>
 
   - role: user
     content: |
       <dataset>
       {dataset}
       </dataset>
+
+      <error_log>
+      {error_log} # 비어 있을 수 있음
+      </error_log>
 
       <user_query>
       {user_query}
