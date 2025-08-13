@@ -82,6 +82,7 @@ class ChartState(TypedDict, total=False):
 
     # Results / Artifacts
     image_paths: Annotated[List[str], "List of generated chart image file paths", operator.add]
+    chart_desc: Annotated[str, "Short description or summary of the chart (purpose, main insights, etc.)"]
 
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last chart execution"]
@@ -92,6 +93,8 @@ class ChartState(TypedDict, total=False):
     debug_font: Annotated[Dict, "Debug font information"]
 
 class RouterState(TypedDict, total=False):
+    user_query: Annotated[str, "Original user query or question"]
+    current_chart: Annotated[Dict[str,str], "key: chart_name, value: chart_desc(refer to this chart, router decide to generate chart)"]
+    current_dataframe: Annotated[Dict[str,str], "key: df_name, value: df_desc(refer to this df, router decide to generate df)"]
     prev_node: Annotated[str, "Previous node (e.g., 'df_exec'|'chart_exec'|...)"]
     next_action: Annotated[str, "Routing key (e.g., 'to_df_gen'|'to_chart_gen'|'finish')"]
-    want_chart: Annotated[bool, "Whether a chart is needed (False if only CSV is requested)"]
