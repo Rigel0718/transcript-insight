@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 from .base import BaseNode
-from .state import RouterState
+from .state import AgentContextState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.output_parsers import PydanticOutputParser
@@ -26,7 +26,7 @@ class RouterNode(BaseNode):
         )
         return llm 
     
-    def run(self, state: RouterState) -> RouterState:
+    def run(self, state: AgentContextState) -> AgentContextState:
         prompt = load_prompt_template("prompts/router.yaml")
         chain = prompt | self.llm | PydanticOutputParser(RouteDecision)
         user_query = state['user_query']

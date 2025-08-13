@@ -1,33 +1,6 @@
 from typing import TypedDict, Annotated, List, Dict, Literal, Optional
 import operator
 
-class AgentContextState(TypedDict):
-    # Input / Environment
-    user_query: Annotated[str, "Original request or question from the user"]
-    dataset: Annotated[Dict | str, "Input dataset (as a dictionary or serialized string)"]
-    artifact_dir: Annotated[str, "Directory path for storing generated artifacts (CSV, images, etc.)"]
-    work_dir: Annotated[str, "Working directory path for temporary or intermediate files"]
-    allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"]
-
-    # Progress Tracking
-    phase: Annotated[Literal["planning", "executing", "reporting"], "Current processing phase of the agent"]
-    attempts: Annotated[Dict, "Number of attempts per task type, e.g., {'df': int, 'chart': int}"]
-    
-    generated_codes: Annotated[List[str], "generated Python code that builds DataFrame from dataset", operator.add]
-
-    # DataFrame Information
-    df_handle: Annotated[List[str], "Reference or identifier of the loaded DataFrame", operator.add]
-    df_meta: Annotated[List[Dict], "Metadata about the DataFrame (columns, dtypes, shape, etc.)", operator.add]
-    csv_path: Annotated[List[str], "File paths to generated CSV files", operator.add]
-
-    # Chart Information
-    image_paths: Annotated[List[str], "File paths to generated chart images", operator.add]
-
-    # Execution Logs / Errors
-    last_stdout: Annotated[str, "Captured standard output from the last execution"]
-    last_stderr: Annotated[str, "Captured standard error from the last execution"]
-    last_error: Annotated[str, "Summary or message of the last error encountered"]
-    errors: Annotated[List[str], "List of all error messages encountered during the process"]
 
 class DataFrameState(TypedDict, total=False):
     # Code / Input
@@ -61,8 +34,19 @@ class ChartState(TypedDict, total=False):
     attempts: Annotated[int, "Number of attempts to execute the chart code"]
     debug_font: Annotated[Dict, "Debug font information"]
 
-class RouterState(TypedDict, total=False):
+
+class AgentContextState(TypedDict, total=False):
     user_query: Annotated[str, "Original user query or question"]
+    dataset: Annotated[Dict | str, "Input dataset (as a dictionary or serialized string)"]
+    artifact_dir: Annotated[str, "Directory path for storing generated artifacts (CSV, images, etc.)"]
+    work_dir: Annotated[str, "Working directory path for temporary or intermediate files"]
+    allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False
+
+    # Progress Tracking
+    attempts: Annotated[Dict, "Number of attempts per task type, e.g., {'df': int, 'chart': int}"]
+    generated_codes: Annotated[List[str], "generated Python code that builds DataFrame from dataset", operator.add]
+    errors: Annotated[List[str], "List of all error messages encountered during the process"]
+
     current_chart: Annotated[Dict[str,str], "key: chart_name, value: chart_desc(refer to this chart, router decide to generate chart)"]
     current_dataframe: Annotated[Dict[str,str], "key: df_name, value: df_desc(refer to this df, router decide to generate df)"]
     previous_node: Annotated[str, "Previous node (e.g., 'df_exec'|'chart_exec'|...)"]
