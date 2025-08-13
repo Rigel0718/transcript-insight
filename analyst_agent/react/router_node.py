@@ -4,7 +4,7 @@ from .base import BaseNode
 from .state import AgentContextState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.output_parsers import PydanticOutputParser
+from .utils import load_prompt_template
 
 class RouteDecision(BaseModel):
     action: Literal["to_gen_df", "to_gen_chart", "finish"] = Field(
@@ -28,7 +28,7 @@ class RouterNode(BaseNode):
     
     def run(self, state: AgentContextState) -> AgentContextState:
         prompt = load_prompt_template("prompts/router.yaml")
-        chain = prompt | self.llm | PydanticOutputParser(RouteDecision)
+        chain = prompt | self.llm.with_structured_output(RouteDecision)
         user_query = state['user_query']
         current_dataframe_informs = state['current_dataframe']
         current_chart_informs = state['current_chart']
