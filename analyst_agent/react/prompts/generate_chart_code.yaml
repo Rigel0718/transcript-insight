@@ -56,10 +56,6 @@ messages:
       {question}
       </question>
 
-      <artifact_dir>
-      {artifact_dir}
-      </artifact_dir>
-
       <error_log>
       {error_log}  # 비어 있을 수 있음
       </error_log>
