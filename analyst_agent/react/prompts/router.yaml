@@ -63,7 +63,7 @@ message:
           user_query: "전공/비전공 이수학점 추이를 선그래프로 보고 싶어요"
           current_dataframe_informs: {{}}
           current_chart_informs: {{}}
-          prev_node: null
+          previous_node: _START_
         </input>
         <output>
           {{"action":"to_gen_df","reason":"차트 요청이지만 DF가 없어 먼저 데이터프레임을 생성해야 합니다.","notes":"x=학기, y=전공/비전공 학점 시계열"}}
@@ -75,7 +75,7 @@ message:
           user_query: "전공/비전공 이수학점 추이를 선그래프로 보고 싶어요"
           current_dataframe_informs: {{"credits_df":"이수학점과 학기 정보 포함"}}
           current_chart_informs: {{}}
-          prev_node: "df_exec"
+          previous_node: "df_exec"
         </input>
         <output>
           {{"action":"to_gen_chart","reason":"시각화 의도가 명확하고 DF가 존재하므로 차트 생성으로 진행합니다.","notes":"x=학기, y=전공/비전공 학점 시계열 비교 선그래프"}}
