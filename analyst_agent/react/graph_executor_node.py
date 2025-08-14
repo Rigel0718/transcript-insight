@@ -45,7 +45,6 @@ class DataFrameAgentExecutorNode(BaseNode):
                 'user_query' : state['user_query'], 
                 'current_dataframe_informs': state['current_dataframe_informs'],
                 'current_chart_informs': state['current_chart_informs'],
-                'previous_node': state['previous_node']
             },
             config=config
             )
