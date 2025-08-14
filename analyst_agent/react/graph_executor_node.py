@@ -47,5 +47,12 @@ class DataFrameAgentExecutorNode(BaseNode):
             },
             config=config
             )
+        ''' output format
+        {
+            "df_info": ["<df_name>", "<df_desc>"],
+            "df_code": "<여기에 순수 Python 코드 문자열>"
+        }
+        '''
         state['current_dataframe_informs'] = result['df_info']
+        state['dataframe_code'] = result['df_code']
         return state
