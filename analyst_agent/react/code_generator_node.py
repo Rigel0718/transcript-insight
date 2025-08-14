@@ -28,7 +28,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['user_query']
         self.log(message=input_query)
-        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': ''}
+        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': state['error_logs']}
         result = chain.invoke(input_values)
         state['dataframe_code'] = result['code']
         state['df_info'] = result['df_info']
@@ -57,7 +57,7 @@ class ChartCodeGeneratorNode(BaseNode):
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['user_query']
         input_dataframe = state['dataframe']
-        code_error = state['last_error']
+        code_error = state['error_logs']
         input_values = {'user_query': input_query, 'dataframe': input_dataframe, 'error_log': code_error}
         chart_generation_code = chain.invoke(input_values)
         ''' output foramt (json)
