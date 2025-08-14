@@ -142,7 +142,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                 "csv_path": csv_paths,
                 "stdout": stdout_stream.getvalue(),
                 "stderr": stderr_stream.getvalue().strip(),
-                "last_error": last_err if errors else "",
+                "error_log": last_err if errors else "",
                 "errors": (state.get("errors") or []) + errors,
                 "attempts": attempts,
             }

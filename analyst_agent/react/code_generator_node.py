@@ -28,9 +28,10 @@ class DataFrameCodeGeneratorNode(BaseNode):
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['user_query']
         self.log(message=input_query)
-        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': state['error_logs']}
+        print(state.keys())
+        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': state['error_log']}
         result = chain.invoke(input_values)
-        state['dataframe_code'] = result['code']
+        state['df_code'] = result['df_code']
         state['df_info'] = result['df_info']
         self.log(message=str(result['df_info']))
         return state

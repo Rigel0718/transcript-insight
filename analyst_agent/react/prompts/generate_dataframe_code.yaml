@@ -35,10 +35,10 @@ messages:
 
       <output_format>
       유일한 출력으로 **아래 JSON만** 반환하세요. (코드펜스, 여분 텍스트 금지)
-      {
+      {{
         "df_info": ["<df_name>", "<df_desc>"],
         "df_code": "<여기에 순수 Python 코드 문자열>"
-      }
+      }}
       </output_format>
 
       <code_requirements>

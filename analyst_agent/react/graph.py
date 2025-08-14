@@ -114,7 +114,7 @@ def react_code_agent(verbose: bool = False, track_time: bool = False, queue: Que
 
 def check_code_validity (state: Dict[str, Any]) -> str:
     print("---CODE VALIDITY CHECKER---")
-    code_error = state.get("last_error", "")
+    code_error = state.get("error_log", "")
 
     if code_error == "":
         print ("---CONTINUE---")
