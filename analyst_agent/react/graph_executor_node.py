@@ -21,7 +21,6 @@ class ChartAgentExecutorNode(BaseNode):
                 'user_query' : state['user_query'], 
                 'current_dataframe_informs': state['current_dataframe_informs'],
                 'current_chart_informs': state['current_chart_informs'],
-                'previous_node': state['previous_node']
             },
             config=config
             )
@@ -43,9 +42,10 @@ class DataFrameAgentExecutorNode(BaseNode):
         result : DataFrameState = df_graph.invoke(
             input={
                 'user_query' : state['user_query'], 
-                'current_dataframe_informs': state['current_dataframe_informs'],
-                'current_chart_informs': state['current_chart_informs'],
+                'dataset': state['dataset'],
+                'error_log': state['last_error']
             },
             config=config
             )
-        return {"df_state": result}
+        state['current_dataframe_informs'] = result['df_info']
+        return state
