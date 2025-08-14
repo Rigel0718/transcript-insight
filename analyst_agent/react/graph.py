@@ -1,7 +1,8 @@
-from .code_executor_node import DataFrameCodeExecutorNode, ChartCodeExecutorNode
-from .router_node import RouterNode
-from .code_generator_node import DataFrameCodeGeneratorNode, ChartCodeGeneratorNode
-from .state import AgentContextState, DataFrameState, ChartState
+from analyst_agent.react.code_executor_node import DataFrameCodeExecutorNode, ChartCodeExecutorNode
+from analyst_agent.react.router_node import RouterNode
+from analyst_agent.react.code_generator_node import DataFrameCodeGeneratorNode, ChartCodeGeneratorNode
+from analyst_agent.react.state import AgentContextState, DataFrameState, ChartState
+from analyst_agent.react.graph_executor_node import DataFrameAgentExecutorNode, ChartAgentExecutorNode
 from typing import Dict, Any
 from langgraph.graph import StateGraph, END, START
 from langgraph.graph.state import CompiledStateGraph
@@ -38,8 +39,8 @@ def df_code_react_agent(verbose: bool = False, track_time: bool = False, queue: 
 
 def react_code_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
     router_node = RouterNode(verbose=verbose, track_time=track_time, queue=queue)
-    dataframe_code_agent = df_code_react_agent(verbose=verbose, track_time=track_time, queue=queue)
-    chart_code_agent = chart_code_react_agent(verbose=verbose, track_time=track_time, queue=queue)
+    dataframe_code_agent = DataFrameAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
+    chart_code_agent = ChartAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
     
     react_code_agent_workflow = StateGraph(AgentContextState)
     react_code_agent_workflow.add_node('router', router_node)
