@@ -50,7 +50,7 @@ class DataFrameAgentExecutorNode(BaseNode):
             input={
                 'user_query' : state['user_query'], 
                 'dataset': state['dataset'],
-                'error_log': state['last_error']
+                'error_log': ''
             },
             config=config
             )
