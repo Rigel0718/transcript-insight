@@ -66,11 +66,11 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
 
-    def _create_exec_env_for_df(self, registry, state, debug_on: bool=False):
+    def _create_exec_env_for_df(self, registry, artifact_dir, debug_on: bool=False):
 
         def save_df(df: pd.DataFrame, name: str):
 
-            info = self._write_csv(df, name, state["artifact_dir"])
+            info = self._write_csv(df, name, artifact_dir)
             if debug_on:
                 meta = self._collect_df_meta(df, name, max_cols=30, sample_rows=5)
                 entry = {**info, **meta}
@@ -99,7 +99,8 @@ class DataFrameCodeExecutorNode(BaseNode):
         last_err = ""
 
         try:
-            g_env = self._create_exec_env_for_df(registry, state)  # offer save_df
+            artifact_dir = state.get("artifact_dir", "./artifacts")
+            g_env = self._create_exec_env_for_df(registry, artifact_dir)  # offer save_df
             l_env: Dict[str, Any] = {}
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 try:
@@ -136,7 +137,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                 if info.get("path"): csv_paths.append(info["path"])
 
 
-            attempts = (state['attempts'] or 0) + 1
+            attempts = (state.get("attempts", 0)) + 1
             self.log(message=stdout_stream.getvalue())
             return {
                 "df_handle": df_handles,
@@ -270,7 +271,7 @@ class ChartCodeExecutorNode(BaseNode):
             # korean font
             applied = self._auto_apply_korean_font()
             plt.rcParams["axes.unicode_minus"] = False
-            artifact_dir = state["artifact_dir"]
+            artifact_dir = state.get("artifact_dir", "./artifacts")
             g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
             l_env: Dict[str, Any] = {}
 
@@ -289,7 +290,7 @@ class ChartCodeExecutorNode(BaseNode):
                 errors.append(f"matplotlib_font_issue: warn_hit={warn_hit}, log_hit={bool(log_hit)}")
                 last_err = last_err or "Font warning detected"
 
-            attempts = (state['attempts'] or 0) + 1
+            attempts = (state.get("attempts", 0)) + 1
 
             return {
                 "image_paths": registry["images"],
