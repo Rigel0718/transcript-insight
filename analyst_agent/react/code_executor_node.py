@@ -89,9 +89,9 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
     def run(self, state: DataFrameState) -> DataFrameState:
-        code = state.get("dataframe_code")  # 분리된 슬롯
+        code = state.get("df_code")
         if not code or not code.strip():
-            return {"df_last_error": "No df_code provided"}
+            return {"error_logs": "No df_code provided"}
 
         stdout_stream, stderr_stream = io.StringIO(), io.StringIO()
         registry: Dict[str, Any] = {"dataframes": {}}
@@ -127,8 +127,10 @@ class DataFrameCodeExecutorNode(BaseNode):
             for name, info in registry["dataframes"].items():
                 df_handles.append(name)
                 df_metas.append({
-                    "name": name, "path": info.get("path"),
-                    "rows": info.get("rows"), "schema": info.get("schema"),
+                    "name": name, 
+                    "path": info.get("path"),
+                    "rows": info.get("rows"), 
+                    "schema": info.get("schema"),
                     "format": info.get("format", "csv")
                 })
                 if info.get("path"): csv_paths.append(info["path"])
