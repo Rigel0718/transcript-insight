@@ -57,9 +57,10 @@ class ChartCodeGeneratorNode(BaseNode):
         prompt = load_prompt_template("prompts/generate_chart_code.yaml")
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['user_query']
-        input_dataframe = state['dataframe']
+        df_info = state['df_info']  # (df_name, df_desc)
+        df_meta = state['df_meta']
         code_error = state['error_logs']
-        input_values = {'user_query': input_query, 'dataframe': input_dataframe, 'error_log': code_error}
+        input_values = {'user_query': input_query, 'dataframe_infromation': df_info, 'df_metadata': df_meta, 'error_log': code_error}
         chart_generation_code = chain.invoke(input_values)
         ''' output foramt (json)
         {{

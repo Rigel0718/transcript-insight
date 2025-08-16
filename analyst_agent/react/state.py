@@ -24,6 +24,9 @@ class ChartState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
+    df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
+    csv_path: Annotated[str, "Path to the saved CSV file"] = ''
+    df_meta: Annotated[List[Dict], "Metadata for each DataFrame (schema/shape/columns, etc.)", operator.add] = []
     chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
     chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"] = {}
 
