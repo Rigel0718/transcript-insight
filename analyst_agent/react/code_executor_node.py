@@ -23,6 +23,9 @@ class DataFrameCodeExecutorNode(BaseNode):
         return os.path.abspath(os.path.join(*paths))
 
     def _write_csv(self, df: pd.DataFrame, name: str, artifact_dir: str) -> Dict[str, Any]:
+        '''
+        DataFrame을 CSV 파일로 저장하고, 저장된 파일의 메타데이터를 반환합니다.
+        '''
         ts = int(time.time())
         safe_name = self._safe_name(name)
         os.makedirs(self._abs(artifact_dir), exist_ok=True)
@@ -42,13 +45,29 @@ class DataFrameCodeExecutorNode(BaseNode):
         }
 
     def _collect_df_meta(self, df: pd.DataFrame, name: str, max_cols: int = 30, sample_rows: int = 5) -> dict:
+        '''
+        output format:
+        {
+            "name": name,
+            "rows": rows,
+            "cols": cols,
+            "columns": columns,
+            "schema": schema,
+            "memory": int(df.memory_usage(deep=True).sum()),
+            ----------- optional -----------
+            "nulls": nulls,
+            "sample": sample,
+        }
+        '''
         cols = int(df.shape[1])
         rows = int(len(df))
         schema = [{"name": c, "dtype": str(df[c].dtype)} for c in list(df.columns)[:max_cols]]
+        columns = df.columns.tolist()
         out = {
             "name": name,
             "rows": rows,
             "cols": cols,
+            "columns": columns,
             "schema": schema,
             "memory": int(df.memory_usage(deep=True).sum()),
         }
