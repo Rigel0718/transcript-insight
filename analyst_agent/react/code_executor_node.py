@@ -99,7 +99,7 @@ class DataFrameCodeExecutorNode(BaseNode):
         last_err = ""
 
         try:
-            g_env = self._create_exec_env_for_df(registry, state)  # register_df만 제공
+            g_env = self._create_exec_env_for_df(registry, state)  # offer save_df
             l_env: Dict[str, Any] = {}
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 try:
@@ -108,19 +108,19 @@ class DataFrameCodeExecutorNode(BaseNode):
                     err = traceback.format_exc()
                     errors.append(err); last_err = "DF exec failed"
 
-            # check local_env for RESULT_DF and register it as the primary result DataFrame.
+            # check local_env for RESULT_DF and save it as the primary result DataFrame.
             if "primary_df" not in registry and isinstance(l_env, dict) and "RESULT_DF" in l_env:
                 try:
                     df = l_env["RESULT_DF"]
-                    g_env["register_df"](df, "result")
+                    g_env["save_df"](df, "result")
                 except Exception as e:
-                    errors.append(f"Failed to register RESULT_DF: {e}")
+                    errors.append(f"Failed to save RESULT_DF: {e}")
 
             # scanning is allowed, search l_env for the first pandas DataFrame (optional)
             if state.get("allow_scan_df", True) and not registry["dataframes"]:
                 for k, v in (l_env or {}).items():
                     if isinstance(v, pd.DataFrame):
-                        g_env["register_df"](v, f"auto_{k}"); break
+                        g_env["save_df"](v, f"auto_{k}"); break
 
             # collect metas
             df_handles, df_metas, csv_paths = [], [], []
