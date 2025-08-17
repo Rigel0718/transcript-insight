@@ -9,6 +9,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from queue import Queue
 from langchain_core.runnables import RunnableConfig  
 from analyst_agent.react.base import BaseNode
+from analyst_agent.react.logger import RunLogger
 
 
 #TODO bring csv file path and create methods to read csv file in codeexecutornode.
@@ -16,8 +17,8 @@ class ChartAgentExecutorNode(BaseNode):
     '''
     차트 생성 agent를 실행시키는 node.
     '''
-    def __init__(self, verbose=False, queue: Queue=None, **kwargs):
-        super().__init__(verbose=verbose, queue=queue, **kwargs)
+    def __init__(self, verbose=False, queue: Queue=None, run_logger: RunLogger=None, **kwargs):
+        super().__init__(verbose=verbose, queue=queue, run_logger=run_logger, **kwargs)
 
     
     def run(self, state: AgentContextState):
@@ -38,8 +39,8 @@ class DataFrameAgentExecutorNode(BaseNode):
     '''
     차트 생성 agent를 실행시키는 node.
     '''
-    def __init__(self, verbose=False, queue: Queue=None, **kwargs):
-        super().__init__(verbose=verbose, queue=queue, **kwargs)
+    def __init__(self, verbose=False, queue: Queue=None, run_logger: RunLogger=None, **kwargs):
+        super().__init__(verbose=verbose, queue=queue, run_logger=run_logger, **kwargs)
 
     #TODO bring csv file path and create methods to read csv file in codeexecutornode.
     def run(self, state: AgentContextState):
@@ -64,9 +65,9 @@ class DataFrameAgentExecutorNode(BaseNode):
         state['dataframe_code'] = result['df_code']
         return state
 
-def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    chart_code_generator_node = ChartCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue)
-    chart_code_executor_node = ChartCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
+def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, run_logger: RunLogger=None) -> CompiledStateGraph:
+    chart_code_generator_node = ChartCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
+    chart_code_executor_node = ChartCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
     
     chart_code_agent_workflow = StateGraph(ChartState)
     chart_code_agent_workflow.add_node('chart_code_generator', chart_code_generator_node)
@@ -77,9 +78,9 @@ def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queu
     chart_memory = MemorySaver()
     return chart_code_agent_workflow.compile(checkpointer=chart_memory)
 
-def df_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    dataframe_code_generator_node = DataFrameCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue)
-    dataframe_code_executor_node = DataFrameCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
+def df_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, run_logger: RunLogger=None) -> CompiledStateGraph:
+    dataframe_code_generator_node = DataFrameCodeGeneratorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
+    dataframe_code_executor_node = DataFrameCodeExecutorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
     
     dataframe_code_agent_workflow = StateGraph(DataFrameState)
     dataframe_code_agent_workflow.add_node('dataframe_code_generator', dataframe_code_generator_node)
@@ -91,10 +92,10 @@ def df_code_react_agent(verbose: bool = False, track_time: bool = False, queue: 
     return dataframe_code_agent_workflow.compile(checkpointer=dataframe_memory)
 
 
-def react_code_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None) -> CompiledStateGraph:
-    router_node = RouterNode(verbose=verbose, track_time=track_time, queue=queue)
-    dataframe_code_agent = DataFrameAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
-    chart_code_agent = ChartAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue)
+def react_code_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, run_logger: RunLogger=None) -> CompiledStateGraph:
+    router_node = RouterNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
+    dataframe_code_agent = DataFrameAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
+    chart_code_agent = ChartAgentExecutorNode(verbose=verbose, track_time=track_time, queue=queue, run_logger=run_logger)
     
     react_code_agent_workflow = StateGraph(AgentContextState)
     react_code_agent_workflow.add_node('router', router_node)
