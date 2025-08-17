@@ -118,7 +118,7 @@ class DataFrameCodeExecutorNode(BaseNode):
         last_err = ""
 
         try:
-            artifact_dir = state.get("artifact_dir", "./artifacts")
+            artifact_dir = self.env.artifact_dir
             g_env = self._create_exec_env_for_df(registry, artifact_dir)  # offer save_df
             l_env: Dict[str, Any] = {}
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
@@ -290,7 +290,7 @@ class ChartCodeExecutorNode(BaseNode):
             # korean font
             applied = self._auto_apply_korean_font()
             plt.rcParams["axes.unicode_minus"] = False
-            artifact_dir = state.get("artifact_dir", "./artifacts")
+            artifact_dir = self.env.artifact_dir
             g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
             l_env: Dict[str, Any] = {}
 

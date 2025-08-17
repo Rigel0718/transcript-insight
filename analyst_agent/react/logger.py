@@ -1,6 +1,7 @@
 import logging, os, time
 from logging.handlers import RotatingFileHandler
 from typing import Optional
+from analyst_agent.react.base import Env
 
 class _NodeNameFilter(logging.Filter):
     """%(node_name)s KeyError 방지: 레코드에 node_name 필드 강제 주입"""
@@ -63,12 +64,10 @@ class RunLogger:
 
         self._configured_for = run_id
         
-    def _get_root_logger(self, state: dict) -> logging.Logger:
-        work_dir = state.get("work_dir")
-        run_id = state.get("run_id") or str(int(time.time()))
-        user_id = state.get("user_id")
-        state.setdefault("run_id", run_id)
-        state.setdefault("user_id", user_id)
+    def _get_root_logger(self, env: Env, run_id: str) -> logging.Logger:
+        work_dir = env.workdir
+        run_id = run_id or str(int(time.time()))
+        user_id = env.user_id
 
         run_dir = self._abs(work_dir, "users", user_id, run_id)
         logs_dir = self._abs(run_dir, "logs")
@@ -82,9 +81,9 @@ class RunLogger:
         return root_logger
 
 
-    def get_logger(self, state: dict, node_name: Optional[str] = None) -> logging.LoggerAdapter:
+    def get_logger(self, env: Env, run_id, node_name: Optional[str] = None) -> logging.LoggerAdapter:
         """노드에서 바로 쓰는 메인 API. 항상 LoggerAdapter 반환."""
-        root = self._get_root_logger(state)
+        root = self._get_root_logger(env, run_id)
         name = root.name if node_name is None else f"{root.name}.{node_name}"
         base = logging.getLogger(name)
         return logging.LoggerAdapter(base, {"node_name": node_name or "-"})
