@@ -22,19 +22,16 @@ class BaseNode(ABC, Generic[T]):
     def _ensure_logger(self, state: T):
         if self.logger is not None:
             return
-        if self._run_logger is None:
-            # fallback: 콘솔로만 출력하는 심플 로거
+        if self.run_logger is None:
             base = logging.getLogger(self.name)
             self.logger = logging.LoggerAdapter(base, {"component": self.name})
             return
-        base_logger = self._run_logger.configure_logger(state, component=self.name)
+        base_logger = self.run_logger.configure_logger(state, component=self.name)
         self.logger = logging.LoggerAdapter(base_logger, {"component": self.name})
 
 
     def log(self, message: str, level: int = logging.INFO, **kwargs):
-        # verbose 모드일 때만 print 하던 기존 로직을, 표준 logging으로 대체
         if self.logger is None:
-            # state 이전 단계에서도 호출될 수 있으니 방어
             base = logging.getLogger(self.name)
             self.logger = logging.LoggerAdapter(base, {"component": self.name})
         self.logger.log(level, message, extra={"component": self.name, **kwargs})
