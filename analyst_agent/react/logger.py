@@ -2,7 +2,23 @@ import logging, os, time
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 
+class _NodeNameFilter(logging.Filter):
+    """%(node_name)s KeyError 방지: 레코드에 node_name 필드 강제 주입"""
+    def __init__(self, default_node: str = "-"):
+        super().__init__()
+        self.default_node = default_node
+    def filter(self, record: logging.LogRecord) -> bool:
+        if not hasattr(record, "node_name"):
+            record.node_name = self.default_node
+        return True
+
 class RunLogger:
+
+    _MAX_BYTES = 1_000_000
+    _BACKUP_COUNT = 3
+    _FMT_WITH_NODE_NAME = "%(asctime)s [%(levelname)s] [%(node_name)s] %(name)s: %(message)s"
+    _DATEFMT = None
+
     def __init__(self, base_name: str = "agent", level: int = logging.DEBUG):
         self.base_name = base_name
         self.level = level
@@ -13,32 +29,61 @@ class RunLogger:
     def _abs(*paths: str) -> str:
         return os.path.abspath(os.path.join(*paths))
 
-    def configure_logger(self, state: dict, component: Optional[str] = None) -> logging.Logger:
-        artifact_dir = state.get("artifact_dir", "./artifacts")
-        run_id = state.get("run_id") or str(int(time.time()))
-        state.setdefault("run_id", run_id)
 
-        logs_dir = self._abs(artifact_dir, "logs")
+    def _setup_handlers(self, root_logger: logging.Logger, run_id: str, logs_dir: str):
+        """같은 run_id면 재설정 생략. 다르면 핸들러 교체."""
+        if self._configured_for == run_id and root_logger.handlers:
+            return
+        
+        for h in list(root_logger.handlers):
+            root_logger.removeHandler(h)
+        root_logger.setLevel(self.level)
+        root_logger.propagate = False
+
         os.makedirs(logs_dir, exist_ok=True)
+        self.log_path = self._abs(logs_dir, f"{run_id}.log")
 
-        if self._configured_for != run_id:
-            self.log_path = self._abs(logs_dir, f"{run_id}.log")
-            logger = logging.getLogger(f"{self.base_name}.{run_id}")
-            logger.setLevel(self.level)
-            logger.handlers.clear()
+        formatter = logging.Formatter(self._FMT_WITH_NODE_NAME, datefmt=self._DATEFMT)
+        node_filter = _NodeNameFilter("-")
 
-            formatter = logging.Formatter("%(asctime)s [%(levelname)s] [%(component)s] %(name)s: %(message)s")
-            file_handler = RotatingFileHandler(self.log_path, maxBytes=1_000_000, backupCount=3, encoding="utf-8")
-            file_handler.setFormatter(formatter)
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-            logger.addHandler(console_handler)
-            logger.propagate = False
+        fh = RotatingFileHandler(
+            self.log_path,
+            maxBytes=self._MAX_BYTES,
+            backupCount=self._BACKUP_COUNT,
+            encoding="utf-8",
+        )
+        fh.setFormatter(formatter)
+        fh.addFilter(node_filter)
+        root_logger.addHandler(fh)
 
-            self._configured_for = run_id
-            state.setdefault("log_file", self.log_path)
+        ch = logging.StreamHandler()
+        ch.setFormatter(formatter)
+        ch.addFilter(node_filter)
+        root_logger.addHandler(ch)
 
-        if component:
-            return logging.getLogger(f"{self.base_name}.{run_id}.{component}")
-        return logging.getLogger(f"{self.base_name}.{run_id}")
+        self._configured_for = run_id
+        
+    def _get_root_logger(self, state: dict) -> logging.Logger:
+        run_id = state.get("run_id") or str(int(time.time()))
+        user_id = state.get("user_id")
+        state.setdefault("run_id", run_id)
+        state.setdefault("user_id", user_id)
+
+        run_dir = self._abs(work_dir, "users", user_id, run_id)
+        logs_dir = self._abs(run_dir, "logs")
+
+        os.makedirs(logs_dir, exist_ok=True)
+        root_name = f"{self.base_name}.{user_id}.{run_id}"
+        root_logger = logging.getLogger(root_name)
+        self._ensure_handlers(root_logger, run_id, logs_dir)
+
+        state.setdefault("log_file", self.log_path)
+        return root_logger
+
+
+    def get_logger(self, state: dict, node_name: Optional[str] = None) -> logging.LoggerAdapter:
+        """노드에서 바로 쓰는 메인 API. 항상 LoggerAdapter 반환."""
+        root = self._get_root(state)
+        name = root.name if node_name is None else f"{root.name}.{node_name}"
+        base = logging.getLogger(name)
+        return logging.LoggerAdapter(base, {"node_name": node_name or "-"})
