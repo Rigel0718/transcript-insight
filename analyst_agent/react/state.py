@@ -22,6 +22,7 @@ example
 class DataFrameState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"] = ''
+    run_id: Annotated[str, "Unique run identifier"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
     df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"] = ''
     # Results / Artifacts
@@ -40,6 +41,7 @@ class DataFrameState(TypedDict, total=False):
 class ChartState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"] = ''
+    run_id: Annotated[str, "Unique run identifier"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
     df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
     csv_path: Annotated[str, "Path to the saved CSV file"] = ''
@@ -63,10 +65,7 @@ class ChartState(TypedDict, total=False):
 class AgentContextState(TypedDict, total=False):
     user_query: Annotated[str, "Original user query or question"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
-    work_dir: Annotated[str, "Working directory path for temporary or intermediate files"] = ''
     run_id: Annotated[str, "Unique run identifier"] = ''
-    user_id: Annotated[str, "Unique user identifier"] = ''
-    artifact_dir: Annotated[str, "Directory path for storing generated artifacts (CSV, images, etc.)"] = ''
     allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False
 
     # Progress Tracking

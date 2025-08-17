@@ -7,15 +7,29 @@ import logging
 from typing import Optional
 from analyst_agent.react.logger import RunLogger
 
+
+from pydantic import BaseModel
+
+class Env(BaseModel):
+    user_id: str = "anonymous"
+    workdir: str = "."
+    artifact_dir: str = "./artifacts"
+    run_logger: Optional["RunLogger"] = None
+
+    class Config:
+        frozen = True
+        validate_assignment = False
+
 T = TypeVar("T", bound=dict)
 
 class BaseNode(ABC, Generic[T]):
-    def __init__(self, verbose=False, track_time=False, queue: Queue=None, run_logger: RunLogger=None, **kwargs):
+    def __init__(self, env: Env, verbose=False, track_time=False, queue: Queue=None, **kwargs):
         self.name = self.__class__.__name__
         self.verbose = verbose
         self.track_time = track_time
         self.queue = queue
-        self.run_logger = run_logger
+        self.env = env
+        self.run_logger = env.run_logger
         self.logger: Optional[LoggerAdapter] = None
 
     @abstractmethod
