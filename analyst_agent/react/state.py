@@ -63,9 +63,10 @@ class ChartState(TypedDict, total=False):
 class AgentContextState(TypedDict, total=False):
     user_query: Annotated[str, "Original user query or question"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
+    work_dir: Annotated[str, "Working directory path for temporary or intermediate files"] = ''
     run_id: Annotated[str, "Unique run identifier"] = ''
+    user_id: Annotated[str, "Unique user identifier"] = ''
     artifact_dir: Annotated[str, "Directory path for storing generated artifacts (CSV, images, etc.)"] = ''
-    work_dir: Annotated[str, "Working directory path for temporary or intermediate files (./{run_id})"] = ''
     allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False
 
     # Progress Tracking
