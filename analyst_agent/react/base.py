@@ -19,22 +19,16 @@ class BaseNode(ABC, Generic[T]):
     def run(self, state: T) -> T:
         pass
     
-    def _ensure_logger(self, state: T):
+    def _setup_logger(self, state: T):
         if self.logger is not None:
             return
-        if self.run_logger is None:
-            base = logging.getLogger(self.name)
-            self.logger = logging.LoggerAdapter(base, {"component": self.name})
-            return
-        base_logger = self.run_logger.configure_logger(state, component=self.name)
-        self.logger = logging.LoggerAdapter(base_logger, {"component": self.name})
+        self.logger = self.run_logger.get_logger(state, node_name=self.name)
 
 
     def log(self, message: str, level: int = logging.INFO, **kwargs):
         if self.logger is None:
-            base = logging.getLogger(self.name)
-            self.logger = logging.LoggerAdapter(base, {"component": self.name})
-        self.logger.log(level, message, extra={"component": self.name, **kwargs})
+            self._setup_logger({})
+        self.logger.log(level, message, extra={"node_name": self.name, **kwargs})
 
     def emit_event(self, status: str, **extras):
         if self.queue:
@@ -45,7 +39,7 @@ class BaseNode(ABC, Generic[T]):
             })
 
     def __call__(self, state: T) -> T:
-        self._ensure_logger(state)
+        self._setup_logger(state)
         self.emit_event("start")
         
         if self.track_time:
