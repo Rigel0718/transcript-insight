@@ -23,7 +23,7 @@ class ChartAgentExecutorNode(BaseNode):
     
     def run(self, state: AgentContextState):
         config = RunnableConfig(recursion_limit=5) 
-        chart_graph = chart_code_react_agent(queue=self.queue)
+        chart_graph = chart_code_react_agent(queue=self.queue, run_logger=self.run_logger)
         result : ChartState = chart_graph.invoke(
             input={
                 'user_query' : state['user_query'], 
@@ -46,7 +46,7 @@ class DataFrameAgentExecutorNode(BaseNode):
     def run(self, state: AgentContextState):
         
         config = RunnableConfig(recursion_limit=5) 
-        df_graph = df_code_react_agent(queue=self.queue)
+        df_graph = df_code_react_agent(queue=self.queue, run_logger=self.run_logger)
         result : DataFrameState = df_graph.invoke(
             input={
                 'user_query' : state['user_query'], 
