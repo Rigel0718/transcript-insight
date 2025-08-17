@@ -27,19 +27,43 @@ class RouterNode(BaseNode):
         return llm 
     
     def run(self, state: AgentContextState) -> AgentContextState:
-        prompt = load_prompt_template("prompts/router.yaml")
-        chain = prompt | self.llm.with_structured_output(RouteDecision)
+        try:
+            prompt = load_prompt_template("prompts/router.yaml")
+            chain = prompt | self.llm.with_structured_output(RouteDecision)
+            self.logger.info(f"[{self.name}] LLM chain constructed (prompt → llm → structured output)")
+        except Exception as e:
+            self.logger.exception(f"[{self.name}] Failed to construct Router chain")
+            state.setdefault("errors", []).append(f"[{self.name}] chain init error: {e}")
+            return state
+        
         user_query = state['user_query']
-        current_dataframe_informs = state['current_dataframe']
-        current_chart_informs = state['current_chart']
+        df_info = state.get('df_info', {})
+        chart_info = state.get('chart_info', {})
+        previous_node = state.get('previous_node', '_START_')
         input_values = {
             'user_query': user_query, 
-            'current_dataframe_informs': current_dataframe_informs, 
-            'current_chart_informs': current_chart_informs,
-            'previous_node': state['previous_node']
+            'df_info': df_info, 
+            'chart_info': chart_info,
+            'previous_node': previous_node
             }
+
+        self.logger.debug(f"[{self.name}] Input preview: {input_values}")
+
+
+        try:
+            self.logger.info(f"[{self.name}] Invoking LLM for route decision …")
+            result: RouteDecision = chain.invoke(input_values)
+            self.logger.info(f"[{self.name}] LLM invocation completed")
+        except Exception as e:
+            self.logger.exception(f"[{self.name}] LLM invocation failed")
+            state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
+            return state
         
-        result: RouteDecision = chain.invoke(input_values)
+        self.logger.info(f"[{self.name}] Decision → action={result.action}")
+        self.logger.debug(f"[{self.name}] Reason: {result.reason}")
+        if result.notes:
+            self.logger.debug(f"[{self.name}] Notes: {result.notes}")
+
         self.log(message=result.action)
         return {'next_action': result.action, 'previous_node': 'router'}
 
