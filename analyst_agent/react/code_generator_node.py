@@ -39,13 +39,13 @@ class DataFrameCodeGeneratorNode(BaseNode):
         error_log = state.get("error_log", "")
         input_values = {'user_query': input_query, 'dataset': dataset, 'error_log': error_log}
 
-        self.logger.debug(f"chain input preview: {self._preview(input_values)}")
+        self.logger.debug(f"chain input preview: {input_values}")
         
         try:
             self.logger.info("Invoking LLM for df_code/df_info …")
             result = chain.invoke(input_values)
             self.logger.info("LLM invocation done")
-            self.logger.debug(f"raw LLM result: {self._preview(result)}")
+            self.logger.debug(f"raw LLM result: {result}")
         except Exception as e:
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.__class__.__name__}] llm invoke error: {e}")
@@ -63,8 +63,8 @@ class DataFrameCodeGeneratorNode(BaseNode):
         state['df_code'] = df_code
         state['df_info'] = df_info
 
-        self.logger.info(f"df_code: {self._preview(df_code)}")
-        self.logger.info(f"df_info: {self._preview(df_info)}")
+        self.logger.info(f"df_code: {df_code}")
+        self.logger.info(f"df_info: {df_info}")
         self.logger.debug("DF CodeGen end")
         return state
 
@@ -103,19 +103,19 @@ class ChartCodeGeneratorNode(BaseNode):
         code_error = state.get("error_logs", "")
 
         self.logger.info("user_query received")
-        self.logger.debug(f"user_query: {self._preview(input_query)}")
+        self.logger.debug(f"user_query: {input_query}")
         if df_info is None:
             self.logger.warning("df_info is missing (expected (df_name, df_desc))")
         else:
-            self.logger.debug(f"df_info: {self._preview(df_info)}")
+            self.logger.debug(f"df_info: {df_info}")
 
         if df_meta is None:
             self.logger.warning("df_meta is missing (columns/dtypes metadata expected)")
         else:
-            self.logger.debug(f"df_meta preview: {self._preview(df_meta)}")
+            self.logger.debug(f"df_meta preview: {df_meta}")
 
         if code_error:
-            self.logger.debug(f"previous error_logs: {self._preview(code_error)}")
+            self.logger.debug(f"previous error_logs: {code_error}")
 
 
         input_values = {'user_query': input_query, 'dataframe_infromation': df_info, 'df_metadata': df_meta, 'error_log': code_error}
@@ -167,7 +167,7 @@ class ChartCodeGeneratorNode(BaseNode):
         state['img_path'] = img_path
         state['chart_info'] = chart_info
 
-        self.logger.info(f"chart_code: {self._preview(code)}")
+        self.logger.info(f"chart_code: {code}")
         self.logger.info(f"chart_name='{chart_name}', img_path='{img_path}'")
         self.logger.debug("Chart CodeGen end")
         return state

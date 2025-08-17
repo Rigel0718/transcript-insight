@@ -29,6 +29,7 @@ class ChartAgentExecutorNode(BaseNode):
                 'user_query' : state['user_query'], 
                 'current_dataframe_informs': state['current_dataframe_informs'],
                 'current_chart_informs': state['current_chart_informs'],
+                'run_id': state['run_id']
             },
             config=config
             )
@@ -51,7 +52,8 @@ class DataFrameAgentExecutorNode(BaseNode):
             input={
                 'user_query' : state['user_query'], 
                 'dataset': state['dataset'],
-                'error_log': ''
+                'error_log': '',
+                'run_id': state['run_id']
             },
             config=config
             )
