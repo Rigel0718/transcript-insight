@@ -11,7 +11,6 @@ class Env(BaseModel):
         frozen=True,                  
         populate_by_name=True          
     )
-    user_id: str = "anonymous"
-    work_dir: str = Field(".", alias="workdir")
-    artifact_dir: str = Field("./artifacts", alias="artifact_dir")
+    user_id: str = Field(default="anonymous")
+    work_dir: str = Field(default=".")
     run_logger: Optional["RunLogger"] = None

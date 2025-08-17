@@ -118,7 +118,10 @@ class DataFrameCodeExecutorNode(BaseNode):
         last_err = ""
 
         try:
-            artifact_dir = self.env.artifact_dir
+            work_dir = self.env.work_dir
+            user_id = self.env.user_id
+            run_id = state.get("run_id")
+            artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
             g_env = self._create_exec_env_for_df(registry, artifact_dir)  # offer save_df
             l_env: Dict[str, Any] = {}
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
