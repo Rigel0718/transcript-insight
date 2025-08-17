@@ -5,20 +5,10 @@ from queue import Queue
 from logging import LoggerAdapter
 import logging
 from typing import Optional
-from analyst_agent.react.logger import RunLogger
+from analyst_agent.react.env_model import Env
 
 
-from pydantic import BaseModel
 
-class Env(BaseModel):
-    user_id: str = "anonymous"
-    workdir: str = "."
-    artifact_dir: str = "./artifacts"
-    run_logger: Optional["RunLogger"] = None
-
-    class Config:
-        frozen = True
-        validate_assignment = False
 
 T = TypeVar("T", bound=dict)
 
