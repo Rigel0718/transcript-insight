@@ -1,7 +1,24 @@
 from typing import TypedDict, Annotated, List, Dict, Tuple
 import operator
 
+'''
+workdir structure: 
+/root/
+└── users/
+    └── {user_id}/
+        └── {run_id}/
+            ├── artifacts/      # 실행 결과물 (CSV, 이미지, 리포트 등)
+            └── logs/
 
+
+example
+/root/users/{user_id}/2025-08-03_160530/
+  ├─ artifacts/
+  │   ├─ 1723871120_df.csv
+  │   └─ 1723871121_chart.png
+  └─ logs/
+      └─ 2025-08-03_160530.log
+'''
 class DataFrameState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"] = ''
