@@ -5,11 +5,12 @@ from queue import Queue
 from logging import LoggerAdapter
 import logging
 from typing import Optional
+from analyst_agent.react.logger import RunLogger
 
 T = TypeVar("T", bound=dict)
 
 class BaseNode(ABC, Generic[T]):
-    def __init__(self, verbose=False, track_time=False, queue: Queue=None, run_logger=None, **kwargs):
+    def __init__(self, verbose=False, track_time=False, queue: Queue=None, run_logger: RunLogger=None, **kwargs):
         self.name = self.__class__.__name__
         self.verbose = verbose
         self.track_time = track_time

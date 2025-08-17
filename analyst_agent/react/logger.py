@@ -64,6 +64,7 @@ class RunLogger:
         self._configured_for = run_id
         
     def _get_root_logger(self, state: dict) -> logging.Logger:
+        work_dir = state.get("work_dir")
         run_id = state.get("run_id") or str(int(time.time()))
         user_id = state.get("user_id")
         state.setdefault("run_id", run_id)
@@ -75,7 +76,7 @@ class RunLogger:
         os.makedirs(logs_dir, exist_ok=True)
         root_name = f"{self.base_name}.{user_id}.{run_id}"
         root_logger = logging.getLogger(root_name)
-        self._ensure_handlers(root_logger, run_id, logs_dir)
+        self._setup_handlers(root_logger, run_id, logs_dir)
 
         state.setdefault("log_file", self.log_path)
         return root_logger
