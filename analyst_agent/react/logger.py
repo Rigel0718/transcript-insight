@@ -83,7 +83,7 @@ class RunLogger:
 
     def get_logger(self, state: dict, node_name: Optional[str] = None) -> logging.LoggerAdapter:
         """노드에서 바로 쓰는 메인 API. 항상 LoggerAdapter 반환."""
-        root = self._get_root(state)
+        root = self._get_root_logger(state)
         name = root.name if node_name is None else f"{root.name}.{node_name}"
         base = logging.getLogger(name)
         return logging.LoggerAdapter(base, {"node_name": node_name or "-"})

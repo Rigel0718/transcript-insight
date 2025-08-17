@@ -3,6 +3,8 @@ from typing import Generic, TypeVar
 import time
 from queue import Queue
 from logging import LoggerAdapter
+import logging
+from typing import Optional
 
 T = TypeVar("T", bound=dict)
 
