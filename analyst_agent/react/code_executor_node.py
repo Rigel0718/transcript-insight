@@ -110,6 +110,7 @@ class DataFrameCodeExecutorNode(BaseNode):
     def run(self, state: DataFrameState) -> DataFrameState:
         code = state.get("df_code")
         if not code or not code.strip():
+            self.logger.warning("No df_code provided")
             return {"error_logs": "No df_code provided"}
 
         stdout_stream, stderr_stream = io.StringIO(), io.StringIO()
@@ -124,26 +125,34 @@ class DataFrameCodeExecutorNode(BaseNode):
             artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
             g_env = self._create_exec_env_for_df(registry, artifact_dir)  # offer save_df
             l_env: Dict[str, Any] = {}
+
+            self.logger.info("Executing df_code …")
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 try:
                     exec(code, g_env, l_env)
                 except Exception:
                     err = traceback.format_exc()
-                    errors.append(err); last_err = "DF exec failed"
+                    errors.append(err)
+                    last_err = "DF exec failed"
+                    self.logger.exception("DataFrame execution failed")
 
             # check local_env for RESULT_DF and save it as the primary result DataFrame.
             if "primary_df" not in registry and isinstance(l_env, dict) and "RESULT_DF" in l_env:
                 try:
                     df = l_env["RESULT_DF"]
                     g_env["save_df"](df, "result")
+                    self.logger.info("RESULT_DF saved as primary result")
                 except Exception as e:
                     errors.append(f"Failed to save RESULT_DF: {e}")
+                    self.logger.exception("Failed to save RESULT_DF")
 
             # scanning is allowed, search l_env for the first pandas DataFrame (optional)
             if state.get("allow_scan_df", True) and not registry["dataframes"]:
                 for k, v in (l_env or {}).items():
                     if isinstance(v, pd.DataFrame):
-                        g_env["save_df"](v, f"auto_{k}"); break
+                        g_env["save_df"](v, f"auto_{k}")
+                        self.logger.info(f"Auto-detected DataFrame saved as auto_{k}")
+                        break
 
             # collect metas
             df_handles, df_metas, csv_paths = [], [], []
@@ -156,11 +165,17 @@ class DataFrameCodeExecutorNode(BaseNode):
                     "schema": info.get("schema"),
                     "format": info.get("format", "csv")
                 })
-                if info.get("path"): csv_paths.append(info["path"])
+                if info.get("path"): 
+                    csv_paths.append(info["path"])
+            self.logger.debug(f"Collected DF metas: {df_metas}")
 
 
             attempts = (state.get("attempts", 0)) + 1
             self.log(message=stdout_stream.getvalue())
+            self.logger.info("DataFrame execution node completed")
+            self.logger.debug(f"DF handles: {df_handles}")
+            self.logger.debug(f"DF metas: {df_metas}")
+            
             return {
                 "df_handle": df_handles,
                 "df_meta": df_metas,
