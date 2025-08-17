@@ -24,16 +24,48 @@ class DataFrameCodeGeneratorNode(BaseNode):
         return llm 
 
     def run(self, state: DataFrameState) -> DataFrameState:
-        prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
-        chain = prompt | self.llm | JsonOutputParser()
-        input_query = state['user_query']
-        self.log(message=input_query)
-        print(state.keys())
-        input_values = {'user_query': input_query, 'dataset': state['dataset'], 'error_log': state['error_log']}
-        result = chain.invoke(input_values)
-        state['df_code'] = result['df_code']
-        state['df_info'] = result['df_info']
-        self.log(message=str(result['df_info']))
+        try:
+            prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
+            chain = prompt | self.llm | JsonOutputParser()
+            self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
+        except Exception as e:
+            self.logger.exception("Failed to construct LLM chain")
+            state.setdefault("errors", []).append(f"[DataFrameCodeGeneratorNode] chain init error: {e}")
+            state["last_error"] = str(e)
+            return state
+
+        input_query = state.get("user_query", "")
+        dataset = state.get("dataset", {})
+        error_log = state.get("error_log", "")
+        input_values = {'user_query': input_query, 'dataset': dataset, 'error_log': error_log}
+
+        self.logger.debug(f"chain input preview: {self._preview(input_values)}")
+        
+        try:
+            self.logger.info("Invoking LLM for df_code/df_info …")
+            result = chain.invoke(input_values)
+            self.logger.info("LLM invocation done")
+            self.logger.debug(f"raw LLM result: {self._preview(result)}")
+        except Exception as e:
+            self.logger.exception("LLM invocation failed")
+            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] llm invoke error: {e}")
+            state["last_error"] = str(e)
+            return state
+
+        df_code = result.get("df_code")
+        df_info = result.get("df_info")
+
+        if not df_code:
+            self.logger.warning("LLM returned empty df_code")
+        if not df_info:
+            self.logger.warning("LLM returned empty df_info")
+
+        state['df_code'] = df_code
+        state['df_info'] = df_info
+
+        self.logger.info(f"df_code: {self._preview(df_code)}")
+        self.logger.info(f"df_info: {self._preview(df_info)}")
+        self.logger.debug("DF CodeGen end")
         return state
 
 
@@ -54,14 +86,51 @@ class ChartCodeGeneratorNode(BaseNode):
         return llm 
 
     def run(self, state: ChartState) -> ChartState:
-        prompt = load_prompt_template("prompts/generate_chart_code.yaml")
-        chain = prompt | self.llm | JsonOutputParser()
-        input_query = state['user_query']
-        df_info = state['df_info']  # (df_name, df_desc)
-        df_meta = state['df_meta']
-        code_error = state['error_logs']
+
+        try:
+            prompt = load_prompt_template("prompts/generate_chart_code.yaml")
+            chain = prompt | self.llm | JsonOutputParser()
+            self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
+        except Exception as e:
+            self.logger.exception("Failed to construct LLM chain")
+            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] chain init error: {e}")
+            state["last_error"] = str(e)
+            return state
+        
+        input_query = state.get("user_query", "")
+        df_info = state.get("df_info")            
+        df_meta = state.get("df_meta")           
+        code_error = state.get("error_logs", "")
+
+        self.logger.info("user_query received")
+        self.logger.debug(f"user_query: {self._preview(input_query)}")
+        if df_info is None:
+            self.logger.warning("df_info is missing (expected (df_name, df_desc))")
+        else:
+            self.logger.debug(f"df_info: {self._preview(df_info)}")
+
+        if df_meta is None:
+            self.logger.warning("df_meta is missing (columns/dtypes metadata expected)")
+        else:
+            self.logger.debug(f"df_meta preview: {self._preview(df_meta)}")
+
+        if code_error:
+            self.logger.debug(f"previous error_logs: {self._preview(code_error)}")
+
+
         input_values = {'user_query': input_query, 'dataframe_infromation': df_info, 'df_metadata': df_meta, 'error_log': code_error}
-        chart_generation_code = chain.invoke(input_values)
+        
+        try:
+            self.logger.info("Invoking LLM for chart code/info …")
+            chart_generation_code = chain.invoke(input_values)
+            self.logger.info("LLM invocation done")
+            self.logger.debug(f"raw LLM result: {self._preview(chart_generation_code)}")
+        except Exception as e:
+            self.logger.exception("LLM invocation failed")
+            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] llm invoke error: {e}")
+            state["last_error"] = str(e)
+            return state
+        
         ''' output foramt (json)
         {{
           "code": """차트 생성 Python 코드""",
@@ -70,12 +139,35 @@ class ChartCodeGeneratorNode(BaseNode):
           "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
         }}
         '''
-        chart_info = (chart_generation_code['chart_name'], chart_generation_code['chart_desc'])
-        if chart_generation_code['code'] == "None":
-            state['previous_node'] = 'text2chart'
-        else :
-            state['previous_node'] = 'code_executor'
-        state['chart_code'] = chart_generation_code['code']
-        state['img_path'] = chart_generation_code['img_path']
+        code = chart_generation_code.get("code")
+        chart_name = chart_generation_code.get("chart_name")
+        img_path = chart_generation_code.get("img_path")
+        chart_desc = chart_generation_code.get("chart_desc")
+
+        if not code:
+            self.logger.warning("LLM returned empty chart code")
+        if not chart_name:
+            self.logger.warning("LLM returned empty chart_name")
+        if not img_path:
+            self.logger.warning("LLM returned empty img_path (template expects '{{artifact_dir}}/{{chart_name}}.png')")
+        if not chart_desc:
+            self.logger.warning("LLM returned empty chart_desc")
+    
+        
+        chart_info = (chart_name, chart_desc)
+
+        if not code or str(code).strip().lower() == "none":
+            state["previous_node"] = "chart_code_generator"
+            self.logger.info("No chart code returned → route to 'chart_code_generator'")
+        else:
+            state["previous_node"] = "code_executor"
+            self.logger.info("Chart code returned → route to 'code_executor'")
+
+        state['chart_code'] = code
+        state['img_path'] = img_path
         state['chart_info'] = chart_info
+
+        self.logger.info(f"chart_code: {self._preview(code)}")
+        self.logger.info(f"chart_name='{chart_name}', img_path='{img_path}'")
+        self.logger.debug("Chart CodeGen end")
         return state
