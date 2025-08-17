@@ -2,26 +2,42 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 import time
 from queue import Queue
+from logging import LoggerAdapter
 
 T = TypeVar("T", bound=dict)
 
 class BaseNode(ABC, Generic[T]):
-    def __init__(self, verbose=False, track_time=False, queue: Queue=None, **kwargs):
+    def __init__(self, verbose=False, track_time=False, queue: Queue=None, run_logger=None, **kwargs):
         self.name = self.__class__.__name__
         self.verbose = verbose
         self.track_time = track_time
         self.queue = queue
+        self.run_logger = run_logger
+        self.logger: Optional[LoggerAdapter] = None
 
     @abstractmethod
     def run(self, state: T) -> T:
         pass
-
-    def log(self, message: str, **kwargs):
-        if not self.verbose:
+    
+    def _ensure_logger(self, state: T):
+        if self.logger is not None:
             return
-        print(f"[{self.name}] {message}")
-        for key, value in kwargs.items():
-            print(f"  {key}: {value}")
+        if self._run_logger is None:
+            # fallback: 콘솔로만 출력하는 심플 로거
+            base = logging.getLogger(self.name)
+            self.logger = logging.LoggerAdapter(base, {"component": self.name})
+            return
+        base_logger = self._run_logger.configure_logger(state, component=self.name)
+        self.logger = logging.LoggerAdapter(base_logger, {"component": self.name})
+
+
+    def log(self, message: str, level: int = logging.INFO, **kwargs):
+        # verbose 모드일 때만 print 하던 기존 로직을, 표준 logging으로 대체
+        if self.logger is None:
+            # state 이전 단계에서도 호출될 수 있으니 방어
+            base = logging.getLogger(self.name)
+            self.logger = logging.LoggerAdapter(base, {"component": self.name})
+        self.logger.log(level, message, extra={"component": self.name, **kwargs})
 
     def emit_event(self, status: str, **extras):
         if self.queue:
@@ -32,6 +48,7 @@ class BaseNode(ABC, Generic[T]):
             })
 
     def __call__(self, state: T) -> T:
+        self._ensure_logger(state)
         self.emit_event("start")
         
         if self.track_time:
