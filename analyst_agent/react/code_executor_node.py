@@ -117,7 +117,7 @@ class DataFrameCodeExecutorNode(BaseNode):
         stdout_stream, stderr_stream = io.StringIO(), io.StringIO()
         registry: Dict[str, Any] = {"dataframes": {}}
         errors: list[str] = []
-        last_err = ""
+        error_log = ""
 
         try:
             work_dir = self.env.work_dir
@@ -135,7 +135,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                 except Exception:
                     err = traceback.format_exc()
                     errors.append(err)
-                    last_err = "DF exec failed"
+                    error_log = "DF exec failed"
                     self.logger.exception("DataFrame execution failed")
 
             # check local_env for RESULT_DF and save it as the primary result DataFrame.
@@ -178,16 +178,16 @@ class DataFrameCodeExecutorNode(BaseNode):
             self.logger.debug(f"DF handles: {df_handles}")
             self.logger.debug(f"DF metas: {df_metas}")
 
-            return {
-                "df_handle": df_handles,
-                "df_meta": df_metas,
-                "csv_path": csv_paths,
-                "stdout": stdout_stream.getvalue(),
-                "stderr": stderr_stream.getvalue().strip(),
-                "error_log": last_err if errors else "",
-                "errors": (state.get("errors") or []) + errors,
-                "attempts": attempts,
-            }
+            state['df_handle'] = df_handles
+            state['df_meta'] = df_metas
+            state['csv_path'] = csv_paths
+            state['stdout'] = stdout_stream.getvalue()
+            state['stderr'] = stderr_stream.getvalue().strip()
+            state['error_log'] = error_log if errors else ""
+            state['errors'] = (state.get("errors") or []) + errors
+            state['attempts'] = attempts
+
+            return state
         finally:
             try:
                 plt.close("all")
@@ -297,14 +297,14 @@ class ChartCodeExecutorNode(BaseNode):
     def run(self, state: ChartState) -> ChartState:
         code = state["chart_code"]
         if not code or not code.strip():
-            return {"last_error": "No chart_code provided"}
+            return {"error_log": "No chart_code provided"}
 
         stdout_stream, stderr_stream, log_stream = io.StringIO(), io.StringIO(), io.StringIO()
         logger = logging.getLogger("matplotlib.font_manager")
         handler = logging.StreamHandler(log_stream); logger.addHandler(handler)
 
         registry: Dict[str, Any] = {"images": []}
-        errors: list[str] = []; last_err = ""
+        errors: list[str] = []; error_log = ""
 
         try:
             plt.clf()
@@ -325,26 +325,27 @@ class ChartCodeExecutorNode(BaseNode):
                     try:
                         exec(code, g_env, l_env)
                     except Exception:
-                        errors.append(traceback.format_exc()); last_err = "Chart exec failed"
+                        errors.append(traceback.format_exc()); error_log = "Chart exec failed"
 
             # Font warnings are considered errors (retry routing)
             warn_hit = any(self.FONT_WARN_PATTERN.search(str(w.message)) for w in warning_list)
             log_hit = self.FONT_WARN_PATTERN.search(log_stream.getvalue())
             if warn_hit or log_hit:
                 errors.append(f"matplotlib_font_issue: warn_hit={warn_hit}, log_hit={bool(log_hit)}")
-                last_err = last_err or "Font warning detected"
+                error_log = error_log or "Font warning detected"
 
             attempts = (state.get("attempts", 0)) + 1
+            
+            state['img_path'] = registry["images"]
+            state['stdout'] = stdout_stream.getvalue()
+            state['stderr'] = "\n".join(s for s in [stderr_stream.getvalue(), log_stream.getvalue()] if s).strip()
+            state['error_log'] = error_log if errors else ""
+            state['errors'] = (state.get("errors") or []) + errors
+            state['attempts'] = attempts
+            state['debug_font'] = applied
 
-            return {
-                "img_path": registry["images"],
-                "stdout": stdout_stream.getvalue(),
-                "stderr": "\n".join(s for s in [stderr_stream.getvalue(), log_stream.getvalue()] if s).strip(),
-                "last_error": last_err if errors else "",
-                "errors": (state.get("errors") or []) + errors,
-                "attempts": attempts,
-                "debug_font": applied,
-            }
+            return state
+
         finally:
             logger.removeHandler(handler)
             try: plt.close("all")
