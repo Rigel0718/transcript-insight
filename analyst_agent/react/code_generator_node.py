@@ -31,7 +31,6 @@ class DataFrameCodeGeneratorNode(BaseNode):
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
             state.setdefault("errors", []).append(f"[DataFrameCodeGeneratorNode] chain init error: {e}")
-            state["last_error"] = str(e)
             return state
 
         input_query = state.get("user_query", "")
@@ -48,8 +47,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
             self.logger.debug(f"raw LLM result: {result}")
         except Exception as e:
             self.logger.exception("LLM invocation failed")
-            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] llm invoke error: {e}")
-            state["last_error"] = str(e)
+            state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             return state
 
         df_code = result.get("df_code")
@@ -93,13 +91,12 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
-            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] chain init error: {e}")
-            state["last_error"] = str(e)
+            state.setdefault("errors", []).append(f"[{self.name}] chain init error: {e}")
             return state
         
         input_query = state.get("user_query", "")
         df_info = state.get("df_info")            
-        df_meta = state.get("df_meta")           
+        df_code = state.get("df_code")           
         code_error = state.get("error_logs", "")
 
         self.logger.info("user_query received")
@@ -109,26 +106,25 @@ class ChartCodeGeneratorNode(BaseNode):
         else:
             self.logger.debug(f"df_info: {df_info}")
 
-        if df_meta is None:
-            self.logger.warning("df_meta is missing (columns/dtypes metadata expected)")
+        if df_code is None:
+            self.logger.warning("df_code is missing (columns/dtypes metadata expected)")
         else:
-            self.logger.debug(f"df_meta preview: {df_meta}")
+            self.logger.debug(f"df_code preview: {df_code}")
 
         if code_error:
             self.logger.debug(f"previous error_logs: {code_error}")
 
 
-        input_values = {'user_query': input_query, 'dataframe_infromation': df_info, 'df_metadata': df_meta, 'error_log': code_error}
+        input_values = {'user_query': input_query, 'df_info': df_info, 'df_code': df_code, 'error_log': code_error}
         
         try:
             self.logger.info("Invoking LLM for chart code/info …")
             chart_generation_code = chain.invoke(input_values)
             self.logger.info("LLM invocation done")
-            self.logger.debug(f"raw LLM result: {self._preview(chart_generation_code)}")
+            self.logger.debug(f"raw LLM result: {chart_generation_code}")
         except Exception as e:
             self.logger.exception("LLM invocation failed")
-            state.setdefault("errors", []).append(f"[{self.__class__.__name__}] llm invoke error: {e}")
-            state["last_error"] = str(e)
+            state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             return state
         
         ''' output foramt (json)

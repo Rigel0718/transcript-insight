@@ -175,7 +175,7 @@ class DataFrameCodeExecutorNode(BaseNode):
             self.logger.info("DataFrame execution node completed")
             self.logger.debug(f"DF handles: {df_handles}")
             self.logger.debug(f"DF metas: {df_metas}")
-            
+
             return {
                 "df_handle": df_handles,
                 "df_meta": df_metas,
@@ -330,7 +330,7 @@ class ChartCodeExecutorNode(BaseNode):
             attempts = (state.get("attempts", 0)) + 1
 
             return {
-                "image_paths": registry["images"],
+                "img_path": registry["images"],
                 "stdout": stdout_stream.getvalue(),
                 "stderr": "\n".join(s for s in [stderr_stream.getvalue(), log_stream.getvalue()] if s).strip(),
                 "last_error": last_err if errors else "",
