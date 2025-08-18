@@ -48,21 +48,17 @@ messages:
 
   - role: user
     content: |
-      <dataframe>
-      {dataframe}
-      </dataframe>
-
-      <df_metadata>
-      {df_metadata}
-      </df_metadata>
+      <df_code>
+      {df_code}
+      </df_code>
 
       <df_information>
-      {df_information}
+      {df_info}
       </df_information>
 
-      <question>
-      {question}
-      </question>
+      <user_query>
+      {user_query}
+      </user_query>
 
       <error_log>
       {error_log}  # 비어 있을 수 있음
