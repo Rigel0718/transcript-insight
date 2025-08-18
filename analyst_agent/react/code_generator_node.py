@@ -2,9 +2,21 @@ from analyst_agent.react.base import BaseNode
 from analyst_agent.react.state import ChartState, DataFrameState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
+from typing import Optional, Tuple
 from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from pydantic import BaseModel
+
+
+class DataFrameSpec(BaseModel):
+    df_code: str = Field(..., description="Python code to generate the DataFrame")
+    df_info: Tuple[str, str] = Field(..., description="DataFrame metadata, [df_name, df_desc]")
+
+
+class ChartSpec(BaseModel):
+    chart_code: str = Field(..., description="Python code to generate the chart")
+    chart_name: str = Field(..., description="Chart title")
+    chart_desc: str = Field(..., description="Chart purpose/description in Korean")
 
 class DataFrameCodeGeneratorNode(BaseNode):
     '''
@@ -26,7 +38,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
     def run(self, state: DataFrameState) -> DataFrameState:
         try:
             prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
-            chain = prompt | self.llm | JsonOutputParser()
+            chain = prompt | self.llm.with_structured_output(DataFrameSpec)
             self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
@@ -67,6 +79,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
         return state
 
 
+ 
 class ChartCodeGeneratorNode(BaseNode):
     '''
     재정의된 유저의 쿼리와 추출된 DataFrame으로 시각화 해주는 python code생성
@@ -87,7 +100,7 @@ class ChartCodeGeneratorNode(BaseNode):
 
         try:
             prompt = load_prompt_template("prompts/generate_chart_code.yaml")
-            chain = prompt | self.llm | JsonOutputParser()
+            chain = prompt | self.llm.with_structured_output(ChartSpec)
             self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
@@ -127,43 +140,36 @@ class ChartCodeGeneratorNode(BaseNode):
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             return state
         
-        ''' output foramt (json)
-        {{
-          "code": """차트 생성 Python 코드""",
+        ''' output foramt (pydantic model: ChartSpec)
+          "chart_code": """차트 생성 Python 코드""",
           "chart_name": "차트 제목 (영어)",
-          "img_path": "{{artifact_dir}}/{{chart_name}}"  # 예: ./artifacts/sales_by_month.png
           "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
-        }}
         '''
-        code = chart_generation_code.get("code")
+        chart_code = chart_generation_code.get("chart_code")
         chart_name = chart_generation_code.get("chart_name")
-        img_path = chart_generation_code.get("img_path")
         chart_desc = chart_generation_code.get("chart_desc")
 
         if not code:
             self.logger.warning("LLM returned empty chart code")
         if not chart_name:
             self.logger.warning("LLM returned empty chart_name")
-        if not img_path:
-            self.logger.warning("LLM returned empty img_path (template expects '{{artifact_dir}}/{{chart_name}}.png')")
         if not chart_desc:
             self.logger.warning("LLM returned empty chart_desc")
     
         
         chart_info = (chart_name, chart_desc)
 
-        if not code or str(code).strip().lower() == "none":
+        if not chart_code or str(chart_code).strip().lower() == "none":
             state["previous_node"] = "chart_code_generator"
             self.logger.info("No chart code returned → route to 'chart_code_generator'")
         else:
             state["previous_node"] = "code_executor"
             self.logger.info("Chart code returned → route to 'code_executor'")
 
-        state['chart_code'] = code
-        state['img_path'] = img_path
+        state['chart_code'] = chart_code
         state['chart_info'] = chart_info
 
-        self.logger.info(f"chart_code: {code}")
-        self.logger.info(f"chart_name='{chart_name}', img_path='{img_path}'")
+        self.logger.info(f"chart_code: {chart_code}")
+        self.logger.info(f"chart_name='{chart_name}'")
         self.logger.debug("Chart CodeGen end")
         return state
