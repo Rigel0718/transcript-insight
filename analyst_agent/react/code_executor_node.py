@@ -187,8 +187,10 @@ class DataFrameCodeExecutorNode(BaseNode):
                 "attempts": attempts,
             }
         finally:
-            try: plt.close("all")
-            except: pass
+            try:
+                plt.close("all")
+            except: 
+                pass
 
 
 class ChartCodeExecutorNode(BaseNode):
