@@ -54,10 +54,18 @@ messages:
       {df_code}
       </df_code>
 
-      <df_information>
-      {df_info}
-      </df_information>
+      <df_name>
+      {df_name}
+      </df_name>
 
+      <df_desc>
+      {df_desc}
+      </df_desc>
+
+      <csv_path>
+      {csv_path}
+      </csv_path>
+      
       <user_query>
       {user_query}
       </user_query>

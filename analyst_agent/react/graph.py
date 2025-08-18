@@ -27,9 +27,11 @@ class ChartAgentExecutorNode(BaseNode):
         result : ChartState = chart_graph.invoke(
             input={
                 'user_query' : state['user_query'], 
-                'df_info': state['df_info'],
-                'df_code': state['df_code'],
-                'chart_info': state['chart_info'],
+                'df_name': state['df_name'],
+                'df_desc': state['df_desc'],
+                'chart_name': state['chart_name'],
+                'chart_desc': state['chart_desc'],
+                'csv_path': state['csv_path'],
                 'run_id': state['run_id']
             },
             config=config
@@ -55,21 +57,23 @@ class DataFrameAgentExecutorNode(BaseNode):
             input={
                 'user_query' : state['user_query'], 
                 'dataset': state['dataset'],
+                'df_name': state['df_name'],
+                'df_code': state['df_code'],
+                'df_desc': state['df_desc'],
                 'error_log': '',
                 'run_id': state['run_id']
             },
             config=config
             )
         ''' output format
-        {
-            "df_info": ["<df_name>", "<df_desc>"],
-            "df_code": "<여기에 순수 Python 코드 문자열>"
-        }
+        df_code: str = Field(..., description="Python code to generate the DataFrame")
+        df_name: str = Field(..., description="DataFrame name")
+        df_desc: str = Field(..., description="DataFrame description")
         '''
-        df_name = result['df_info'][0]
-        df_desc = result['df_info'][1]
-        state['df_info'][df_name] = df_desc
         state['df_code'] = result['df_code']
+        state['df_name'] = result['df_name']
+        state['df_desc'] = result['df_desc']
+        state['csv_path'] = result['csv_path']
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:

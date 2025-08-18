@@ -75,11 +75,12 @@ class DataFrameCodeGeneratorNode(BaseNode):
             self.logger.warning("LLM returned empty df_desc")
 
         state['df_code'] = df_code
-        df_info = (df_name, df_desc)
-        state['df_info'] = df_info
+        state['df_name'] = df_name
+        state['df_desc'] = df_desc
 
         self.logger.info(f"df_code: {df_code}")
-        self.logger.info(f"df_info: {df_info}")
+        self.logger.info(f"df_name: {df_name}")
+        self.logger.info(f"df_desc: {df_desc}")
         self.logger.debug("DF CodeGen end")
         return state
 
@@ -113,19 +114,31 @@ class ChartCodeGeneratorNode(BaseNode):
             return state
         
         input_query = state.get("user_query", "")
-        df_info = state.get("df_info")            
+        df_name = state.get("df_name")
+        df_desc = state.get("df_desc")
+        csv_path = state.get("csv_path")
         df_code = state.get("df_code")           
-        code_error = state.get("error_logs", "")
+        code_error = state.get("error_log", "")
 
         self.logger.info("user_query received")
         self.logger.debug(f"user_query: {input_query}")
-        if df_info is None:
-            self.logger.warning("df_info is missing (expected (df_name, df_desc))")
+        if df_name is None:
+            self.logger.warning("df_name is missing (expected df_name)")
         else:
-            self.logger.debug(f"df_info: {df_info}")
+            self.logger.debug(f"df_name: {df_name}")
+
+        if df_desc is None:
+            self.logger.warning("df_desc is missing (expected df_desc)")
+        else:
+            self.logger.debug(f"df_desc: {df_desc}")
+
+        if csv_path is None:
+            self.logger.warning("csv_path is missing (expected csv_path)")
+        else:
+            self.logger.debug(f"csv_path: {csv_path}")
 
         if df_code is None:
-            self.logger.warning("df_code is missing (columns/dtypes metadata expected)")
+            self.logger.warning("df_code is missing (columns/dtypes expected)")
         else:
             self.logger.debug(f"df_code preview: {df_code}")
 
@@ -133,7 +146,14 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.debug(f"previous error_logs: {code_error}")
 
 
-        input_values = {'user_query': input_query, 'df_info': df_info, 'df_code': df_code, 'error_log': code_error}
+        input_values = {
+            'user_query': input_query,
+            'df_name': df_name,
+            'df_desc': df_desc,
+            'csv_path': csv_path,
+            'df_code': df_code,
+            'error_log': code_error
+        }
         
         try:
             self.logger.info("Invoking LLM for chart code/info …")
@@ -162,7 +182,6 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.warning("LLM returned empty chart_desc")
     
         
-        chart_info = (chart_name, chart_desc)
 
         if not chart_code or str(chart_code).strip().lower() == "none":
             state["previous_node"] = "chart_code_generator"
@@ -172,9 +191,11 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.info("Chart code returned → route to 'code_executor'")
 
         state['chart_code'] = chart_code
-        state['chart_info'] = chart_info
+        state['chart_name'] = chart_name
+        state['chart_desc'] = chart_desc
 
         self.logger.info(f"chart_code: {chart_code}")
         self.logger.info(f"chart_name='{chart_name}'")
+        self.logger.info(f"chart_desc='{chart_desc}'")
         self.logger.debug("Chart CodeGen end")
         return state

@@ -37,13 +37,17 @@ class RouterNode(BaseNode):
             return state
         
         user_query = state['user_query']
-        df_info = state.get('df_info', {})
-        chart_info = state.get('chart_info', {})
+        df_name = state.get('df_name', '')
+        df_desc = state.get('df_desc', '')
+        chart_name = state.get('chart_name', '')
+        chart_desc = state.get('chart_desc', '')
         previous_node = state.get('previous_node', '_START_')
         input_values = {
             'user_query': user_query, 
-            'df_info': df_info, 
-            'chart_info': chart_info,
+            'df_name': df_name, 
+            'df_desc': df_desc,
+            'chart_name': chart_name,
+            'chart_desc': chart_desc,
             'previous_node': previous_node
             }
 

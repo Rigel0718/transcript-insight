@@ -16,8 +16,10 @@ messages:
       </task>
 
       <state_definition>
-      • df_info: {{ df_name: df_desc, ... }}  // 비어있으면 사용 가능한 DF 없음  
-      • chart_info:    {{ chart_name: chart_desc, ... }}  // 비어있으면 사용 가능한 차트 없음  
+      • df_name: {df_name}  // 비어있으면 사용 가능한 DF 없음  
+      • df_desc: {df_desc}  
+      • chart_name: {chart_name}  // 비어있으면 사용 가능한 차트 없음 
+      • chart_desc: {chart_desc}
       • previous_node: 'df_exec' | 'chart_exec' | 'router' | '_START_'...
       </state_definition>
 
@@ -61,8 +63,10 @@ messages:
       <example>
         <input>
           user_query: "전공/비전공 이수학점 추이를 선그래프로 보고 싶어요"
-          df_info: {{}}
-          chart_info: {{}}
+          df_name: ""
+          df_desc: ""
+          chart_name: ""
+          chart_desc: ""
           previous_node: _START_
         </input>
         <output>
@@ -73,8 +77,10 @@ messages:
       <example>
         <input>
           user_query: "전공/비전공 이수학점 추이를 선그래프로 보고 싶어요"
-          df_info: {{"credits_df":"이수학점과 학기 정보 포함"}}
-          chart_info: {{}}
+          df_name: "credits_df"
+          df_desc: "이수학점과 학기 정보 포함"
+          chart_name: ""
+          chart_desc: ""
           previous_node: "df_exec"
         </input>
         <output>
@@ -87,7 +93,9 @@ messages:
     content: |
       <input>
       user_query: {user_query}
-      df_info: {df_info}
-      chart_info: {chart_info}
+      df_name: {df_name}
+      df_desc: {df_desc}
+      chart_name: {chart_name}
+      chart_desc: {chart_desc}
       previous_node: {previous_node}
       </input>
