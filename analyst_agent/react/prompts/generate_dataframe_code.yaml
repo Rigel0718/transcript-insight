@@ -16,7 +16,10 @@ messages:
       6) **주석/출력 금지**: 코드에는 주석, print, 로깅, 파일 I/O를 포함하지 않습니다.  
       7) **성능 배려**: 대용량 가능성을 고려해 불필요한 전체 스캔, 중복 변환을 피하고 선택적 파싱을 우선합니다.
       8) 저장은 반드시 **save_df(df: pd.DataFrame, df_name: str)** 를 호출해 수행합니다. (그 외 출력/저장/프린트 금지) 
-      </instruction>
+      9) **데이터셋 하드코딩 금지**: 생성되는 **df_code** 안에 dataset 원문(JSON 문자열)을 **절대 포함하지 마세요**. 
+         dataset은 외부 변수 **`INPUT_DATA`**(JSON 문자열)로 주어지며, **반드시** `data = json.loads(INPUT_DATA)` 로 파싱해서 사용하세요.
+         또한 user_query와 error_log도 외부 변수 **`INPUT_QUERY`**, **`ERROR_LOG`** 가 존재한다고 가정만 하며, 원문을 코드에 삽입하지 마세요.
+         (금지 예: `json_data = '''{{...}}'''`; 허용 예: `data = json.loads(INPUT_DATA)`)
 
       <df_name_rules>
       - **df_name**은 **데이터프레임 구조(의미/주요 컬럼/집계 대상)** 와 **user_query의 의도**를 종합해 짓습니다.
@@ -27,16 +30,16 @@ messages:
 
       <output_schema>
       생성 결과는 반드시 다음 **JSON** 형태여야 합니다.
-      - **df_info**: [df_name, df_desc]  (튜플 의미의 2원 리스트)
-        - **df_name**: 위 규칙을 따르는 데이터프레임 이름
-        - **df_desc**: dataframe의 내용/전처리/필터/집계 요약 설명 (한두 문장)
+      - **df_name**: 위 규칙을 따르는 데이터프레임 이름 (영어)
+      - **df_desc**: dataframe의 내용/전처리/필터/집계 요약 설명 (한두 문장)
       - **df_code**: 실행 가능한 순수 Python 코드 (주석/출력 없음)
       </output_schema>
 
       <output_format>
       유일한 출력으로 **아래 JSON만** 반환하세요. (코드펜스, 여분 텍스트 금지)
       {{
-        "df_info": ["<df_name>", "<df_desc>"],
+        "df_name": "<df_name> df 의 title로, csv파일 이름으로 사용. (영어)",
+        "df_desc": "<df_desc> df 의 내용/전처리/필터/집계 요약 설명 (한글, 한두 문장)",
         "df_code": "<여기에 순수 Python 코드 문자열>"
       }}
       </output_format>
@@ -45,17 +48,22 @@ messages:
       - 반드시 아래 시그니처를 가정합니다:
         {{ "def save_df(df: pd.DataFrame, df_name: str): ..." }}
       - 코드 내부 요구사항:
-        1. dataset(JSON 문자열)을 파싱하여 적절히 중첩을 풀고 **RESULT_DF** 변수에 DataFrame을 생성
+        1. **반드시 다음 순서로 시작**: 
+           a) df_name을 문자열로 선언  
+           b) `data = json.loads(INPUT_DATA)` 로 dataset 파싱 (dataset 원문 하드코딩 금지)  
         2. user_query의 조건(선택, 필터, 정렬, 집계 등) 적용
         3. 필요 시 컬럼명 리네이밍/정렬
-        4. 마지막 줄에 **save_df(dataframe, df_name)** 호출
-      - 주의: **df_name**은 코드 상단에서 문자열 변수로 설정하고, **df_desc**는 코드가 아니라 JSON의 **df_info**에만 서술합니다.
+        4. 마지막 줄에 **save_df(RESULT_DF, df_name)** 호출
+      - 금지사항(중요): `json_data = '''{{...}}'''` 같은 형태로 dataset을 코드에 포함하거나, dataset/user_query/error_log 원문을 코드에 삽입하는 행위를 금지합니다.
       </code_requirements>
 
       <context>
-      - dataset은 JSON 문자열로 주어집니다.
-      - user_query는 자연어 설명이며, 가능한 범위 내에서 합리적으로 해석합니다.
-      - 다단계 중첩(JSON)일 경우 dict/list 탐색으로 안전하게 접근하세요.
+      - 다음 입력 변수가 외부 환경에서 이미 제공됩니다:  
+        - **INPUT_DATA**: str (JSON 문자열)  
+        - **INPUT_QUERY**: str (사용자 쿼리; 필요 시 조건 상수화에만 활용)  
+        - **ERROR_LOG**: Optional[str] (이전 실행 에러/경고 메시지; 필요 시 방어 코드에 반영)  
+      - dataset은 JSON 문자열이며, 다단계 중첩(JSON)일 경우 dict/list 탐색으로 안전하게 접근하세요.
+      - 필요한 경우만 위 입력 변수를 참조하고, 원문을 코드에 직접 포함하지 마세요.
       </context>
 
   - role: user

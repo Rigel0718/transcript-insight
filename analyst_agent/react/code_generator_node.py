@@ -5,12 +5,13 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, Tuple
 from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DataFrameSpec(BaseModel):
     df_code: str = Field(..., description="Python code to generate the DataFrame")
-    df_info: Tuple[str, str] = Field(..., description="DataFrame metadata, [df_name, df_desc]")
+    df_name: str = Field(..., description="DataFrame name")
+    df_desc: str = Field(..., description="DataFrame description")
 
 
 class ChartSpec(BaseModel):
@@ -62,15 +63,19 @@ class DataFrameCodeGeneratorNode(BaseNode):
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             return state
 
-        df_code = result.get("df_code")
-        df_info = result.get("df_info")
+        df_code = result.df_code
+        df_name = result.df_name
+        df_desc = result.df_desc
 
         if not df_code:
             self.logger.warning("LLM returned empty df_code")
-        if not df_info:
-            self.logger.warning("LLM returned empty df_info")
+        if not df_name:
+            self.logger.warning("LLM returned empty df_name")
+        if not df_desc:
+            self.logger.warning("LLM returned empty df_desc")
 
         state['df_code'] = df_code
+        df_info = (df_name, df_desc)
         state['df_info'] = df_info
 
         self.logger.info(f"df_code: {df_code}")
@@ -79,7 +84,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
         return state
 
 
- 
+
 class ChartCodeGeneratorNode(BaseNode):
     '''
     재정의된 유저의 쿼리와 추출된 DataFrame으로 시각화 해주는 python code생성
@@ -132,9 +137,9 @@ class ChartCodeGeneratorNode(BaseNode):
         
         try:
             self.logger.info("Invoking LLM for chart code/info …")
-            chart_generation_code = chain.invoke(input_values)
+            chart_generator_result = chain.invoke(input_values)
             self.logger.info("LLM invocation done")
-            self.logger.debug(f"raw LLM result: {chart_generation_code}")
+            self.logger.debug(f"raw LLM result: {chart_generator_result}")
         except Exception as e:
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
@@ -145,11 +150,11 @@ class ChartCodeGeneratorNode(BaseNode):
           "chart_name": "차트 제목 (영어)",
           "chart_desc": "차트 목적, 차트 설명 (한글).. etc"
         '''
-        chart_code = chart_generation_code.get("chart_code")
-        chart_name = chart_generation_code.get("chart_name")
-        chart_desc = chart_generation_code.get("chart_desc")
+        chart_code = chart_generator_result.chart_code
+        chart_name = chart_generator_result.chart_name
+        chart_desc = chart_generator_result.chart_desc
 
-        if not code:
+        if not chart_code:
             self.logger.warning("LLM returned empty chart code")
         if not chart_name:
             self.logger.warning("LLM returned empty chart_name")
