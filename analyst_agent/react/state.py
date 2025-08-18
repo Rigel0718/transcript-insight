@@ -74,7 +74,10 @@ class AgentContextState(TypedDict, total=False):
     errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
 
     current_chart: Annotated[Dict[str,str], "key: chart_name, value: chart_desc(refer to this chart, router decide to generate chart)"] = {}
-    # current_dataframe: Annotated[Dict[str,str], "key: df_name, value: df_desc(refer to this df, router decide to generate df)"] = {}
+    chart_info: Annotated[Dict[str, str], "[{chart_name : chart_desc}, ...]  refer to this chart, router decide to generate chart "] = {}
+    chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
+    img_path: Annotated[str, "Path to the saved image file"] = ''
     df_info: Annotated[Dict[str, str], "[{df_name : df_desc}, ...]  refer to this df, router decide to generate df "] = {}
+    df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"] = ''
     previous_node: Annotated[str, "Previous node (e.g., 'df_exec'|'chart_exec'|'router'|...)"] = ''
     next_action: Annotated[str, "Routing key (e.g., 'to_df_gen'|'to_chart_gen'|'finish')"] = ''
