@@ -27,13 +27,16 @@ class ChartAgentExecutorNode(BaseNode):
         result : ChartState = chart_graph.invoke(
             input={
                 'user_query' : state['user_query'], 
-                'current_dataframe_informs': state['current_dataframe_informs'],
-                'current_chart_informs': state['current_chart_informs'],
+                'df_info': state['df_info'],
+                'df_code': state['df_code'],
+                'chart_info': state['chart_info'],
                 'run_id': state['run_id']
             },
             config=config
             )
-        return {"chart_state": result}
+        img_path = result['img_path']
+        state['img_path'] = img_path
+        return state
 
 
 class DataFrameAgentExecutorNode(BaseNode):
@@ -63,8 +66,10 @@ class DataFrameAgentExecutorNode(BaseNode):
             "df_code": "<여기에 순수 Python 코드 문자열>"
         }
         '''
-        state['current_dataframe_informs'] = result['df_info']
-        state['dataframe_code'] = result['df_code']
+        df_name = result['df_info'][0]
+        df_desc = result['df_info'][1]
+        state['df_info'][df_name] = df_desc
+        state['df_code'] = result['df_code']
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:
