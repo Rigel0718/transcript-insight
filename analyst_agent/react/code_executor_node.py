@@ -308,7 +308,10 @@ class ChartCodeExecutorNode(BaseNode):
             # korean font
             applied = self._auto_apply_korean_font()
             plt.rcParams["axes.unicode_minus"] = False
-            artifact_dir = self.env.artifact_dir
+            work_dir = self.env.work_dir
+            user_id = self.env.user_id
+            run_id = state.get("run_id")
+            artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
             g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
             l_env: Dict[str, Any] = {}
 
