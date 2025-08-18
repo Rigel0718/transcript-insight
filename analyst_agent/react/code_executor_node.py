@@ -85,7 +85,7 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
 
-    def _create_exec_env_for_df(self, registry, artifact_dir, debug_on: bool=False):
+    def _create_exec_env_for_df(self, registry, artifact_dir, dataset, debug_on: bool=False):
 
         def save_df(df: pd.DataFrame, name: str):
 
@@ -103,7 +103,8 @@ class DataFrameCodeExecutorNode(BaseNode):
         return {
             "__builtins__": __builtins__,
             "pd": pd, 
-            "save_df": save_df
+            "save_df": save_df,
+            "INPUT_DATA": dataset,
             }
 
 
@@ -122,8 +123,9 @@ class DataFrameCodeExecutorNode(BaseNode):
             work_dir = self.env.work_dir
             user_id = self.env.user_id
             run_id = state.get("run_id")
+            dataset = state.get("dataset")
             artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
-            g_env = self._create_exec_env_for_df(registry, artifact_dir)  # offer save_df
+            g_env = self._create_exec_env_for_df(registry, artifact_dir, dataset)  # offer save_df
             l_env: Dict[str, Any] = {}
 
             self.logger.info("Executing df_code …")
