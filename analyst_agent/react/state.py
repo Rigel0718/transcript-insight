@@ -29,8 +29,8 @@ class DataFrameState(TypedDict, total=False):
     df_desc: Annotated[str, "DataFrame description"] = ''
     # Results / Artifacts
     df_handle: Annotated[List[str], "List of registered DataFrame names"] = []
-    df_meta: Annotated[List[Dict], "Metadata for each DataFrame (schema/shape/columns, etc.)", operator.add] = []
-    csv_path: Annotated[List[str], "List of saved CSV file paths", operator.add] = []
+    df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
+    csv_path: Annotated[str, "List of saved CSV file paths", operator.add] = ''
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last DataFrame execution"] = ''
     stderr: Annotated[str, "Standard error output from the last DataFrame execution"] = ''
@@ -46,7 +46,6 @@ class ChartState(TypedDict, total=False):
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
     df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
     csv_path: Annotated[str, "Path to the saved CSV file"] = ''
-    df_meta: Annotated[List[Dict], "Metadata for each DataFrame (schema/shape/columns, etc.)", operator.add] = []
     chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
     chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"] = {}
 
@@ -62,6 +61,7 @@ class ChartState(TypedDict, total=False):
     errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
     attempts: Annotated[int, "Number of attempts to execute the chart code"] = 0
     debug_font: Annotated[Dict, "Debug font information"] = {}
+    df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
 
 
 class AgentContextState(TypedDict, total=False):
@@ -82,5 +82,6 @@ class AgentContextState(TypedDict, total=False):
     df_name: Annotated[str, "DataFrame name"] = ''
     df_desc: Annotated[str, "DataFrame description"] = ''
     df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"] = ''
+    df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
     previous_node: Annotated[str, "Previous node (e.g., 'df_exec'|'chart_exec'|'router'|...)"] = ''
     next_action: Annotated[str, "Routing key (e.g., 'to_df_gen'|'to_chart_gen'|'finish')"] = ''
