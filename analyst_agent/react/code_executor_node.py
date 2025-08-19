@@ -157,30 +157,30 @@ class DataFrameCodeExecutorNode(BaseNode):
                         break
 
             # collect metas
-            df_handles, df_metas, csv_paths = [], [], []
+            df_handles, df_meta, csv_path = [], {}, ''
             for name, info in registry["dataframes"].items():
                 df_handles.append(name)
-                df_metas.append({
+                df_meta = {
                     "name": name, 
                     "path": info.get("path"),
                     "rows": info.get("rows"), 
                     "schema": info.get("schema"),
                     "format": info.get("format", "csv")
-                })
-                if info.get("path"): 
-                    csv_paths.append(info["path"])
-            self.logger.debug(f"Collected DF metas: {df_metas}")
+                }
+                if info.get("path"):
+                    csv_path = info.get("path") 
+            self.logger.debug(f"Collected DF meta: {df_meta}")
 
 
             attempts = (state.get("attempts", 0)) + 1
             self.log(message=stdout_stream.getvalue())
             self.logger.info("DataFrame execution node completed")
             self.logger.debug(f"DF handles: {df_handles}")
-            self.logger.debug(f"DF metas: {df_metas}")
+            self.logger.debug(f"DF meta: {df_meta}")
 
             state['df_handle'] = df_handles
-            state['df_meta'] = df_metas
-            state['csv_path'] = csv_paths
+            state['df_meta'] = df_meta
+            state['csv_path'] = csv_path
             state['stdout'] = stdout_stream.getvalue()
             state['stderr'] = stderr_stream.getvalue().strip()
             state['error_log'] = error_log if errors else ""
@@ -297,14 +297,18 @@ class ChartCodeExecutorNode(BaseNode):
     def run(self, state: ChartState) -> ChartState:
         code = state["chart_code"]
         if not code or not code.strip():
+            self.logger.warning("No chart_code provided")
             return {"error_log": "No chart_code provided"}
 
         stdout_stream, stderr_stream, log_stream = io.StringIO(), io.StringIO(), io.StringIO()
-        logger = logging.getLogger("matplotlib.font_manager")
-        handler = logging.StreamHandler(log_stream); logger.addHandler(handler)
+        # matplotlib.font_manager 로그 캡처(폰트 진단용)
+        mpl_logger = logging.getLogger("matplotlib.font_manager")
+        mpl_handler = logging.StreamHandler(log_stream)
+        mpl_logger.addHandler(mpl_handler)
 
         registry: Dict[str, Any] = {"images": []}
-        errors: list[str] = []; error_log = ""
+        errors: list[str] = []
+        error_log = ""
 
         try:
             plt.clf()
@@ -319,23 +323,35 @@ class ChartCodeExecutorNode(BaseNode):
             g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
             l_env: Dict[str, Any] = {}
 
+            self.logger.info("Executing chart_code …")
+
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 with warnings.catch_warnings(record=True) as warning_list:
                     warnings.simplefilter("always")
                     try:
                         exec(code, g_env, l_env)
                     except Exception:
-                        errors.append(traceback.format_exc()); error_log = "Chart exec failed"
+                        errors.append(traceback.format_exc())
+                        error_log = "Chart exec failed"
+                        self.logger.exception("Chart execution failed")
 
             # Font warnings are considered errors (retry routing)
             warn_hit = any(self.FONT_WARN_PATTERN.search(str(w.message)) for w in warning_list)
             log_hit = self.FONT_WARN_PATTERN.search(log_stream.getvalue())
             if warn_hit or log_hit:
-                errors.append(f"matplotlib_font_issue: warn_hit={warn_hit}, log_hit={bool(log_hit)}")
+                msg = f"matplotlib_font_issue: warn_hit={warn_hit}, log_hit={bool(log_hit)}"
+                errors.append(msg)
                 error_log = error_log or "Font warning detected"
+                self.logger.warning(msg)
 
             attempts = (state.get("attempts", 0)) + 1
             
+            if error_log:
+                self.logger.error("Error_log: ", error_log)
+            
+            if errors:
+                self.logger.error("Errors: ", errors)
+
             state['img_path'] = registry["images"]
             state['stdout'] = stdout_stream.getvalue()
             state['stderr'] = "\n".join(s for s in [stderr_stream.getvalue(), log_stream.getvalue()] if s).strip()
@@ -347,7 +363,7 @@ class ChartCodeExecutorNode(BaseNode):
             return state
 
         finally:
-            logger.removeHandler(handler)
+            mpl_logger.removeHandler(mpl_handler)
             try: plt.close("all")
             except: pass
 
