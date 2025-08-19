@@ -28,35 +28,14 @@ class ChartAgentExecutorNode(BaseNode):
         user_query = state['user_query']
         df_name = state['df_name']
         df_desc = state['df_desc']
+        df_meta = state['df_meta']
+        df_code = state['df_code']
         chart_name = state['chart_name']
         chart_desc = state['chart_desc']
         csv_path = state['csv_path']
         run_id = state['run_id']
-        df_meta = state['df_meta']
-        '''
-        class ChartState(TypedDict, total=False):
-    # Code / Input
-    user_query: Annotated[str, "Original user query or question"] = ''
-    run_id: Annotated[str, "Unique run identifier"] = ''
-    df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
-    csv_path: Annotated[str, "Path to the saved CSV file"] = ''
-    chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
-    chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"] = {}
+        
 
-    # Results / Artifacts
-    img_path: Annotated[str, "Path to the saved image file"] = ''
-    chart_name: Annotated[str, "Chart name"] = ''
-    chart_desc: Annotated[str, "Chart description"] = ''
-
-    # Execution logs / Errors
-    stdout: Annotated[str, "Standard output from the last chart execution"] = ''
-    stderr: Annotated[str, "Standard error output from the last chart execution"] = ''
-    error_logs: Annotated[str, "Error message from the last chart execution"] = ''
-    errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
-    attempts: Annotated[int, "Number of attempts to execute the chart code"] = 0
-    debug_font: Annotated[Dict, "Debug font information"] = {}
-    df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
-        '''
         input_values = {
             'user_query' : user_query, 
             'df_name': df_name,
@@ -66,6 +45,7 @@ class ChartAgentExecutorNode(BaseNode):
             'csv_path': csv_path,
             'run_id': run_id,
             'df_meta': df_meta,
+            'df_code': df_code,
             'chart_code': '',
             'chart_intent': {},
             'stdout': '',
@@ -85,7 +65,12 @@ class ChartAgentExecutorNode(BaseNode):
             config=config
             )
         img_path = result['img_path']
+        chart_desc = result['chart_desc']
+        chart_name = result['chart_name']
         state['img_path'] = img_path
+        state['chart_desc'] = chart_desc
+        state['chart_name'] = chart_name
+        state['previous_node'] = "chart_exec"
         return state
 
 
@@ -101,16 +86,35 @@ class DataFrameAgentExecutorNode(BaseNode):
         
         config = RunnableConfig(recursion_limit=5) 
         df_graph = df_code_react_agent(queue=self.queue, env=self.env)
+
+        DEFAULT_DATAFRAME_STATE = {
+            "user_query": "",
+            "run_id": "",
+            "dataset": "",
+            "df_code": "",
+            "df_name": "",
+            "df_desc": "",
+            "df_handle": [],
+            "df_meta": {},
+            "csv_path": "",
+            "stdout": "",
+            "stderr": "",
+            "attempts": 0,
+            "error_log": "",
+            "errors": [],
+        }
+        input_values = {
+            **DEFAULT_DATAFRAME_STATE,
+            "user_query": state["user_query"],
+            "dataset": state["dataset"],
+            "df_name": state["df_name"],
+            "df_code": state["df_code"],
+            "df_desc": state["df_desc"],
+            "error_log": "",
+            "run_id": state["run_id"]
+        }
         result : DataFrameState = df_graph.invoke(
-            input={
-                'user_query' : state['user_query'], 
-                'dataset': state['dataset'],
-                'df_name': state['df_name'],
-                'df_code': state['df_code'],
-                'df_desc': state['df_desc'],
-                'error_log': '',
-                'run_id': state['run_id']
-            },
+            input=input_values,
             config=config
             )
         ''' output format
@@ -123,6 +127,7 @@ class DataFrameAgentExecutorNode(BaseNode):
         state['df_desc'] = result['df_desc']
         state['csv_path'] = result['csv_path']
         state['df_meta'] = result['df_meta']
+        state['previous_node'] = "df_exec"
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:
