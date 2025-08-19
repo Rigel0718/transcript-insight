@@ -2,9 +2,9 @@ from analyst_agent.react.base import BaseNode
 from analyst_agent.react.state import ChartState, DataFrameState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional, Tuple
+from typing import Optional
 from .utils import load_prompt_template
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+import pandas as pd
 from pydantic import BaseModel, Field
 
 
@@ -119,6 +119,7 @@ class ChartCodeGeneratorNode(BaseNode):
         csv_path = state.get("csv_path")
         df_code = state.get("df_code")           
         code_error = state.get("error_log", "")
+        df_meta = state.get("df_meta", {})
 
         self.logger.info("user_query received")
         self.logger.debug(f"user_query: {input_query}")
@@ -145,14 +146,24 @@ class ChartCodeGeneratorNode(BaseNode):
         if code_error:
             self.logger.debug(f"previous error_logs: {code_error}")
 
+        
+       
+
+        # CSV 파일 읽기
+        df = pd.read_csv(csv_path)
+
+        # DataFrame을 dict로 변환
+        data_dict = df.to_dict(orient="records")
 
         input_values = {
             'user_query': input_query,
             'df_name': df_name,
             'df_desc': df_desc,
             'csv_path': csv_path,
+            'dataframe_dict': data_dict,
             'df_code': df_code,
-            'error_log': code_error
+            'error_log': code_error,
+            'df_meta': df_meta
         }
         
         try:
