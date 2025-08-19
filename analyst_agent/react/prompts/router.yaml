@@ -33,11 +33,14 @@ messages:
          - DF 없음 & 차트 없음 → "to_gen_df".
          - DF 있음 & 차트 없음 & 시각화 의도 있음 → "to_gen_chart".
          - DF 있음 & 사용자 요구가 “CSV만/표만” → "to_gen_df".
-         - DF/차트 모두 있고 요구가 충족됨 → "finish".
       4) 수정/재생성 시나리오
          - DF는 있는데 "컬럼 변경/필터/재집계/정렬/정제" 요청 → "to_gen_df".
          - 차트는 있는데 "종류 변경/축/라벨/스타일/하이라이트/비교" 요청 → "to_gen_chart".
-      5) 안전 장치
+      5) 요구 충족 여부 (추가된 규칙)
+         - user_query가 df_name/df_desc에서 설명하는 데이터와 일치하지 않으면 → "to_gen_df".
+         - user_query가 chart_name/chart_desc에서 설명하는 시각화와 일치하지 않으면 → "to_gen_chart".
+         - user_query가 df_info와 chart_info 모두와 일치할 때만 → "finish".
+      6) 안전 장치
          - 모호하지만 시각화 가능성이 높고 DF 있음 → "to_gen_chart".
          - 모호하고 DF 없음 → "to_gen_df".
       </decision_rubric>
@@ -85,6 +88,20 @@ messages:
         </input>
         <output>
           {{"action":"to_gen_chart","reason":"시각화 의도가 명확하고 DF가 존재하므로 차트 생성으로 진행합니다.","notes":"x=학기, y=전공/비전공 학점 시계열 비교 선그래프"}}
+        </output>
+      </example>
+
+      <example>
+        <input>
+          user_query: "학기별 전공/비전공 학점 변화를 나타낸 라인차트를 보고 싶어요"
+          df_name: "credits_df"
+          df_desc: "학기별 전공/비전공 학점 데이터 포함"
+          chart_name: "Major_vs_Nonmajor_Trends"
+          chart_desc: "학기별 전공/비전공 학점 추이를 선그래프로 시각화"
+          previous_node: "chart_exec"
+        </input>
+        <output>
+          {{"action":"finish","reason":"DF와 차트가 모두 user_query의 요구를 충족하므로 추가 작업이 필요 없습니다.","notes":null}}
         </output>
       </example>
       </examples>
