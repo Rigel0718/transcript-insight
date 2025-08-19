@@ -24,16 +24,64 @@ class ChartAgentExecutorNode(BaseNode):
     def run(self, state: AgentContextState):
         config = RunnableConfig(recursion_limit=5) 
         chart_graph = chart_code_react_agent(queue=self.queue, env=self.env)
+
+        user_query = state['user_query']
+        df_name = state['df_name']
+        df_desc = state['df_desc']
+        chart_name = state['chart_name']
+        chart_desc = state['chart_desc']
+        csv_path = state['csv_path']
+        run_id = state['run_id']
+        df_meta = state['df_meta']
+        '''
+        class ChartState(TypedDict, total=False):
+    # Code / Input
+    user_query: Annotated[str, "Original user query or question"] = ''
+    run_id: Annotated[str, "Unique run identifier"] = ''
+    df_info: Annotated[Tuple[str, str], "(df_name, df_desc)"]
+    csv_path: Annotated[str, "Path to the saved CSV file"] = ''
+    chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
+    chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"] = {}
+
+    # Results / Artifacts
+    img_path: Annotated[str, "Path to the saved image file"] = ''
+    chart_name: Annotated[str, "Chart name"] = ''
+    chart_desc: Annotated[str, "Chart description"] = ''
+
+    # Execution logs / Errors
+    stdout: Annotated[str, "Standard output from the last chart execution"] = ''
+    stderr: Annotated[str, "Standard error output from the last chart execution"] = ''
+    error_logs: Annotated[str, "Error message from the last chart execution"] = ''
+    errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
+    attempts: Annotated[int, "Number of attempts to execute the chart code"] = 0
+    debug_font: Annotated[Dict, "Debug font information"] = {}
+    df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
+        '''
+        input_values = {
+            'user_query' : user_query, 
+            'df_name': df_name,
+            'df_desc': df_desc,
+            'chart_name': chart_name,
+            'chart_desc': chart_desc,
+            'csv_path': csv_path,
+            'run_id': run_id,
+            'df_meta': df_meta,
+            'chart_code': '',
+            'chart_intent': {},
+            'stdout': '',
+            'stderr': '',
+            'error_logs': '',
+            'errors': [],
+            'attempts': 0,
+            'debug_font': {},
+            'img_path': ''
+        }
+
+        self.logger.info("Invoking chart_code_react_agent …")
+        self.logger.debug(f"chart_code_react_agent input preview: {input_values}")
+
         result : ChartState = chart_graph.invoke(
-            input={
-                'user_query' : state['user_query'], 
-                'df_name': state['df_name'],
-                'df_desc': state['df_desc'],
-                'chart_name': state['chart_name'],
-                'chart_desc': state['chart_desc'],
-                'csv_path': state['csv_path'],
-                'run_id': state['run_id']
-            },
+            input=input_values,
             config=config
             )
         img_path = result['img_path']
@@ -74,6 +122,7 @@ class DataFrameAgentExecutorNode(BaseNode):
         state['df_name'] = result['df_name']
         state['df_desc'] = result['df_desc']
         state['csv_path'] = result['csv_path']
+        state['df_meta'] = result['df_meta']
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:
