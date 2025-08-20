@@ -72,11 +72,10 @@ example
 ### 2) DataFrameCodeExecutorNode
 - **역할**: `df_code` 실행 → DataFrame 생성 및 CSV 저장
 - **주요 기능**
-  - 헬퍼 제공: `save_df(df, name)` → `{artifact_dir}/{timestamp}_{name}.csv` 저장
   - 메타데이터 수집: `df_meta`(schema/shape/columns, 샘플 등)
-  - state 갱신: `df_handle`, `df_meta`, `csv_path`, `stdout`, `stderr`, `errors`, `attempts`
+  - state: `df_handle`, `df_meta`, `csv_path`, `stdout`, `stderr`, `errors`, `attempts`
 
-- **실행 환경(Global) Alias**
+- **추가 실행 환경(Global) Alias**
   - `pd`, `json`, `save_df`, `INPUT_DATA`(원본 JSON/dict)
 
 ---
@@ -97,10 +96,9 @@ example
 - **주요 기능**
   - Matplotlib 기반 시각화
   - 한글 폰트 자동 적용: NanumGothic / Noto Sans CJK / DejaVu Sans (fallback)
-  - 헬퍼 제공: `save_chart(filename="...", dpi=170)`
-  - state 갱신: `img_path`, `stdout`, `stderr`, `debug_font`, `errors`, `attempts`
+  - state: `img_path`, `stdout`, `stderr`, `debug_font`, `errors`, `attempts`
 
-- **실행 환경(Global) ALias**
+- **추가 실행 환경(Global) ALias**
   - `pd`, `plt`, `save_chart`, `use_korean_font()`
 
 ---
