@@ -31,7 +31,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
 
     def _init_llm(self):
         llm = ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4.1-mini",
             temperature=0,
         )
         return llm 
@@ -97,7 +97,7 @@ class ChartCodeGeneratorNode(BaseNode):
 
     def _init_llm(self):
         llm = ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4.1-mini",
             temperature=0,
         )
         return llm 
