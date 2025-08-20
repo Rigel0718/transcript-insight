@@ -3,7 +3,7 @@ from typing import Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 if TYPE_CHECKING:
-    from analyst_agent.react_code_agent.logger import RunLogger
+    from base_node.logger import RunLogger
 
 class Env(BaseModel):
     model_config = ConfigDict(
