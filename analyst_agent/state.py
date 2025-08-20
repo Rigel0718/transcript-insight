@@ -15,5 +15,7 @@ class ReportState(TypedDict, total=False):
     analyst: Annotated[AnalysisSpec, "Config for Analysis spec (focus, audience, tone, language)"] = ''
 
     rewrite_query: Annotated[str, "Rewritten query"] = ''
+
+    cost: Annotated[float, "total cost(dollars)"] = 0.0
     
     
