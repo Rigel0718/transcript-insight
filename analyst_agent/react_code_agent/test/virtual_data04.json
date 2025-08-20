@@ -1,444 +1,444 @@
 {
-        "student_info": {
-            "name": "최진우",
-            "university": "한양대학교",
-            "department": "전기전자공학과",
-            "degree": "공학사",
-            "date_of_birth": "1998-05-12",
-            "gender": "남",
-            "admission_date": "2017-03-02",
-            "graduation_date": "2021-08-20",
-            "degree_number": "한양대2021(학)5678"
+    "student_info": {
+        "name": "최진우",
+        "university": "한양대학교",
+        "department": "전기전자공학과",
+        "degree": "공학사",
+        "date_of_birth": "1998-05-12",
+        "gender": "남",
+        "admission_date": "2017-03-02",
+        "graduation_date": "2021-08-20",
+        "degree_number": "한양대2021(학)5678"
+    },
+    "semesters": [
+        {
+            "year": 2017,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "미적분학 I",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "물리학 I",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "프로그래밍기초",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "공학입문",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "회로이론 I",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "영어읽기",
+                    "grade": "C+",
+                    "credits": 2.0,
+                    "category": "V"
+                },
+                {
+                    "name": "체육",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 18.0,
+            "gpa": 3.29,
+            "percentage": 87.9
         },
-        "semesters": [
-            {
-                "year": 2017,
-                "semester": "1학기",
-                "courses": [
-                    {
-                        "name": "미적분학 I",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "물리학 I",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "프로그래밍기초",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "공학입문",
-                        "grade": "A0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "회로이론 I",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "영어읽기",
-                        "grade": "C+",
-                        "credits": 2.0,
-                        "category": "V"
-                    },
-                    {
-                        "name": "체육",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 18.0,
-                "gpa": 3.29,
-                "percentage": 87.9
-            },
-            {
-                "year": 2017,
-                "semester": "2학기",
-                "courses": [
-                    {
-                        "name": "미적분학 II",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "물리학 II",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "선형대수",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "회로이론 II",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "디지털논리",
-                        "grade": "A0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "공업수학",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "미술의이해",
-                        "grade": "B+",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "리더십세미나",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 21.0,
-                "gpa": 3.2,
-                "percentage": 87.0
-            },
-            {
-                "year": 2018,
-                "semester": "1학기",
-                "courses": [
-                    {
-                        "name": "전자기학",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "회로설계",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "미분방정식",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "전자회로",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "컴퓨터구조",
-                        "grade": "A0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "경제학개론",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "영어회화",
-                        "grade": "B+",
-                        "credits": 2.0,
-                        "category": "V"
-                    },
-                    {
-                        "name": "봉사활동",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 21.0,
-                "gpa": 3.27,
-                "percentage": 87.8
-            },
-            {
-                "year": 2018,
-                "semester": "2학기",
-                "courses": [
-                    {
-                        "name": "전기기기",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "통신공학",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "신호및시스템",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "전파공학",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "제어공학",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "회로이론III",
-                        "grade": "C0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "한국사",
-                        "grade": "C0",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "스포츠와건강",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 21.0,
-                "gpa": 2.83,
-                "percentage": 83.2
-            },
-            {
-                "year": 2019,
-                "semester": "1학기",
-                "courses": [
-                    {
-                        "name": "반도체공학",
-                        "grade": "A0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "전력전자",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "전자기장",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "통신이론",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "확률과랜덤변수",
-                        "grade": "C0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "미시경제학",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "인문학개론",
-                        "grade": "B0",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "체육",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 21.0,
-                "gpa": 3.15,
-                "percentage": 86.5
-            },
-            {
-                "year": 2019,
-                "semester": "2학기",
-                "courses": [
-                    {
-                        "name": "RF회로",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "디지털신호처리",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "무선통신",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "제어시스템설계",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "컴퓨터네트워크",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "경제통계",
-                        "grade": "C0",
-                        "credits": 3.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "철학과윤리",
-                        "grade": "B0",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "사회봉사",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 21.0,
-                "gpa": 2.85,
-                "percentage": 83.5
-            },
-            {
-                "year": 2020,
-                "semester": "1학기",
-                "courses": [
-                    {
-                        "name": "캡스톤디자인",
-                        "grade": "A0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "임베디드시스템",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "시스템소프트웨어",
-                        "grade": "B0",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "전력계통공학",
-                        "grade": "C+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "신호처리",
-                        "grade": "B+",
-                        "credits": 3.0,
-                        "category": "D"
-                    },
-                    {
-                        "name": "공학법규",
-                        "grade": "B0",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "환경과생태",
-                        "grade": "B0",
-                        "credits": 2.0,
-                        "category": "Y"
-                    },
-                    {
-                        "name": "취업세미나",
-                        "grade": "P",
-                        "credits": 1.0,
-                        "category": "Z"
-                    }
-                ],
-                "total_credits": 20.0,
-                "gpa": 3.24,
-                "percentage": 87.4
-            }
-        ],
-        "credit_summary": {
-            "total_credits": 143.0,
-            "total_gpa_points": 423.5,
-            "overall_gpa": 3.11,
-            "overall_percentage": 86.1,
-            "credits_by_category": {
-                "교양필수(A)": 0.0,
-                "학부기초(M)": 0.0,
-                "기초공통(B)": 0.0,
-                "기초교양(V)": 4.0,
-                "전공필수(C)": 0.0,
-                "전공기초교양(X)": 0.0,
-                "전공선택(D)": 111.0,
-                "핵심교양(Y)": 21.0,
-                "교양선택(E)": 0.0,
-                "자유교양(Z)": 7.0,
-                "일반선택(F)": 0.0,
-                "교직(H)": 0.0,
-                "교양기초(K)": 0.0,
-                "복수전공(J)": 0.0,
-                "계열교양(L)": 0.0,
-                "부전공(G)": 0.0
-            },
-            "multi_major_credits": {
-                "2전공(계열교양)(PL)": 0.0,
-                "2전공(전공기초교양)(PX)": 0.0,
-                "2전공(학부기초)(PM)": 0.0,
-                "2전공(전공)(PN)": 0.0,
-                "3전공(계열교양)(QL)": 0.0,
-                "3전공(전공기초교양)(QX)": 0.0,
-                "3전공(학부기초)(QM)": 0.0,
-                "3전공(전공)(QN)": 0.0,
-                "연계융합(학부기초)(RM)": 0.0,
-                "연계융합(전공)(RN)": 0.0
-            }
+        {
+            "year": 2017,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "미적분학 II",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "물리학 II",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "선형대수",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "회로이론 II",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "디지털논리",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "공업수학",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미술의이해",
+                    "grade": "B+",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "리더십세미나",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 3.2,
+            "percentage": 87.0
+        },
+        {
+            "year": 2018,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "전자기학",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "회로설계",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미분방정식",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "전자회로",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "컴퓨터구조",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "경제학개론",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "영어회화",
+                    "grade": "B+",
+                    "credits": 2.0,
+                    "category": "V"
+                },
+                {
+                    "name": "봉사활동",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 3.27,
+            "percentage": 87.8
+        },
+        {
+            "year": 2018,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "전기기기",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "통신공학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "신호및시스템",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "전파공학",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "제어공학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "회로이론III",
+                    "grade": "C0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "한국사",
+                    "grade": "C0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "스포츠와건강",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 2.83,
+            "percentage": 83.2
+        },
+        {
+            "year": 2019,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "반도체공학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "전력전자",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "전자기장",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "통신이론",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "확률과랜덤변수",
+                    "grade": "C0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미시경제학",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "인문학개론",
+                    "grade": "B0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "체육",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 3.15,
+            "percentage": 86.5
+        },
+        {
+            "year": 2019,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "RF회로",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "디지털신호처리",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "무선통신",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "제어시스템설계",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "컴퓨터네트워크",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "경제통계",
+                    "grade": "C0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "철학과윤리",
+                    "grade": "B0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "사회봉사",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 2.85,
+            "percentage": 83.5
+        },
+        {
+            "year": 2020,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "캡스톤디자인",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "임베디드시스템",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "시스템소프트웨어",
+                    "grade": "B0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "전력계통공학",
+                    "grade": "C+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "신호처리",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "공학법규",
+                    "grade": "B0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "환경과생태",
+                    "grade": "B0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "취업세미나",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 20.0,
+            "gpa": 3.24,
+            "percentage": 87.4
+        }
+    ],
+    "credit_summary": {
+        "total_credits": 143.0,
+        "total_gpa_points": 423.5,
+        "overall_gpa": 3.11,
+        "overall_percentage": 86.1,
+        "credits_by_category": {
+            "교양필수(A)": 0.0,
+            "학부기초(M)": 0.0,
+            "기초공통(B)": 0.0,
+            "기초교양(V)": 4.0,
+            "전공필수(C)": 0.0,
+            "전공기초교양(X)": 0.0,
+            "전공선택(D)": 111.0,
+            "핵심교양(Y)": 21.0,
+            "교양선택(E)": 0.0,
+            "자유교양(Z)": 7.0,
+            "일반선택(F)": 0.0,
+            "교직(H)": 0.0,
+            "교양기초(K)": 0.0,
+            "복수전공(J)": 0.0,
+            "계열교양(L)": 0.0,
+            "부전공(G)": 0.0
+        },
+        "multi_major_credits": {
+            "2전공(계열교양)(PL)": 0.0,
+            "2전공(전공기초교양)(PX)": 0.0,
+            "2전공(학부기초)(PM)": 0.0,
+            "2전공(전공)(PN)": 0.0,
+            "3전공(계열교양)(QL)": 0.0,
+            "3전공(전공기초교양)(QX)": 0.0,
+            "3전공(학부기초)(QM)": 0.0,
+            "3전공(전공)(QN)": 0.0,
+            "연계융합(학부기초)(RM)": 0.0,
+            "연계융합(전공)(RN)": 0.0
         }
     }
+}
