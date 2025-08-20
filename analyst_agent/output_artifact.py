@@ -12,10 +12,11 @@ class ChartSpec(BaseModel):
     name: str
     chart_type: Literal["line","bar","scatter","pie","hist","box"]
     df_ref: str  # 어떤 표로부터 만드는지 (name)
-    constraints: Dict = Field(default_factory=dict)
+    options: Dict = Field(default_factory=dict)  # aggregation, hue, facet, etc..
+
 
 class AnalysisSpec(BaseModel):
-    focus: List[str]  # 예: ["GPA_trend","at_risk_courses","major_vs_overall"]
+    focus: List[str]  # ["GPA_trend","at_risk_courses","major_vs_overall"]
     audience: Literal["student","parent","advisor"] = "student"
     tone: Literal["neutral","encouraging","formal"] = "neutral"
     language: Literal["ko","en"] = "ko"
