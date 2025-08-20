@@ -5,7 +5,7 @@ from queue import Queue
 from logging import LoggerAdapter
 import logging
 from typing import Optional
-from analyst_agent.react.env_model import Env
+from analyst_agent.react_code_agent.env_model import Env
 
 
 
