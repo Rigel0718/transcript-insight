@@ -1,7 +1,7 @@
 import io, re, logging, time, warnings, traceback
 from typing import Dict, Any
 from contextlib import redirect_stdout, redirect_stderr
-import os
+import os, json
 import pandas as pd
 import matplotlib.font_manager as fm
 import matplotlib as mpl
@@ -102,7 +102,8 @@ class DataFrameCodeExecutorNode(BaseNode):
 
         return {
             "__builtins__": __builtins__,
-            "pd": pd, 
+            "pd": pd,
+            "json": json, 
             "save_df": save_df,
             "INPUT_DATA": dataset,
             }
