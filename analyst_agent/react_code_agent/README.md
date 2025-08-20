@@ -1,7 +1,7 @@
 # ReACT Code Agent
 
-ReACT Code Agent는 **자연어 쿼리 → DataFrame 생성 → 차트 생성**의 과정을 자동화하는 LangGraph 기반 AI 에이전트입니다.  
-LLM으로 코드를 생성하고, 실행하며, 결과물(아티팩트/로그)을 일관된 디렉터리 구조로 저장합니다.
+ReACT Code Agent는 **자연어 쿼리 → DataFrame 생성 → 차트 생성**의 과정을 동적으로 조율하고 자동화하는 LangGraph 기반 AI 에이전트입니다.  
+LLM으로 코드를 생성하고, 실행하며, 결과물(차트 이미지/로그)을 일관된 디렉터리 구조로 저장합니다.
 
 ![ReACT Code Agent](images/react_code_agent_graph.png)
 
