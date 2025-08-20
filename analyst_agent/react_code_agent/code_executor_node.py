@@ -7,7 +7,7 @@ import matplotlib.font_manager as fm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from analyst_agent.react_code_agent.state import DataFrameState, ChartState
-from analyst_agent.react_code_agent.base import BaseNode
+from base_node.base import BaseNode
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):

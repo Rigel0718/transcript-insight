@@ -1,4 +1,4 @@
-from analyst_agent.react_code_agent.base import BaseNode
+from base_node.base import BaseNode
 from analyst_agent.react_code_agent.state import ChartState, DataFrameState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
