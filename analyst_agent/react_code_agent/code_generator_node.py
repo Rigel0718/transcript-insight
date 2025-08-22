@@ -1,5 +1,5 @@
 from base_node.base import BaseNode
-from analyst_agent.react_code_agent.state import ChartState, DataFrameState
+from analyst_agent.react_code_agent.state import ChartState, DataFrameState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
@@ -59,8 +59,10 @@ class DataFrameCodeGeneratorNode(BaseNode):
             self.logger.info("LLM invocation done")
             self.logger.debug(f"raw LLM result: {result}")
         except Exception as e:
+            status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
+            state['status'] = status
             return state
 
         df_code = result.df_code
@@ -172,8 +174,10 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.info("LLM invocation done")
             self.logger.debug(f"raw LLM result: {chart_generator_result}")
         except Exception as e:
+            status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
+            state['status'] = status
             return state
         
         ''' output foramt (pydantic model: ChartSpec)
