@@ -1,0 +1,61 @@
+from typing import Optional
+from base_node import BaseNode
+from analyst_agent.state import ReportState
+from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from typing import Optional
+from langchain.callbacks import get_openai_callback
+from .utils import load_prompt_template
+from analyst_agent.report_plan_models import MetricPlan, MetricSpec
+
+
+gpa_trend_metric = MetricSpec(
+    id="gpa_trend",
+    rationale="Term별 GPA 변화 추세를 요약.",
+    compute_hint="compute term_gpa by term (if missing, derive from course grades & credits); line chart term vs term_gpa; include table of term, term_gpa;",
+    chart_type="line",
+    produces="chart",
+    tags=["required","trend","gpa","term"]
+)
+
+credit_category_share_metric = MetricSpec(
+    id="credit_category_share",
+    rationale="이수 학점의 카테고리별 구성 비중을 요약.",
+    compute_hint="aggregate total_credits by course_category (or course_type|is_core|department); compute percentage of total; pie chart category vs credit_share; include table;",
+    chart_type="pie",
+    produces="chart",
+    tags=["required","composition","credits","category","share"]
+)
+
+
+class MetricPlannerNode(BaseNode):
+    '''
+    성적표 분석 보고서를 작성하기 위한 플래너 노드.
+    AnalysisSpec을 참고하여 필요한 Metric을 계획
+    '''
+    def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+        self.llm = llm or self._init_llm()
+
+    def _init_llm(self):
+        llm = ChatOpenAI(
+            model="gpt-4.1-mini",
+            temperature=0.4,
+        )
+        return llm
+
+    def run(self, state: ReportState) -> ReportState:
+        prompt = load_prompt_template("prompts/planner_prompt.yaml")
+        chain = prompt | self.llm.with_structured_output(MetricPlan)
+        
+        analyst = state['analyst']
+        self.logger.info(f"[{self.name}]: {analyst}")
+
+        with get_openai_callback() as cb:
+            result = chain.invoke(input = {'analysis_spec':analyst})
+            cost = cb.total_cost
+        self.logger.info(f"[{self.name}]: {result}")
+        default_metrics = [gpa_trend_metric, credit_category_share_metric]
+        state['metric_plan'] = default_metrics + result['metric_plan'].metrics
+        state['cost'] = cost
+        return state
