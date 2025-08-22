@@ -21,6 +21,9 @@ messages:
       • chart_name: {chart_name}  // 비어있으면 사용 가능한 차트 없음 
       • chart_desc: {chart_desc}
       • previous_node: 'df_exec' | 'chart_exec' | 'router' | '_START_'...
+      • status: {status}  // 에이전트의 현재 상태를 나타냄. 
+          - status: Literal["normal", "alert"] = "normal"
+          - message: str = "Everything is running smoothly."
       </state_definition>
 
       <decision_rubric>
@@ -43,6 +46,8 @@ messages:
       6) 안전 장치
          - 모호하지만 시각화 가능성이 높고 DF 있음 → "to_gen_chart".
          - 모호하고 DF 없음 → "to_gen_df".
+         - status가 alert → "finish".
+         - status가 alert인경우는 agent 작동중에 문제가 생긴것으로 보고 finish로 이동(종료).
       </decision_rubric>
 
       <output_format>
@@ -60,6 +65,7 @@ messages:
       • notes는 선택 항목이며, 후속 노드가 알아야 할 힌트를 간단히 요약.
       • 가정이 필요하면 최소한으로 하되, 그 가정을 notes에 명시.
       • **차트 요청이더라도 DF가 없으면 무조건 to_gen_df**
+      • status가 alert인경우는 agent 작동중에 문제가 발생한것으로 보고 반드시 finish로 이동(종료).
       </constraints>
 
       <examples>
@@ -71,6 +77,7 @@ messages:
           chart_name: ""
           chart_desc: ""
           previous_node: _START_
+          status: normal
         </input>
         <output>
           {{"action":"to_gen_df","reason":"차트 요청이지만 DF가 없어 먼저 데이터프레임을 생성해야 합니다.","notes":"x=학기, y=전공/비전공 학점 시계열"}}
@@ -85,6 +92,7 @@ messages:
           chart_name: ""
           chart_desc: ""
           previous_node: "df_exec"
+          status: normal
         </input>
         <output>
           {{"action":"to_gen_chart","reason":"시각화 의도가 명확하고 DF가 존재하므로 차트 생성으로 진행합니다.","notes":"x=학기, y=전공/비전공 학점 시계열 비교 선그래프"}}
@@ -99,9 +107,25 @@ messages:
           chart_name: "Major_vs_Nonmajor_Trends"
           chart_desc: "학기별 전공/비전공 학점 추이를 선그래프로 시각화"
           previous_node: "chart_exec"
+          status: normal
         </input>
         <output>
           {{"action":"finish","reason":"DF와 차트가 모두 user_query의 요구를 충족하므로 추가 작업이 필요 없습니다.","notes":null}}
+        </output>
+      </example>
+
+      <example>
+        <input>
+          user_query: "학기별 전공/비전공 학점 변화를 나타낸 라인차트를 보고 싶어요"
+          df_name: "credits_df"
+          df_desc: "학기별 전공/비전공 학점 데이터 포함"
+          chart_name: "Major_vs_Nonmajor_Trends"
+          chart_desc: "학기별 전공/비전공 학점 추이를 선그래프로 시각화"
+          previous_node: "chart_exec"
+          status: alert
+        </input>
+        <output>
+          {{"action":"finish","reason":"agent 작동중에 문제가 발생한것으로 보고 종료합니다.","notes":status.message}}
         </output>
       </example>
       </examples>
@@ -115,4 +139,5 @@ messages:
       chart_name: {chart_name}
       chart_desc: {chart_desc}
       previous_node: {previous_node}
+      status: {status}
       </input>

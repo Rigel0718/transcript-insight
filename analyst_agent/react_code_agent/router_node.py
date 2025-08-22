@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 from base_node.base import BaseNode
-from analyst_agent.react_code_agent.state import AgentContextState
+from analyst_agent.react_code_agent.state import AgentContextState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from analyst_agent.react_code_agent.utils import load_prompt_template
@@ -42,13 +42,15 @@ class RouterNode(BaseNode):
         chart_name = state.get('chart_name', '')
         chart_desc = state.get('chart_desc', '')
         previous_node = state.get('previous_node', '_START_')
+        status = state.get('status', Status(status="normal", message="Everything is running smoothly."))
         input_values = {
             'user_query': user_query, 
             'df_name': df_name, 
             'df_desc': df_desc,
             'chart_name': chart_name,
             'chart_desc': chart_desc,
-            'previous_node': previous_node
+            'previous_node': previous_node,
+            'status': status
             }
 
         self.logger.debug(f"[{self.name}] Input preview: {input_values}")

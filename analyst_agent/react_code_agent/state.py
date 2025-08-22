@@ -1,5 +1,6 @@
-from typing import TypedDict, Annotated, List, Dict, Tuple
+from typing import TypedDict, Annotated, List, Dict, Tuple, Literal
 import operator
+from pydantic import BaseModel, Field
 
 '''
 workdir structure: 
@@ -19,6 +20,12 @@ example
   └─ logs/
       └─ 2025-08-03_160530.log
 '''
+
+class Status(BaseModel):
+    status: Literal["normal", "alert"] = "normal"
+    message: str = "Everything is running smoothly."
+
+
 class DataFrameState(TypedDict, total=False):
     # Code / Input
     user_query: Annotated[str, "Original user query or question"] = ''
@@ -27,6 +34,7 @@ class DataFrameState(TypedDict, total=False):
     df_code: Annotated[str, "Python code that generates a DataFrame from the dataset"] = ''
     df_name: Annotated[str, "DataFrame name"] = ''
     df_desc: Annotated[str, "DataFrame description"] = ''
+    status: Annotated[Status, "Status of the DataFrame execution"] = Status(status="normal", message="Everything is running smoothly.")
     # Results / Artifacts
     df_handle: Annotated[List[str], "List of registered DataFrame names"] = []
     df_meta: Annotated[Dict, "Metadata for each DataFrame (schema/shape/columns, etc.)"] = {}
@@ -51,6 +59,7 @@ class ChartState(TypedDict, total=False):
     csv_path: Annotated[str, "Path to the saved CSV file"] = ''
     chart_code: Annotated[str, "Python code that visualizes the DataFrame"] = ''
     chart_intent: Annotated[Dict, "Visualization intent/options (line, bar, axes, labels, etc.)"] = {}
+    status: Annotated[Status, "Status of the Chart execution"] = Status(status="normal", message="Everything is running smoothly.")
 
     # Results / Artifacts
     img_path: Annotated[str, "Path to the saved image file"] = ''
@@ -72,6 +81,7 @@ class AgentContextState(TypedDict, total=False):
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
     run_id: Annotated[str, "Unique run identifier"] = ''
     allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False
+    status: Annotated[Status, "Status of the agent"] = Status(status="normal", message="Everything is running smoothly.")
 
     # Progress Tracking
     attempts: Annotated[Dict, "Number of attempts per task type, e.g., {'df': int, 'chart': int}"] = {}

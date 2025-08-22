@@ -1,7 +1,7 @@
 from analyst_agent.react_code_agent.code_executor_node import DataFrameCodeExecutorNode, ChartCodeExecutorNode
 from analyst_agent.react_code_agent.router_node import RouterNode
 from analyst_agent.react_code_agent.code_generator_node import DataFrameCodeGeneratorNode, ChartCodeGeneratorNode
-from analyst_agent.react_code_agent.state import AgentContextState, DataFrameState, ChartState
+from analyst_agent.react_code_agent.state import AgentContextState, DataFrameState, ChartState, Status
 from typing import Dict, Any
 from langgraph.graph import StateGraph, END, START
 from langgraph.graph.state import CompiledStateGraph
@@ -54,7 +54,8 @@ class ChartAgentExecutorNode(BaseNode):
             'errors': [],
             'attempts': 0,
             'debug_font': {},
-            'img_path': ''
+            'img_path': '',
+            'status': Status(status="normal", message="Everything is running smoothly.")
         }
 
         self.logger.info("Invoking chart_code_react_agent …")
@@ -71,6 +72,7 @@ class ChartAgentExecutorNode(BaseNode):
         state['chart_desc'] = chart_desc
         state['chart_name'] = chart_name
         state['previous_node'] = "chart_exec"
+        state['status'] = result['status']
         return state
 
 
@@ -102,6 +104,7 @@ class DataFrameAgentExecutorNode(BaseNode):
             "attempts": 0,
             "error_log": "",
             "errors": [],
+            "status": Status(status="normal", message="Everything is running smoothly.")
         }
         input_values = {
             **DEFAULT_DATAFRAME_STATE,
@@ -128,6 +131,7 @@ class DataFrameAgentExecutorNode(BaseNode):
         state['csv_path'] = result['csv_path']
         state['df_meta'] = result['df_meta']
         state['previous_node'] = "df_exec"
+        state['status'] = result['status']
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:

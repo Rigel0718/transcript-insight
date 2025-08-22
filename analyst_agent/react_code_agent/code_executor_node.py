@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.font_manager as fm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from analyst_agent.react_code_agent.state import DataFrameState, ChartState
+from analyst_agent.react_code_agent.state import DataFrameState, ChartState, Status
 from base_node.base import BaseNode
 
 class DataFrameCodeExecutorNode(BaseNode):
@@ -169,7 +169,12 @@ class DataFrameCodeExecutorNode(BaseNode):
                     "format": info.get("format", "csv")
                 }
                 if info.get("path"):
-                    csv_path = info.get("path") 
+                    csv_path = info.get("path")
+            if df_meta['rows'] == 0:
+                os.remove(csv_path)
+                self.logger.warning("[FINISH AGENT] There is no suitable data available.")
+                state['status'] = Status(status="alert", message="[FINISH AGENT] There is no suitable data available.")
+                return state
             self.logger.debug(f"Collected DF meta: {df_meta}")
 
 
