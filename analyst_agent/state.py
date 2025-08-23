@@ -1,6 +1,6 @@
 from typing import TypedDict, Annotated, List, Dict
 import operator
-from analyst_agent.output_artifact import ReportPlan, ChartSpec, TableSpec, AnalysisSpec
+from analyst_agent.report_plan_models import ReportPlan, ChartSpec, TableSpec, AnalysisSpec, MetricSpec, InformMetric
 
 class ReportState(TypedDict, total=False):
     # user_input
@@ -10,6 +10,9 @@ class ReportState(TypedDict, total=False):
 
     # report_element
     report_plan: Annotated[ReportPlan, "Report plan (as a dictionary or serialized string)"] = ''
+    metric_plan: Annotated[List[MetricSpec], "List of MetricSpec(id, rationale, compute_hint, chart_type, produces, tags)"] = []
+    inform_metric: Annotated[InformMetric, "Normalized student profile & transcript summary (name, university, department, dates, credits, GPA, percentage)"] = ''
+    semantic_course_names: Annotated[List[Dict[str,str]], "Per-metric selected course names from semantic extraction (e.g., {'metric_id': '...', 'course_names': 'A; B; C'})"] = {}
     chart: Annotated[ChartSpec, "generated chart spec(name, chart_type, df_ref, options)"] = ''
     table: Annotated[TableSpec, "generated table spec(name, desc, query, constraints)"] = ''
     analyst: Annotated[AnalysisSpec, "Config for Analysis spec (focus, audience, tone, language)"] = ''
