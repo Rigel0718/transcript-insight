@@ -13,13 +13,13 @@ from base_node.env_model import Env
 T = TypeVar("T", bound=dict)
 
 class BaseNode(ABC, Generic[T]):
-    def __init__(self, env: Env, verbose=False, track_time=False, queue: Queue=None, **kwargs):
+    def __init__(self, env: Env, verbose=False, track_time=False, queue: Queue=None, logger: Optional[LoggerAdapter] = None, **kwargs):
         self.name = self.__class__.__name__
         self.verbose = verbose
         self.track_time = track_time
         self.queue = queue
         self.env = env
-        self.run_logger = env.run_logger
+        self.run_logger = logger or env.run_logger
         self.logger: Optional[LoggerAdapter] = None
 
     @abstractmethod

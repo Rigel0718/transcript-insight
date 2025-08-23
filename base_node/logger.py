@@ -1,7 +1,7 @@
 import logging, os, time
 from logging.handlers import RotatingFileHandler
 from typing import Optional
-from analyst_agent.react_code_agent.base import Env
+from .env_model import Env
 
 class _NodeNameFilter(logging.Filter):
     """%(node_name)s KeyError 방지: 레코드에 node_name 필드 강제 주입"""
