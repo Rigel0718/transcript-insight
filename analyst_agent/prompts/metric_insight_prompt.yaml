@@ -30,9 +30,9 @@ messages:
       {metric_spec}   # id, rationale, compute_hint, tags 등
       </metric_spec>
 
-      <analysis_focus>
-      {analysis_focus}
-      </analysis_focus>
+      <analysis_spec>
+      {analysis_spec}
+      </analysis_spec>
 
       <df_stats>
       {df_stats}
