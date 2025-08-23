@@ -13,6 +13,9 @@ class QueryRewrite(BaseModel):
 
 
 class QueryRewriteNode(BaseNode):
+    '''
+    User의 질문이나 요구사항을 LLM이 이해할 수 있도록, 성적표 context에 맞게 변경 또는 재생성하는 노드.
+    '''
     def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
         super().__init__(verbose=verbose, **kwargs)
         self.llm = llm or self._init_llm()
