@@ -5,9 +5,8 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, List
 from langchain.callbacks import get_openai_callback
 from .utils import load_prompt_template
-from pydantic import BaseModel, Field
 from langchain_core.output_parsers import StrOutputParser
-from analyst_agent.output_artifact import AnalysisSpec, TableSpec, ChartSpec, ReportPlan
+from analyst_agent.report_plan_models import AnalysisSpec, TableSpec, ChartSpec, ReportPlan
 
 
 class TranscriptAnalystNode(BaseNode):
@@ -34,6 +33,7 @@ class TranscriptAnalystNode(BaseNode):
 
         focus = analyst.focus
         audience = analyst.audience
+        audience_spec = analyst.audience_spec
         tone = analyst.tone
         language = analyst.language
 
@@ -53,7 +53,8 @@ class TranscriptAnalystNode(BaseNode):
         input_values = {
             'user_query': query, 
             'focus': focus, 
-            'audience': audience, 
+            'audience': audience,
+            'audience_spec': audience_spec,
             'tone': tone, 
             'language': language,
             'tables': dict_table,
