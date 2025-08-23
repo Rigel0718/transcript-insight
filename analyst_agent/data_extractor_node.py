@@ -1,0 +1,69 @@
+from base_node import BaseNode
+from analyst_agent.state import ReportState
+from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from typing import Optional
+from langchain.callbacks import get_openai_callback
+from .utils import load_prompt_template
+from analyst_agent.report_plan_models import InformMetric
+from langchain_core.output_parsers import JsonOutputParser
+
+class DataExtractorNode(BaseNode):
+    '''
+    transcript 정보를 InformMetric으로 추출
+    '''
+    def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+        self.llm = llm or self._init_llm()
+
+    def _init_llm(self):
+        llm = ChatOpenAI(
+            model="gpt-4.1-mini",
+            temperature=0,
+        )
+        return llm
+
+    def run(self, state: ReportState) -> ReportState:
+        prompt = load_prompt_template("prompts/data_extractor_prompt.yaml")
+        chain = prompt | self.llm | JsonOutputParser()
+
+        ''' output_schema
+        {
+            "inform_metric": {
+            "name": str,
+            "university": str,
+            "department": str,
+            "admission_date": "YYYY-MM-DD or null",
+            "graduation_date": "YYYY-MM-DD or null",
+            "degree_number": "str or null",
+            "total_credits": float,
+            "total_gpa_points": float,
+            "overall_gpa": float,
+            "overall_percentage": float
+            },
+            "semantic_course_names": {
+            "<metric_id>": ["과목명1", "과목명2", "..."]
+            }
+        }
+        '''
+        metric_plan = state['metric_plan']
+        semantic_metrics = []
+        for metric_spec in metric_plan.metrics:
+            if metric_spec.extraction_mode == "semantic":
+                semantic_metrics.append({metric_spec.id: metric_spec.extraction_query})
+        
+        input_values = {
+            'dataset': state['dataset'],
+            'semantic_metrics': semantic_metrics,
+        }
+
+        with get_openai_callback() as cb:
+            result = chain.invoke(input_values)
+            cost = cb.total_cost
+
+
+        state['inform_metric'] = result.inform_metric
+        state['semantic_course_names'] = result.semantic_course_names
+        state['cost'] = cost
+
+        return state
