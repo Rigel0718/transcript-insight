@@ -39,6 +39,9 @@ class MetricSpec(BaseModel):
     chart_type: Optional[Literal["line","bar","stacked_bar","scatter","pie","none"]] = "none"
     produces: Literal["table","chart","metric"] = Field(default_factory="metric")
     tags: List[str] = Field(default_factory=list)
+    extraction_mode: Literal["rule","semantic"] = "semantic"
+    extraction_query: Optional[str] = None
+    semantic_course_names: Optional[List[str]] = None
     # # 선택: 가중치/우선순위, 오버라이드 등도 포함 가능
     # priority: Optional[float] = Field(default=None, description="Higher = earlier scheduling")
     # overrides: Optional[dict] = None
@@ -72,5 +75,4 @@ class MetricInsight(BaseModel):
     title: str = Field(..., description="짧은 소제목 (e.g., '수학 역량 요약')")
     insight: str = Field(..., description="2 - 5줄 요약. 사실 중심, 과장 금지")
     key_numbers: List[KeyNumber] = Field(default_factory=list)
-    confidence: float = Field(ge=0.0, le=1.0, default=0.8)
     caveats: List[str] = Field(default_factory=list)
