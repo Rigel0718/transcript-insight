@@ -6,6 +6,7 @@ from typing import Optional
 from langchain.callbacks import get_openai_callback
 from .utils import load_prompt_template
 from analyst_agent.report_plan_models import InformMetric, MetricInsight
+import pandas as pd
 
 class MetricInsightNode(BaseNode):
     '''
@@ -26,18 +27,20 @@ class MetricInsightNode(BaseNode):
     
     def run(self, state: ReportState) -> ReportState:
         prompt = load_prompt_template("prompts/metric_insight_prompt.yaml") 
-        # input variable : metric_spec, analysis_spec, df_stats
+        # input variable : metric_spec, analysis_spec, dataframe
         chain = prompt | self.llm.with_structured_output(MetricInsight)
         
         metric_spec = state['metric_spec']
         self.logger.info(f"[{self.name}]: {metric_spec}")
         analyst = state['analyst']
         self.logger.info(f"[{self.name}]: {analyst}")
-        df_stats = state['df_stats']
-        self.logger.info(f"[{self.name}]: {df_stats}")
+        csv_path = state['csv_path']
+
+        df = pd.read_csv(csv_path)
+        dataframe = df.to_dict(orient="records")
 
         with get_openai_callback() as cb:
-            result = chain.invoke(input = {'metric_spec':metric_spec, 'analysis_spec':analyst, 'df_stats':df_stats})
+            result = chain.invoke(input = {'metric_spec':metric_spec, 'analysis_spec':analyst, 'dataframe':dataframe})
             cost = cb.total_cost
         self.logger.info(f"[{self.name}]: {result}")
         state['metric_insight'] = result
