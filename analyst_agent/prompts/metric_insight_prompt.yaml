@@ -7,7 +7,7 @@ messages:
       출력은 JSON 한 개만 반환한다. (마크다운/주석 금지)
 
       <constraints>
-      - 2~3줄 문장으로 작성.
+      - 2~5줄 문장으로 작성.
       - 과장/추측 금지, 제공된 수치 범위에서만 해석.
       - 독자는 {audience_spec} 이다. 톤은 간결하고 평가 기준이 분명해야 한다.
       - 한국어로 작성.
@@ -17,9 +17,8 @@ messages:
       {
         "metric_id": "str",
         "title": "str",
-        "insight": "str (2-3 sentences)",
+        "insight": "str (2-5 sentences)",
         "key_numbers": [{"label":"str","value": "number or str","unit":"str|null"}],
-        "confidence": 0.0,
         "caveats": ["str", "..."]
       }
       </output_schema>
