@@ -75,4 +75,6 @@ class MetricInsight(BaseModel):
     title: str = Field(..., description="짧은 소제목 (e.g., '수학 역량 요약')")
     insight: str = Field(..., description="2 - 5줄 요약. 사실 중심, 과장 금지")
     key_numbers: List[KeyNumber] = Field(default_factory=list)
+    csv_path: Optional[str] = None
+    chart_path: Optional[str] = None
     caveats: List[str] = Field(default_factory=list)
