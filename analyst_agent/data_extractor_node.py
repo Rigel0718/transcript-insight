@@ -48,7 +48,7 @@ class DataExtractorNode(BaseNode):
         '''
         metric_plan = state['metric_plan']
         semantic_metrics = []
-        for metric_spec in metric_plan.metrics:
+        for metric_spec in metric_plan:
             if metric_spec.extraction_mode == "semantic":
                 semantic_metrics.append({metric_spec.id: metric_spec.extraction_query})
         
@@ -61,9 +61,12 @@ class DataExtractorNode(BaseNode):
             result = chain.invoke(input_values)
             cost = cb.total_cost
 
-
-        state['inform_metric'] = result.inform_metric
-        state['semantic_course_names'] = result.semantic_course_names
+        self.logger.info(f"[{self.name}]: {result}")
+        state['inform_metric'] = result['inform_metric']
+        for metric_spec in state['metric_plan']:
+            if metric_spec.extraction_mode == "semantic":
+                metric_spec.semantic_course_names = result['semantic_course_names'][metric_spec.id]
+        state['metric_plan'] = state['metric_plan']
         state['cost'] = cost
 
         return state
