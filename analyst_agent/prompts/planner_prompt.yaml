@@ -32,8 +32,8 @@ messages:
         - compute_hint: str (DF/차트 생성을 바로 유도하는 **짧은** 지시문)
         - chart_type: "line" | "bar" | "stacked_bar" | "scatter" | "pie" | "none"
         - produces: "table" | "chart" | "metric"   # 단일 값 (Literal)
-        - tags: List[str]
-              - extraction_mode: "rule" | "semantic"  # 데이터 추출 방식 선택 (코드 규칙 vs 의미/맥락 기반 LLM)
+        - tags: List[str]  # 3~7개의 태그 (ex) ["gpa", "year", "trend"]
+        - extraction_mode: "rule" | "semantic"  # 데이터 추출 방식 선택 (코드 규칙 vs 의미/맥락 기반 LLM)
         - extraction_query: Optional[str]          # extraction_mode가 'semantic'일 때 제공하는 **자연어 지시문**
       </output>
 
@@ -51,7 +51,7 @@ messages:
         - rule: 명확한 규칙/컬럼 기반 필터링이 가능한 경우 (예: year==1, course_type=='major', gpa>=3.5).
         - semantic: 의미/맥락 해석이 필요한 경우 (예: "수학적 논리 역량 과목", "과학적 성격의 과목", "AI 관련 과목").
       • **extraction_query 작성 원칙 (semantic일 때)**:
-        - 순수 **자연어**로, 데이터셋에서 무엇을 어떻게 찾아야 하는지 **명확하고 간결**하게 기술합니다.
+        - 순수 **자연어**로, 데이터셋에서 무엇을 어떻게 찾아야 하는지 **명확하고 간결**하게 기술합니다. (한국어로 기술)
         - 포함/제외 기준, 예시(포함/배제), 열 이름 힌트(있다면)를 서술합니다.
         - 예) "수학적 사고가 강하게 요구되는 과목(미적분, 선형대수, 통계역학 등)과 수학적 내용이 핵심인 물리/공학 과목을 포함. 과목명/설명에서 수학 관련 키워드 또는 수학적 도구 사용을 나타내는 서술을 단서로 식별. credits와 grade를 함께 추출."
       </extraction_guidelines>
@@ -106,9 +106,9 @@ messages:
       
       <examples>
       1) **rule 기반 예시**
-      {
+      {{
          "metrics": [
-            {
+            {{
                "id": "first_year_gpa",
                "rationale": "1학년 시기의 학업 적응도를 GPA로 평가한다.",
                "compute_hint": "Filter by year==1; compute average GPA per term and overall.",
@@ -117,14 +117,14 @@ messages:
                "tags": ["gpa", "year", "trend"],
                "extraction_mode": "rule",
                "extraction_query": None
-            }
+            }}
          ]
-      }
+      }}
 
       2) **semantic 기반 예시**
-      {
+      {{
         "metrics": [
-          {
+          {{
             "id": "ai_related_courses_performance",
             "rationale": "AI/ML 관련 과목 성취도를 파악해 관련 역량을 평가한다.",
             "compute_hint": "After extracting AI-related courses, compute average grade and credits distribution by sub-area.",
@@ -133,9 +133,9 @@ messages:
             "tags": ["ai", "ml", "performance"],
             "extraction_mode": "semantic",
             "extraction_query": "Identify courses clearly related to AI/ML/Data Science (e.g., Machine Learning, Deep Learning, Computer Vision, NLP, Data Mining, Reinforcement Learning). Include courses with substantial ML content under CS/EE. Use course names and descriptions; extract course_name, term, credits, grade."
-          }
+          }}
         ]
-      }
+      }}
       </examples>
   - role: user
     content: |
