@@ -15,8 +15,8 @@ messages:
       - 과목 수가 매우 많을 수 있으므로, `max_names_per_metric`를 넘는 항목은 잘라서 반환합니다.
 
       <output_schema>
-      {
-        "inform_metric": {
+      {{
+        "inform_metric": {{
           "name": str,
           "university": str,
           "department": str,
@@ -27,11 +27,11 @@ messages:
           "total_gpa_points": float,
           "overall_gpa": float,
           "overall_percentage": float
-        },
-        "semantic_course_names": {
+        }},
+        "semantic_course_names": {{
           "<metric_id>": ["과목명1", "과목명2", "..."]
-        }
-      }
+        }}
+      }}
       </output_schema>
 
       <quality_checks>
@@ -49,14 +49,8 @@ messages:
 
       <semantic_metrics>
       # MetricSpec 중 extraction_mode=="semantic" 인 항목만 전달됩니다.
-      # 각 항목은 {"id": ..., "extraction_query": ...} 형태입니다.
+      # 각 항목은 {{"id": ..., "extraction_query": ...}} 형태입니다.
       {semantic_metrics}
       </semantic_metrics>
-
-      <params>
-      {{
-        "max_names_per_metric": {max_names_per_metric}
-      }}
-      </params>
 
       위 dataset과 semantic_metrics를 바탕으로, <output_schema> 형식의 JSON만 반환하세요.
