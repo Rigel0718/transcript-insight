@@ -15,7 +15,9 @@ gpa_trend_metric = MetricSpec(
     compute_hint="compute term_gpa by term (if missing, derive from course grades & credits); line chart term vs term_gpa; include table of term, term_gpa;",
     chart_type="line",
     produces="chart",
-    tags=["required","trend","gpa","term"]
+    tags=["required","trend","gpa","term"],
+    extraction_mode="rule",
+    extraction_query=None
 )
 
 credit_category_share_metric = MetricSpec(
@@ -24,7 +26,9 @@ credit_category_share_metric = MetricSpec(
     compute_hint="aggregate total_credits by course_category (or course_type|is_core|department); compute percentage of total; pie chart category vs credit_share; include table;",
     chart_type="pie",
     produces="chart",
-    tags=["required","composition","credits","category","share"]
+    tags=["required","composition","credits","category","share"],
+    extraction_mode="rule",
+    extraction_query=None
 )
 
 
