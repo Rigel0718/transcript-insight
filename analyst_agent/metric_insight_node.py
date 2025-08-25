@@ -1,0 +1,45 @@
+from base_node import BaseNode
+from analyst_agent.state import ReportState
+from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from typing import Optional
+from langchain.callbacks import get_openai_callback
+from .utils import load_prompt_template
+from analyst_agent.report_plan_models import InformMetric, MetricInsight
+
+class MetricInsightNode(BaseNode):
+    '''
+    MetricNode의 결과를 기반으로, 실제 추출된 DF, metric기반으로 분석하는 노드 
+    차트도 결국 dataframe으로 분석을 해야하기 multimodal를 사용하지 않는 이상 df로 분석해야하기 때문에 
+    이 노드에서 metric결과를 활용해서 LLM을 통해 분석 결과를 생성
+    '''
+    def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
+        super().__init__(verbose=verbose, **kwargs)
+        self.llm = llm or self._init_llm()
+
+    def _init_llm(self):
+        llm = ChatOpenAI(
+            model="gpt-4.1-mini",
+            temperature=0,
+        )
+        return llm
+    
+    def run(self, state: ReportState) -> ReportState:
+        prompt = load_prompt_template("prompts/metric_insight_prompt.yaml") 
+        # input variable : metric_spec, analysis_spec, df_stats
+        chain = prompt | self.llm.with_structured_output(MetricInsight)
+        
+        metric_spec = state['metric_spec']
+        self.logger.info(f"[{self.name}]: {metric_spec}")
+        analyst = state['analyst']
+        self.logger.info(f"[{self.name}]: {analyst}")
+        df_stats = state['df_stats']
+        self.logger.info(f"[{self.name}]: {df_stats}")
+
+        with get_openai_callback() as cb:
+            result = chain.invoke(input = {'metric_spec':metric_spec, 'analysis_spec':analyst, 'df_stats':df_stats})
+            cost = cb.total_cost
+        self.logger.info(f"[{self.name}]: {result}")
+        state['metric_insight'] = result
+        state['cost'] = cost
+        return state
