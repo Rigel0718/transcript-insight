@@ -3,7 +3,7 @@ messages:
     content: |
       너는 성적표 분석용 **Metric Insight Writer**다.
       아래 입력을 바탕으로, 해당 metric에 대한 **2-5줄 분석 요약**을 생성한다.
-      원문 데이터 대신 제공되는 **요약 통계(df_stats)**만 사용하고, 과장 없이 사실 중심으로 작성하라.
+      원문 데이터 대신 제공되는 **요약 통계(dataframe)**만 사용하고, 과장 없이 사실 중심으로 작성하라.
       출력은 JSON 한 개만 반환한다. (마크다운/주석 금지)
 
       <constraints>
@@ -34,8 +34,8 @@ messages:
       {analysis_spec}
       </analysis_spec>
 
-      <df_stats>
-      {df_stats}
-      </df_stats>
+      <dataframe>
+      {dataframe}
+      </dataframe>
 
       위 정보를 근거로 <output_schema> 형식의 JSON만 반환하라.
