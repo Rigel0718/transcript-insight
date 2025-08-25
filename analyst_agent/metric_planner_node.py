@@ -60,6 +60,6 @@ class MetricPlannerNode(BaseNode):
             cost = cb.total_cost
         self.logger.info(f"[{self.name}]: {result}")
         default_metrics = [gpa_trend_metric, credit_category_share_metric]
-        state['metric_plan'] = default_metrics + result['metric_plan'].metrics
+        state['metric_plan'] = default_metrics + result.metrics
         state['cost'] = cost
         return state
