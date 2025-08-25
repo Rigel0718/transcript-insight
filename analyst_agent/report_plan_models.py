@@ -45,7 +45,8 @@ class MetricSpec(BaseModel):
 
 class MetricPlan(BaseModel):
     # 최소 3개, 최대 6개
-    metrics: conlist(MetricSpec, min_length=3, max_length=6)
+    metrics: conlist(MetricSpec, min_length=1, max_length=4)
+
 
 class InformMetric(BaseModel):
     name: str
@@ -58,4 +59,18 @@ class InformMetric(BaseModel):
     total_gpa_points: float
     overall_gpa: float
     overall_percentage: float
-    
+
+
+class KeyNumber(BaseModel):
+    label: str
+    value: float | int | str
+    unit: Optional[str] = None
+
+
+class MetricInsight(BaseModel):
+    metric_id: str
+    title: str = Field(..., description="짧은 소제목 (e.g., '수학 역량 요약')")
+    insight: str = Field(..., description="2 - 5줄 요약. 사실 중심, 과장 금지")
+    key_numbers: List[KeyNumber] = Field(default_factory=list)
+    confidence: float = Field(ge=0.0, le=1.0, default=0.8)
+    caveats: List[str] = Field(default_factory=list)
