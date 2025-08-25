@@ -19,6 +19,8 @@ messages:
         "title": "str",
         "insight": "str (2-5 sentences)",
         "key_numbers": [{"label":"str","value": "number or str","unit":"str|null"}],
+        "csv_path": "Optional[str]",
+        "chart_path": "Optional[str]",
         "caveats": ["str", "..."]
       }
       </output_schema>
