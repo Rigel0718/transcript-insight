@@ -288,7 +288,7 @@ class ChartCodeExecutorNode(BaseNode):
                 plt.savefig(path, dpi=dpi, bbox_inches="tight")
             else:
                 fig.savefig(path, dpi=dpi, bbox_inches="tight")
-            registry["images"].append(path)
+            registry["images"] = path
             return path
 
         return {
@@ -312,7 +312,7 @@ class ChartCodeExecutorNode(BaseNode):
         mpl_handler = logging.StreamHandler(log_stream)
         mpl_logger.addHandler(mpl_handler)
 
-        registry: Dict[str, Any] = {"images": []}
+        registry: Dict[str, Any] = {"images": ''}
         errors: list[str] = []
         error_log = ""
 
