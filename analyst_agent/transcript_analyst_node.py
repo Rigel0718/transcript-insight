@@ -6,8 +6,7 @@ from typing import Optional, List
 from langchain.callbacks import get_openai_callback
 from .utils import load_prompt_template
 from langchain_core.output_parsers import StrOutputParser
-from analyst_agent.report_plan_models import AnalysisSpec, TableSpec, ChartSpec, ReportPlan
-
+from analyst_agent.report_plan_models import AnalysisSpec, MetricInsightv2, InformMetric, MetricSpec, ReportPlan
 
 class TranscriptAnalystNode(BaseNode):
     def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
@@ -17,48 +16,24 @@ class TranscriptAnalystNode(BaseNode):
     def _init_llm(self):
         llm = ChatOpenAI(
             model="gpt-4o-mini",
-            temperature=0,
+            temperature=0.4,
         )
         return llm
         
     def run(self, state: ReportState) -> ReportState:
-        prompt = load_prompt_template("prompts/transcript_analyst.yaml")
+        prompt = load_prompt_template("prompts/transcript_analyst_prompt.yaml")
         chain = prompt | self.llm | StrOutputParser()
 
-        query = state['rewrited_query']
+        analyst: AnalysisSpec = state['analyst']
         report_plan: ReportPlan = state['report_plan']
-        analyst: AnalysisSpec = report_plan.analysis
-        tables: List[TableSpec] = report_plan.tables
-        charts: List[ChartSpec] = report_plan.charts
-
-        focus = analyst.focus
-        audience = analyst.audience
-        audience_spec = analyst.audience_spec
-        tone = analyst.tone
-        language = analyst.language
-
-        for table in tables:
-            dict_table = {
-                'table_name': table.name,
-                'table_desc': table.desc,
-            }
-
-        for chart in charts:
-            dict_chart = {
-                'chart_name': chart.name,
-                'chart_type': chart.chart_type,
-                'df_ref': chart.df_ref,
-            }
+        inform_metric: InformMetric = state['inform_metric']
 
         input_values = {
-            'user_query': query, 
-            'focus': focus, 
-            'audience': audience,
-            'audience_spec': audience_spec,
-            'tone': tone, 
-            'language': language,
-            'tables': dict_table,
-            'charts': dict_chart,
+            'analysis_spec': analyst,
+            'metric_insights': report_plan,
+            'inform_metric': inform_metric,
+            'report_title':'',
+            'report_date':state['run_id'],
             }
 
         with get_openai_callback() as cb:
@@ -66,5 +41,5 @@ class TranscriptAnalystNode(BaseNode):
             cost = cb.total_cost
 
         state['cost'] = cost
-        state['report_plan'] = ReportPlan(**result)
+        state['report'] = result
         return state
