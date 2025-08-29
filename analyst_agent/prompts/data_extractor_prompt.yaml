@@ -50,6 +50,7 @@ messages:
       <semantic_metrics>
       # MetricSpec 중 extraction_mode=="semantic" 인 항목만 전달됩니다.
       # 각 항목은 {{"id": ..., "extraction_query": ...}} 형태입니다.
+      # 선택사항입니다. 값이 존재하지 않으면 inform_metric만 반환됩니다.
       {semantic_metrics}
       </semantic_metrics>
 
