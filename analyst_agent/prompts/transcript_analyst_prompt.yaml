@@ -32,17 +32,17 @@ messages:
       </structure>
 
       <per_metric_format>
-      - H2: {title}
+      - H2: {{title}}
       - 1~2문장 핵심 요약(insight 반영, 과장 금지)
       - 핵심 지표 표:
             | 지표 | 값 | 단위 |
             |---|---:|:---|
-            | {label} | {value} | {unit or ""} |
+            | {{label}} | {{value}} | {{unit or ""}} |
       - 차트(조건부): chart_path가 있으면 반드시 삽입  
-            ![{title}]({chart_path})
+            ![{{title}}]({{chart_path}})
         캡션 1줄: 차트가 보여주는 포인트
       - 해석 포인트(3~5 불릿): audience_spec 관점 + analysis_spec.focus 연결
-      - 출처(조건부): csv_path가 있으면 `데이터 출처: {csv_path}`
+      - 출처(조건부): csv_path가 있으면 `데이터 출처: {{csv_path}}`
       - 주의/한계(조건부): caveats 불릿
       </per_metric_format>
 
@@ -75,5 +75,5 @@ messages:
 
       위 입력만 근거로 위 <structure>/<per_metric_format>/<rules>를 지켜 **순수 Markdown** 보고서를 작성하라.
       - language와 tone을 정확히 준수하라.
-      - chart_path가 있는 항목은 즉시 이미지로 포함하라: ![{title}]({chart_path})
+      - chart_path가 있는 항목은 즉시 이미지로 포함하라: <img src="{{chart_path}}" width="500"/>
       - 표와 리스트는 표준 Markdown 문법만 사용하라.
