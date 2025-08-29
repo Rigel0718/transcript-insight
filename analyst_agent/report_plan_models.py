@@ -23,13 +23,6 @@ class AnalysisSpec(BaseModel):
     language: Literal["ko","en"] = "ko"
 
 
-class ReportPlan(BaseModel):
-    tables: List[TableSpec]
-    charts: List[ChartSpec]
-    analysis: AnalysisSpec
-    output_format: Literal["md","html","pdf"] = "md"
-    title: str = "성적표 분석 보고서"
-
 
 
 class MetricSpec(BaseModel):
@@ -74,7 +67,14 @@ class MetricInsight(BaseModel):
     metric_id: str
     title: str = Field(..., description="짧은 소제목 (e.g., '수학 역량 요약')")
     insight: str = Field(..., description="2 - 5줄 요약. 사실 중심, 과장 금지")
+    produces: Literal["table","chart","metric"] = Field(default_factory="metric")
     key_numbers: List[KeyNumber] = Field(default_factory=list)
-    csv_path: Optional[str] = None
-    chart_path: Optional[str] = None
     caveats: List[str] = Field(default_factory=list)
+
+class MetricInsightv2(MetricInsight):
+    dataframe: Optional[List[Dict]] = None
+    csv_path: Optional[str] = ''
+    chart_path: Optional[str] = ''
+
+class ReportPlan(BaseModel):
+    metric_insights: List[MetricInsightv2]
