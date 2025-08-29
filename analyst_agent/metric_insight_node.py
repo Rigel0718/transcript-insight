@@ -1,11 +1,11 @@
 from base_node import BaseNode
-from analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
+from typing import Optional, Dict
+from langgraph.types import Command
 from langchain.callbacks import get_openai_callback
-from .utils import load_prompt_template
-from analyst_agent.report_plan_models import InformMetric, MetricInsight
+from .utils import load_prompt_template, to_relative_path
+from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2
 import pandas as pd
 
 class MetricInsightNode(BaseNode):
@@ -25,7 +25,7 @@ class MetricInsightNode(BaseNode):
         )
         return llm
     
-    def run(self, state: ReportState) -> ReportState:
+    def run(self, state: Dict) -> Dict:
         prompt = load_prompt_template("prompts/metric_insight_prompt.yaml") 
         # input variable : metric_spec, analysis_spec, dataframe
         chain = prompt | self.llm.with_structured_output(MetricInsight)
@@ -34,15 +34,29 @@ class MetricInsightNode(BaseNode):
         self.logger.info(f"[{self.name}]: {metric_spec}")
         analyst = state['analyst']
         self.logger.info(f"[{self.name}]: {analyst}")
+        
         csv_path = state['csv_path']
+        relative_csv_path = to_relative_path(csv_path)
+        chart_path = state['chart_path']
+        relative_chart_path = to_relative_path(chart_path)
 
         df = pd.read_csv(csv_path)
         dataframe = df.to_dict(orient="records")
 
         with get_openai_callback() as cb:
-            result = chain.invoke(input = {'metric_spec':metric_spec, 'analysis_spec':analyst, 'dataframe':dataframe})
+            result = chain.invoke(
+                input = {
+                    'metric_spec':metric_spec,
+                    'analysis_spec':analyst, 
+                    'dataframe':dataframe,
+                    }
+                )
             cost = cb.total_cost
         self.logger.info(f"[{self.name}]: {result}")
-        state['metric_insight'] = result
-        state['cost'] = cost
-        return state
+
+        metric_insight_v2 = MetricInsightv2(**result.model_dump()).model_copy(update={
+        "dataframe": dataframe,
+        "csv_path": relative_csv_path,           
+        "chart_path": relative_chart_path,       
+        })
+        return Command(update={'metric_insight': metric_insight_v2, 'cost': cost})
