@@ -36,12 +36,20 @@ class MetricInsightNode(BaseNode):
         self.logger.info(f"[{self.name}]: {analyst}")
         
         csv_path = state['csv_path']
+        self.logger.info(f"[{self.name}]: {csv_path}")
         relative_csv_path = to_relative_path(csv_path)
         chart_path = state['chart_path']
+        self.logger.info(f"[{self.name}]: {chart_path}")
         relative_chart_path = to_relative_path(chart_path)
 
-        df = pd.read_csv(csv_path)
-        dataframe = df.to_dict(orient="records")
+        message = state['message']
+        dataframe = []
+        if csv_path:
+            try:
+                df = pd.read_csv(csv_path)
+                dataframe = df.to_dict(orient="records")
+            except Exception as e:
+                self.logger.error(f"Failed to load CSV: {e}")
 
         with get_openai_callback() as cb:
             result = chain.invoke(
@@ -49,6 +57,7 @@ class MetricInsightNode(BaseNode):
                     'metric_spec':metric_spec,
                     'analysis_spec':analyst, 
                     'dataframe':dataframe,
+                    'message':message,
                     }
                 )
             cost = cb.total_cost
@@ -59,4 +68,6 @@ class MetricInsightNode(BaseNode):
         "csv_path": relative_csv_path,           
         "chart_path": relative_chart_path,       
         })
-        return Command(update={'metric_insight': metric_insight_v2, 'cost': cost})
+        state['cost'] += cost
+        state['metric_insight'] = metric_insight_v2
+        return state
