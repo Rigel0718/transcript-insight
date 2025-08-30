@@ -12,7 +12,7 @@ class ReportState(TypedDict, total=False):
     metric_plan: Annotated[List[MetricSpec], "List of MetricSpec(id, rationale, compute_hint, chart_type, produces, tags)"] = []
     inform_metric: Annotated[InformMetric, "Normalized student profile & transcript summary (name, university, department, dates, credits, GPA, percentage)"] = ''
     analyst: Annotated[AnalysisSpec, "Config for Analysis spec (focus, audience, tone, language)"] = ''
-
+    report: Annotated[str, "Final report"] = ''
     rewrite_query: Annotated[str, "Rewritten query"] = ''
 
     cost: Annotated[float, "total cost(dollars)"] = 0.0
