@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from analyst_agent.react_code_agent.state import DataFrameState, ChartState, Status
 from base_node.base import BaseNode
 from analyst_agent.react_code_agent.utils import is_alert
+from langgraph.types import Command
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):
@@ -211,7 +212,11 @@ class DataFrameCodeExecutorNode(BaseNode):
             state['errors'] = (state.get("errors") or []) + errors
             state['attempts'] = attempts
 
-            return state
+            if csv_path:
+                goto = 'router'
+            else:
+                goto = 'chart_code_executor'
+            return Command(goto=goto, update=state)
         finally:
             try:
                 plt.close("all")
