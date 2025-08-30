@@ -75,5 +75,6 @@ messages:
 
       위 입력만 근거로 위 <structure>/<per_metric_format>/<rules>를 지켜 **순수 Markdown** 보고서를 작성하라.
       - language와 tone을 정확히 준수하라.
-      - chart_path가 있는 항목은 즉시 이미지로 포함하라: <img src="{{chart_path}}" width="500"/>
+      - chart_path가 있는 항목은 즉시 이미지로 포함하라: <img src="{{chart_path}}" width="500"/> 
+      - chart_path img다음 반드시 줄 바꿈 뒤, 다음 내용을 작성해라
       - 표와 리스트는 표준 Markdown 문법만 사용하라.
