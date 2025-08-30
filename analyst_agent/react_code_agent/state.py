@@ -69,7 +69,7 @@ class ChartState(TypedDict, total=False):
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last chart execution"] = ''
     stderr: Annotated[str, "Standard error output from the last chart execution"] = ''
-    error_logs: Annotated[str, "Error message from the last chart execution"] = ''
+    error_log: Annotated[str, "Error message from the last chart execution"] = ''
     errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
     attempts: Annotated[int, "Number of attempts to execute the chart code"] = 0
     debug_font: Annotated[Dict, "Debug font information"] = {}
@@ -82,6 +82,7 @@ class AgentContextState(TypedDict, total=False):
     run_id: Annotated[str, "Unique run identifier"] = ''
     allow_scan_df: Annotated[bool, "Whether scanning/previewing the entire DataFrame is allowed"] = False
     status: Annotated[Status, "Status of the agent"] = Status(status="normal", message="Everything is running smoothly.")
+    cost: Annotated[float, "Total cost of the agent"] = 0.0
 
     # Progress Tracking
     attempts: Annotated[Dict, "Number of attempts per task type, e.g., {'df': int, 'chart': int}"] = {}
