@@ -2,6 +2,7 @@ from base_node.base import BaseNode
 from analyst_agent.react_code_agent.state import ChartState, DataFrameState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain.callbacks import get_openai_callback
 from typing import Optional
 from .utils import load_prompt_template
 import pandas as pd
@@ -55,7 +56,9 @@ class DataFrameCodeGeneratorNode(BaseNode):
         
         try:
             self.logger.info("Invoking LLM for df_code/df_info …")
-            result = chain.invoke(input_values)
+            with get_openai_callback() as cb:
+                result = chain.invoke(input_values)
+                cost = cb.total_cost
             self.logger.info("LLM invocation done")
             self.logger.debug(f"raw LLM result: {result}")
         except Exception as e:
@@ -63,6 +66,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             state['status'] = status
+            state['cost'] += cost
             return state
 
         df_code = result.df_code
@@ -170,7 +174,9 @@ class ChartCodeGeneratorNode(BaseNode):
         
         try:
             self.logger.info("Invoking LLM for chart code/info …")
-            chart_generator_result = chain.invoke(input_values)
+            with get_openai_callback() as cb:
+                chart_generator_result = chain.invoke(input_values)
+                cost = cb.total_cost
             self.logger.info("LLM invocation done")
             self.logger.debug(f"raw LLM result: {chart_generator_result}")
         except Exception as e:
@@ -178,6 +184,7 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             state['status'] = status
+            state['cost'] += cost
             return state
         
         ''' output foramt (pydantic model: ChartSpec)
