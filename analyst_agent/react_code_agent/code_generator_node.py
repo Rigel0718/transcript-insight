@@ -7,6 +7,7 @@ from typing import Optional
 from .utils import load_prompt_template
 import pandas as pd
 from pydantic import BaseModel, Field
+import os
 
 
 class DataFrameSpec(BaseModel):
@@ -50,8 +51,10 @@ class DataFrameCodeGeneratorNode(BaseNode):
         input_query = state.get("user_query", "")
         dataset = state.get("dataset", {})
         error_log = state.get("error_log", "")
-        input_values = {'user_query': input_query, 'dataset': dataset, 'error_log': error_log}
+        previous_df_code = state.get("df_code", "")
+        input_values = {'user_query': input_query, 'dataset': dataset, 'error_log': error_log, 'previous_df_code': previous_df_code}
 
+        self.logger.debug(f"error_log: {error_log}")
         self.logger.debug(f"chain input preview: {input_values}")
         
         try:
@@ -153,7 +156,13 @@ class ChartCodeGeneratorNode(BaseNode):
             self.logger.debug(f"previous error_logs: {code_error}")
 
         
-       
+        csv_path = state.get("csv_path")
+        if not csv_path or not os.path.isfile(csv_path):
+            msg = f"CSV not ready or missing: {csv_path}, Must going to 'to_gen_df'"
+            self.logger.warning(msg)
+            state.setdefault("errors", []).append(f"[{self.name}] {msg}")
+            state["status"] = Status(status="alert", message=msg)
+            return state
 
         # CSV 파일 읽기
         df = pd.read_csv(csv_path)

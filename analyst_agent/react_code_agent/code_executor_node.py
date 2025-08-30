@@ -8,6 +8,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from analyst_agent.react_code_agent.state import DataFrameState, ChartState, Status
 from base_node.base import BaseNode
+from analyst_agent.react_code_agent.utils import is_alert
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):
@@ -110,6 +111,9 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
     def run(self, state: DataFrameState) -> DataFrameState:
+        if is_alert(state.get("status")):
+            self.logger.info("Upstream status='alert'. Skipping DataFrameCodeExecutorNode.run and returning state as-is.")
+            return state
         code = state.get("df_code")
         if not code or not code.strip():
             self.logger.warning("No df_code provided")
@@ -170,10 +174,24 @@ class DataFrameCodeExecutorNode(BaseNode):
                 }
                 if info.get("path"):
                     csv_path = info.get("path")
-            if df_meta['rows'] == 0:
-                os.remove(csv_path)
-                self.logger.warning("[FINISH AGENT] There is no suitable data available.")
-                state['status'] = Status(status="alert", message="[FINISH AGENT] There is no suitable data available.")
+            if df_meta and df_meta.get("rows", 0) == 0:
+                try:
+                    if csv_path: os.remove(csv_path)
+                except Exception:
+                    pass
+                msg = "[FINISH AGENT] There is no suitable data available."
+                self.logger.warning(msg)
+                state.update({
+                    "df_handle": df_handles,
+                    "df_meta": df_meta,
+                    "csv_path": "",
+                    "stdout": stdout_stream.getvalue(),
+                    "stderr": stderr_stream.getvalue().strip(),
+                    "error_log": msg,
+                    "errors": (state.get("errors") or []) + ["empty_dataframe"],
+                    "attempts": (state.get("attempts", 0)) + 1,
+                    "status": Status(status="alert", message=msg),
+                })
                 return state
             self.logger.debug(f"Collected DF meta: {df_meta}")
 
@@ -301,6 +319,9 @@ class ChartCodeExecutorNode(BaseNode):
         }
 
     def run(self, state: ChartState) -> ChartState:
+        if is_alert(state.get("status")):
+            self.logger.info("Upstream status='alert'. Skipping ChartCodeExecutorNode.run and returning state as-is.")
+            return state
         code = state["chart_code"]
         if not code or not code.strip():
             self.logger.warning("No chart_code provided")
@@ -349,14 +370,23 @@ class ChartCodeExecutorNode(BaseNode):
                 errors.append(msg)
                 error_log = error_log or "Font warning detected"
                 self.logger.warning(msg)
-
+            
+            # 이미지가 존재하지 않는다면, 직접 저장
+            if not registry["images"]:
+                try:
+                    figs = [plt.figure(n) for n in plt.get_fignums()]
+                    if figs:
+                        path = g_env["save_chart"](fig=figs[-1])
+                        self.logger.info(f"Auto-saved chart to {path} (fallback)")
+                        registry["images"] = path
+                except Exception:
+                    pass
             attempts = (state.get("attempts", 0)) + 1
             
             if error_log:
-                self.logger.error("Error_log: ", error_log)
-            
+                self.logger.error(f"Error_log: {error_log}")
             if errors:
-                self.logger.error("Errors: ", errors)
+                self.logger.error(f"Errors: {errors}")
 
             state['img_path'] = registry["images"]
             state['stdout'] = stdout_stream.getvalue()
