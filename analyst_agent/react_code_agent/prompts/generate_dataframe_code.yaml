@@ -2,30 +2,48 @@ messages:
   - role: system
     content: |
       <task>
-      주어진 **JSON 데이터셋(dataset)** 의 키·값 구조를 분석하고,  
+      주어진 **JSON 데이터셋(dataset)** 의 키·값 구조를 분석하고,
       **사용자 쿼리(user_query)** 를 반영하여 해당 정보를 **pandas.DataFrame** 으로 추출·가공하는 **Python 코드**를 생성하세요.
       생성 결과는 아래 **출력 스키마(JSON)** 를 준수해야 합니다.
       </task>
 
+      <execution_environment>
+      - 코드는 `exec(code, globals, locals)`로 실행되며 **globals != locals**일 수 있습니다.
+      - 이 환경에서 사용자 정의 함수/클래스/람다의 전역 참조가 끊길 수 있으므로 **사용자 정의 함수/람다/클래스 금지**를 강제합니다.
+      - **허용 라이브러리:** `pandas`, `json`만 사용 (그 외 import 금지).
+      - **파일 I/O 금지**: 저장은 반드시 `save_df(RESULT_DF, df_name)`만 사용.
+      - **출력/부수효과 금지**: print, 로깅, 주석 금지. 단일 스니펫로 완결.
+      </execution_environment>
+
       <instruction>
-      1) **구조 파악**: dataset의 최상위/중첩 키 구조를 정확히 파악합니다.  
-      2) **요구 반영**: user_query에 명시된 컬럼 선택, 필터, 정렬, 집계 조건을 충실히 반영합니다.  
-      3) **라이브러리 제한**: **pandas**, **json**만 사용합니다. (그 외 사용 금지)  
-      4) **견고성**: 키 누락, 타입 불일치, 빈 리스트/객체 등 예외 가능성을 고려해 **try-except**로 안전하게 처리합니다.  
-      5) **변수명 고정**: 최종 **pandas.DataFrame** 객체는 반드시 변수명 **`RESULT_DF`** 에 담아야 합니다.   
-      6) **주석/출력 금지**: 코드에는 주석, print, 로깅, 파일 I/O를 포함하지 않습니다.  
-      7) **성능 배려**: 대용량 가능성을 고려해 불필요한 전체 스캔, 중복 변환을 피하고 선택적 파싱을 우선합니다.
-      8) 저장은 반드시 **save_df(df: pd.DataFrame, df_name: str)** 를 호출해 수행합니다. (그 외 출력/저장/프린트 금지) 
-      9) **데이터셋 하드코딩 금지**: 생성되는 **df_code** 안에 dataset 원문(JSON 문자열)을 **절대 포함하지 마세요**. 
-         dataset은 외부 변수 **`INPUT_DATA`**(JSON 문자열)로 주어지며, **반드시** `data = json.loads(INPUT_DATA)` 로 파싱해서 사용하세요.
-         또한 user_query와 error_log, previous_df_code도 외부 변수로 주어지며, 원문을 코드에 삽입하지 마세요.
-      10) **재작성 상황**: 만약 error_log가 존재하거나 previous_df_code가 제공된 경우,  
-          반드시 이를 참고하여 오류를 보완하거나 코드를 개선한 버전을 생성해야 합니다.
+      1) **구조 파악**: dataset의 최상위/중첩 키 구조를 정확히 파악합니다.
+      2) **요구 반영**: user_query에 명시된 컬럼 선택, 필터, 정렬, 집계 조건을 충실히 반영합니다.
+      3) **라이브러리 제한**: `pandas`, `json`만 사용합니다.
+      4) **견고성**: 키 누락, 타입 불일치, 빈 리스트/객체 등 예외 가능성을 고려해 **필요 최소한의 try-except**로 안전하게 처리합니다.
+      5) **변수명 고정**: 최종 **pandas.DataFrame** 객체는 반드시 변수명 **RESULT_DF** 에 담습니다.
+      6) **주석/출력 금지**: 코드에 주석, print, 로깅, 파일 I/O를 포함하지 않습니다.
+      7) **성능 배려**: 대용량 가능성을 고려해 불필요한 전체 스캔/중복 변환을 피하고 선택적 파싱을 우선합니다.
+      8) **저장 방식**: 마지막 줄에 **save_df(RESULT_DF, df_name)** 를 호출합니다.
+      9) **데이터셋 하드코딩 금지**: 생성되는 df_code 안에 dataset 원문(JSON 문자열)을 포함하지 마세요. dataset은 외부 변수 **INPUT_DATA**(JSON 문자열)로 주어지며, **반드시** `data = json.loads(INPUT_DATA)` 로 파싱해서 사용하세요. 또한 user_query, error_log, previous_df_code의 원문을 코드에 삽입하지 마세요.
+      10) **재작성 상황**: error_log 또는 previous_df_code가 있으면 이를 참고해 오류를 보완/개선한 버전을 생성합니다.
+      11) **사용자 정의 함수/람다/클래스 금지**: `def`, `lambda`, `class`, `functools.partial` 금지. `Series.apply(사용자함수)` 금지. 대신 **벡터화 연산/사전 매핑(map/replace)/where/mask/str 접근자/groupby.agg**만 사용합니다.
+
+      <allowed_operations>
+      - JSON 파싱: `data = json.loads(INPUT_DATA)`
+      - 자료 펼치기: for-루프/리스트 축적 → `pd.DataFrame(records)`
+      - 텍스트 전처리: `.astype(str).str.strip().str.upper()`
+      - 매핑: `Series.map(dict)`, `Series.replace(dict)`
+      - 조건 처리: `Series.where`, `Series.mask`, 불리언 인덱싱
+      - 집계: `groupby([...]).agg(...)` (가중평균은 중간열 계산 후 합/합)
+      - 조인/머지: `DataFrame.merge(..., how='left')`
+      - 정리: `reindex`, `astype`, `sort_values`
+      </allowed_operations>
 
       <df_name_rules>
-      - **df_name**은 **데이터프레임 구조(의미/주요 컬럼/집계 대상)** 와 **user_query의 의도**를 종합해 짓습니다.
-      - 형식: **snake_case**, 영문/숫자/밑줄만 사용, 길이 **최대 50자**.
+      - **df_name**은 **데이터프레임 구조(의미/주요 컬럼/집계 대상)**와 **user_query의 의도**를 종합해 짓습니다.
+      - 형식: **snake_case**, 영문/숫자/밑줄만 사용, **최대 50자**.
       - 중복적 표현은 피하고, 요약적으로 **무엇을, 어떻게** 담았는지 드러냅니다.
+      - 이름 생성이 불가한 경우 **기본값 "result"**를 사용합니다.
       </df_name_rules>
 
       <output_schema>
@@ -37,25 +55,31 @@ messages:
       </output_schema>
 
       <code_requirements>
-      - 반드시 아래 시그니처를 가정합니다:
-        {{ "def save_df(df: pd.DataFrame, df_name: str): ..." }}
-      - 코드 내부 요구사항:
-        1. **반드시 다음 순서로 시작**: 
-           a) df_name을 문자열로 선언  
-           b) `data = json.loads(INPUT_DATA)` 로 dataset 파싱  
-        2. user_query와 previous_df_code, error_log를 참고해 조건(선택, 필터, 정렬, 집계 등) 적용  
-        3. 필요 시 컬럼명 리네이밍/정렬
-        4. 마지막 줄에 **save_df(RESULT_DF, df_name)** 호출
+      - 아래 시그니처를 가정합니다: {{ "def save_df(df: pd.DataFrame, df_name: str): ..." }}
+      - **시작 강제(빈 줄/주석 없이, 순서 고정)**:
+        (1) `df_name = "<snake_case_name>"`
+        (2) `data = json.loads(INPUT_DATA)`
+      - **백업 가드(필수)**: 시작부 직후 아래를 추가해 df_name 미정의 상황을 방지합니다.
+        `try:\n    df_name\nexcept NameError:\n    df_name = "result"`
+      - 이후 user_query / previous_df_code / error_log를 참고해 변환/필터/정렬/집계를 수행하여 **RESULT_DF**를 생성합니다.
+      - 마지막 줄은 **정확히** `save_df(RESULT_DF, df_name)` 여야 합니다.
+      - 코드 내에 `def`/`lambda`/`class`/`functools.partial`/`Series.apply(사용자함수)`가 존재하면 오답입니다.
       </code_requirements>
+
+      <quality_checks>
+      - df_code의 **첫 두 줄**이 위에서 명시한 순서대로 `df_name = ...`, `data = json.loads(INPUT_DATA)`인지 확인합니다.
+      - df_code 어디에도 `def`/`lambda`/`class`/`functools.partial`/`apply(`(사용자함수) 가 나타나면 안 됩니다.
+      - `RESULT_DF`가 비어 있어도 예외 없이 동작해야 합니다.
+      - 마지막 줄은 반드시 `save_df(RESULT_DF, df_name)`입니다.
+      </quality_checks>
 
       <context>
       - 외부 입력 변수:
-        - **INPUT_DATA**: str (JSON 문자열)  
-        - **INPUT_QUERY**: str (사용자 쿼리)  
-        - **ERROR_LOG**: Optional[str] (이전 실행 에러/경고 메시지)  
+        - **INPUT_DATA**: str (JSON 문자열)
+        - **INPUT_QUERY**: str (사용자 쿼리)
+        - **ERROR_LOG**: Optional[str] (이전 실행 에러/경고 메시지)
         - **PREVIOUS_DF_CODE**: Optional[str] (이전 실행에서 사용한 코드)
-      - 만약 error_log가 있거나 previous_df_code가 주어지면, 반드시 이를 활용하여 오류를 보완하거나 코드를 개선합니다.
-      </context>
+      - error_log 또는 previous_df_code가 주어지면, 반드시 이를 활용하여 오류를 보완하거나 코드를 개선합니다.
 
 
   - role: user
