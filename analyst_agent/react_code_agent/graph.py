@@ -34,6 +34,7 @@ class ChartAgentExecutorNode(BaseNode):
         chart_desc = state['chart_desc']
         csv_path = state['csv_path']
         run_id = state['run_id']
+        cost = state['cost']
         
 
         input_values = {
@@ -55,7 +56,8 @@ class ChartAgentExecutorNode(BaseNode):
             'attempts': 0,
             'debug_font': {},
             'img_path': '',
-            'status': Status(status="normal", message="Everything is running smoothly.")
+            'status': Status(status="normal", message="Everything is running smoothly."),
+            'cost': cost,
         }
 
         self.logger.info("Invoking chart_code_react_agent …")
@@ -73,6 +75,7 @@ class ChartAgentExecutorNode(BaseNode):
         state['chart_name'] = chart_name
         state['previous_node'] = "chart_exec"
         state['status'] = result['status']
+        state['cost'] = result['cost']
         return state
 
 
@@ -104,7 +107,8 @@ class DataFrameAgentExecutorNode(BaseNode):
             "attempts": 0,
             "error_log": "",
             "errors": [],
-            "status": Status(status="normal", message="Everything is running smoothly.")
+            "status": Status(status="normal", message="Everything is running smoothly."),
+            "cost": 0.0,
         }
         input_values = {
             **DEFAULT_DATAFRAME_STATE,
@@ -114,7 +118,8 @@ class DataFrameAgentExecutorNode(BaseNode):
             "df_code": state["df_code"],
             "df_desc": state["df_desc"],
             "error_log": "",
-            "run_id": state["run_id"]
+            "run_id": state["run_id"],
+            "cost": state["cost"],
         }
         result : DataFrameState = df_graph.invoke(
             input=input_values,
@@ -132,6 +137,7 @@ class DataFrameAgentExecutorNode(BaseNode):
         state['df_meta'] = result['df_meta']
         state['previous_node'] = "df_exec"
         state['status'] = result['status']
+        state['cost'] = result['cost']
         return state
 
 def chart_code_react_agent(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:
