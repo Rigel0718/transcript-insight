@@ -20,16 +20,22 @@ def load_prompt_template(prompt_filename: str) -> ChatPromptTemplate:
 
 
 
-def to_relative_path(abs_path: str, base_dir: Optional[str] = None) -> str:
+def to_relative_path(abs_path: str, base_dir: Optional[str] = None, prefix: Optional[str] = None) -> str:
     """
-    절대경로를 base_dir 기준 상대경로로 변환한다.
-    
-    base_dir이 None이면 현재 작업 디렉토리(Path.cwd())를 기준으로 한다.
+    절대경로를 base_dir 기준 상대경로로 변환하고,
+    원하는 prefix 디렉토리를 상대 경로 앞에 붙인다.
+
+    - base_dir이 None이면 현재 작업 디렉토리(Path.cwd())를 기준으로 한다.
+    - prefix가 주어지면 결과 앞에 prefix를 붙인다.
     """
     abs_path = Path(abs_path).resolve()
     base_dir = Path(base_dir).resolve() if base_dir else Path.cwd()
 
     try:
-        return str(abs_path.relative_to(base_dir))
+        rel_path = abs_path.relative_to(base_dir)
     except ValueError:
-        return abs_path.name
+        rel_path = Path(abs_path.name)
+
+    if prefix:
+        return str(Path(prefix) / rel_path)
+    return str(rel_path)
