@@ -10,6 +10,7 @@ from analyst_agent.react_code_agent.state import DataFrameState, ChartState, Sta
 from base_node.base import BaseNode
 from analyst_agent.react_code_agent.utils import is_alert
 from langgraph.types import Command
+from langgraph.graph import END
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):
@@ -132,17 +133,25 @@ class DataFrameCodeExecutorNode(BaseNode):
             dataset = state.get("dataset")
             artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
             g_env = self._create_exec_env_for_df(registry, artifact_dir, dataset)  # offer save_df
-            l_env: Dict[str, Any] = {}
-
-            self.logger.info("Executing df_code …")
+            # l_env: Dict[str, Any] = {}
+            
             with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                 try:
-                    exec(code, g_env, l_env)
+                    exec(code, g_env, g_env)
                 except Exception:
                     err = traceback.format_exc()
                     errors.append(err)
-                    error_log = "DF exec failed"
+                    error_log = err  # ← 전체 traceback 저장
                     self.logger.exception("DataFrame execution failed")
+            # self.logger.info("Executing df_code …")
+            # with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
+            #     try:
+            #         exec(code, g_env, l_env)
+            #     except Exception:
+            #         err = traceback.format_exc()
+            #         errors.append(err)
+            #         error_log = "DF exec failed"
+            #         self.logger.exception("DataFrame execution failed")
 
             # check local_env for RESULT_DF and save it as the primary result DataFrame.
             if "primary_df" not in registry and isinstance(l_env, dict) and "RESULT_DF" in l_env:
@@ -175,6 +184,11 @@ class DataFrameCodeExecutorNode(BaseNode):
                 }
                 if info.get("path"):
                     csv_path = info.get("path")
+                    goto = END
+                else:
+                    goto = 'dataframe_code_executor'
+                    self.logger.warning(f"CSV path not found. goto: {goto}")
+
             if df_meta and df_meta.get("rows", 0) == 0:
                 try:
                     if csv_path: os.remove(csv_path)
@@ -193,7 +207,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                     "attempts": (state.get("attempts", 0)) + 1,
                     "status": Status(status="alert", message=msg),
                 })
-                return state
+                return Command(goto=goto, update=state)
             self.logger.debug(f"Collected DF meta: {df_meta}")
 
 
@@ -212,10 +226,7 @@ class DataFrameCodeExecutorNode(BaseNode):
             state['errors'] = (state.get("errors") or []) + errors
             state['attempts'] = attempts
 
-            if csv_path:
-                goto = 'router'
-            else:
-                goto = 'chart_code_executor'
+            
             return Command(goto=goto, update=state)
         finally:
             try:
@@ -377,15 +388,7 @@ class ChartCodeExecutorNode(BaseNode):
                 self.logger.warning(msg)
             
             # 이미지가 존재하지 않는다면, 직접 저장
-            if not registry["images"]:
-                try:
-                    figs = [plt.figure(n) for n in plt.get_fignums()]
-                    if figs:
-                        path = g_env["save_chart"](fig=figs[-1])
-                        self.logger.info(f"Auto-saved chart to {path} (fallback)")
-                        registry["images"] = path
-                except Exception:
-                    pass
+            
             attempts = (state.get("attempts", 0)) + 1
             
             if error_log:
@@ -401,7 +404,14 @@ class ChartCodeExecutorNode(BaseNode):
             state['attempts'] = attempts
             state['debug_font'] = applied
 
-            return state
+            if not registry["images"]:
+                goto = 'chart_executor_node'
+                self.logger.info("Chart image not found. Retrying chart execution.")
+            else :
+                goto = END
+                self.logger.info("Chart image found. Chart execution completed.")
+
+            return Command(goto=goto, update=state)
 
         finally:
             mpl_logger.removeHandler(mpl_handler)
