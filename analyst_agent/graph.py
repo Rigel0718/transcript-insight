@@ -22,14 +22,12 @@ class ReActCodeAgentNode(BaseNode):
         self.track_time = track_time
         self.queue = queue
         self.env = env
-
+        
     def run(self, state: ReportState):
         react_code_agent_graph = react_code_agent(verbose=self.verbose, track_time=self.track_time, queue=self.queue, env=self.env)
         report_plan = []
         config = RunnableConfig(thread_id=state['run_id'], max_iterations=30) 
-        for metric_spec in state['metric_plan']:
-            input_metric_dict = metric_spec.model_dump(exclude={"extraction_mode", "extraction_query"})
-            schema_explanations = '''
+        schema_explanations = '''
             - id : Stable indentifier
             - rationalbe: Reason for extracting this metric
             - compute_hint: Short hint for DF/Chart generation
@@ -44,6 +42,18 @@ class ReActCodeAgentNode(BaseNode):
             3. produces가 'table'이면 dataframe만 생성하면 됩니다.
             </instruction>
             '''
+        
+        note = '''
+        <attention>
+        1. 차트를 생성할 때 이수 과목을 원문 그대로 반드시 한글로 작성해야 한다.
+        2. 평균 값을 계산하지 않고, 데이터를 활용하여 csv, chart를 생성해야 한다.
+           단 , metric_spec의 produces가 metric인 경우를 제외한다.
+        </attention>
+        '''
+        
+        for metric_spec in state['metric_plan']:
+            input_metric_dict = metric_spec.model_dump(exclude={"extraction_mode", "extraction_query"})
+            
             DEFAULT_AGENT_CONTEXT_STATE = {
             'user_query': '',
             'dataset': '',
@@ -66,6 +76,7 @@ class ReActCodeAgentNode(BaseNode):
             user_input = {
                 'user_query': input_metric_dict,
                 'schema_explanations': schema_explanations,
+                'note': note,
             }
             input_values = {
                 **DEFAULT_AGENT_CONTEXT_STATE,
