@@ -55,15 +55,19 @@ class RouterNode(BaseNode):
 
         self.logger.debug(f"[{self.name}] Input preview: {input_values}")
 
-
+        inc_cost = 0.0
         try:
             self.logger.info(f"[{self.name}] Invoking LLM for route decision …")
-            result: RouteDecision = chain.invoke(input_values)
+            with get_openai_callback() as cb:
+                result: RouteDecision = chain.invoke(input_values)
+            inc_cost = getattr(cb, "total_cost", 0.0)
             self.logger.info(f"[{self.name}] LLM invocation completed")
         except Exception as e:
             self.logger.exception(f"[{self.name}] LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
-            return state
+            # 실패해도 inc_cost(대개 0.0)를 안전 누적
+        finally:
+            state['cost'] = state.get('cost', 0.0) + float(inc_cost)
         
         self.logger.info(f"[{self.name}] Decision → action={result.action}")
         self.logger.debug(f"[{self.name}] Reason: {result.reason}")
@@ -71,5 +75,5 @@ class RouterNode(BaseNode):
             self.logger.debug(f"[{self.name}] Notes: {result.notes}")
 
         self.log(message=result.action)
-        return {'next_action': result.action, 'previous_node': 'router'}
+        return {'next_action': result.action, 'previous_node': 'router', 'cost': state['cost']}
 

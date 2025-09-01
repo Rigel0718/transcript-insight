@@ -57,20 +57,20 @@ class DataFrameCodeGeneratorNode(BaseNode):
         self.logger.debug(f"error_log: {error_log}")
         self.logger.debug(f"chain input preview: {input_values}")
         
+        inc_cost = 0.0
         try:
             self.logger.info("Invoking LLM for df_code/df_info …")
             with get_openai_callback() as cb:
                 result = chain.invoke(input_values)
-                cost = cb.total_cost
+            inc_cost = getattr(cb, "total_cost", 0.0)
             self.logger.info("LLM invocation done")
-            self.logger.debug(f"raw LLM result: {result}")
         except Exception as e:
             status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             state['status'] = status
-            state['cost'] += cost
-            return state
+        finally:
+            state['cost'] = state.get('cost', 0.0) + float(inc_cost)
 
         df_code = result.df_code
         df_name = result.df_name
@@ -181,20 +181,20 @@ class ChartCodeGeneratorNode(BaseNode):
             'df_meta': df_meta
         }
         
+        inc_cost = 0.0
         try:
             self.logger.info("Invoking LLM for chart code/info …")
             with get_openai_callback() as cb:
                 chart_generator_result = chain.invoke(input_values)
-                cost = cb.total_cost
+            inc_cost = getattr(cb, "total_cost", 0.0)
             self.logger.info("LLM invocation done")
-            self.logger.debug(f"raw LLM result: {chart_generator_result}")
         except Exception as e:
             status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
             state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
             state['status'] = status
-            state['cost'] += cost
-            return state
+        finally:
+            state['cost'] = state.get('cost', 0.0) + float(inc_cost)
         
         ''' output foramt (pydantic model: ChartSpec)
           "chart_code": """차트 생성 Python 코드""",
