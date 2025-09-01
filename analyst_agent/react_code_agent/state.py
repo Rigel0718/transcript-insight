@@ -45,6 +45,7 @@ class DataFrameState(TypedDict, total=False):
     attempts: Annotated[int, "Number of attempts to execute the DataFrame code"] = 0
     error_log: Annotated[str, "Error message from the last DataFrame execution"] = ''
     errors: Annotated[List[str], "List of all error messages encountered during the process"] = []
+    cost: Annotated[float, "Total cost of the DataFrame execution"] = 0.0
 
 
 class ChartState(TypedDict, total=False):
@@ -65,6 +66,7 @@ class ChartState(TypedDict, total=False):
     img_path: Annotated[str, "Path to the saved image file"] = ''
     chart_name: Annotated[str, "Chart name"] = ''
     chart_desc: Annotated[str, "Chart description"] = ''
+    cost: Annotated[float, "Total cost of the Chart execution"] = 0.0
 
     # Execution logs / Errors
     stdout: Annotated[str, "Standard output from the last chart execution"] = ''
