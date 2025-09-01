@@ -14,13 +14,43 @@ class ChartSpec(BaseModel):
     options: Dict = Field(default_factory=dict)  # aggregation, hue, facet, etc..
 
 
+# class AnalysisSpec(BaseModel):
+#     focus: List[str]  # ["GPA_trend","at_risk_courses","major_vs_overall"]
+#     audience: Literal["student","evaluator","advisor"] = "student"
+#     audience_spec: str = ""  # ex) "AI company recruiter", "scholarship committee", "promotion reviewer"
+#     audience_goal: str = "general insight"  # ex) "general insight", "risk screening", "promotion review"
+#     tone: Literal["neutral","encouraging","formal"] = "neutral"
+#     language: Literal["ko","en"] = "ko"
+
 class AnalysisSpec(BaseModel):
-    focus: List[str]  # ["GPA_trend","at_risk_courses","major_vs_overall"]
+    # 분석 주제
+    focus: List[str]  
+    
+    # 독자 맥락
     audience: Literal["student","evaluator","advisor"] = "student"
-    audience_spec: str = ""  # ex) "AI company recruiter", "scholarship committee", "promotion reviewer"
-    audience_goal: str = "general insight"  # ex) "general insight", "risk screening", "promotion review"
+    audience_spec: str = ""  
+    audience_goal: str = "general insight"
+    audience_values: List[str] = []          # ex) ["성실성","논리적 사고"]
+    evaluation_criteria: List[str] = []      # ex) ["전공 성취도", "일관성"]
+    decision_context: str = "채용 선발"      # ex) "채용 선발", "장학금 심사"
+    
+    # 분석 범위
+    time_scope: str = "전체 학기"
+    comparison_target: Optional[str] = None
+    priority_focus: List[str] = []           # 분석 중 가장 강조할 포인트
+    
+    # 보고서 톤/스타일
     tone: Literal["neutral","encouraging","formal"] = "neutral"
     language: Literal["ko","en"] = "ko"
+    detail_level: Literal["summary","balanced","in_depth"] = "balanced"
+    insight_style: Literal["descriptive","comparative","predictive"] = "descriptive"
+    evidence_emphasis: Literal["low","medium","high"] = "medium"
+    tone_variation: Optional[str] = None
+    
+    # 산출물 구성
+    output_format: List[Literal["text","chart","table","recommendation"]] = ["text"]
+    include_recommendations: bool = False
+    highlight_style: Literal["numbers","growth","risk","strengths"] = "growth"
 
 
 
