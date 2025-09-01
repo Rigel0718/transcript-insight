@@ -14,6 +14,8 @@ messages:
       - 한국어로 작성.
       - message에 "적절한 데이터를 찾지 못했다"와 같은 오류·부족 정보 메시지가 있을 경우, 
         metric_spec과 analysis_spec을 고려해 그 상황에 맞는 간결한 insight를 작성한다.
+      - dataframe의 행(row) 개수가 **4개 이하라면 produces 값을 무조건 "table"로 설정한다.** 
+        (단, metric_spec의 chart_type이 pie인 경우는 "chart"로 설정한다.)
       </constraints>
 
       <output_schema>
@@ -22,9 +24,8 @@ messages:
         "title": "str",
         "insight": "str (2-5 sentences)",
         "key_numbers": [{{"label":"str","value": "number or str","unit":"str|null"}}],
-        "csv_path": "Optional[str]",
-        "chart_path": "Optional[str]",
-        "caveats": ["str", "..."]
+        "produces": Literal["table","chart","metric"],
+        "caveats": ["str", "..."],
       }}
       </output_schema>
 
