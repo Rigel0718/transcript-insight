@@ -5,7 +5,7 @@ from typing import Optional, Dict
 from langgraph.types import Command
 from langchain.callbacks import get_openai_callback
 from .utils import load_prompt_template, to_relative_path
-from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2
+from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
 import pandas as pd
 
 class MetricInsightNode(BaseNode):
@@ -30,17 +30,17 @@ class MetricInsightNode(BaseNode):
         # input variable : metric_spec, analysis_spec, dataframe
         chain = prompt | self.llm.with_structured_output(MetricInsight)
         
-        metric_spec = state['metric_spec']
+        metric_spec: MetricSpec = state['metric_spec']
         self.logger.info(f"[{self.name}]: {metric_spec}")
         analyst = state['analyst']
         self.logger.info(f"[{self.name}]: {analyst}")
         
         csv_path = state['csv_path']
         self.logger.info(f"[{self.name}]: {csv_path}")
-        relative_csv_path = to_relative_path(csv_path)
+        relative_csv_path = to_relative_path(abs_path=csv_path, prefix="../")
         chart_path = state['chart_path']
         self.logger.info(f"[{self.name}]: {chart_path}")
-        relative_chart_path = to_relative_path(chart_path)
+        relative_chart_path = to_relative_path(abs_path=chart_path, prefix="../")
 
         message = state['message']
         dataframe = []
@@ -48,9 +48,10 @@ class MetricInsightNode(BaseNode):
             try:
                 df = pd.read_csv(csv_path)
                 dataframe = df.to_dict(orient="records")
+                relative_chart_path = relative_chart_path if metric_spec.chart_type == "pie" or len(dataframe) > 4 else ""
             except Exception as e:
                 self.logger.error(f"Failed to load CSV: {e}")
-
+        
         with get_openai_callback() as cb:
             result = chain.invoke(
                 input = {
