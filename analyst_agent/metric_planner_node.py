@@ -23,7 +23,11 @@ gpa_trend_metric = MetricSpec(
 credit_category_share_metric = MetricSpec(
     id="credit_category_share",
     rationale="이수 학점의 카테고리별 구성 비중을 요약.",
-    compute_hint="aggregate total_credits by course_category (or course_type|is_core|department); compute percentage of total; pie chart category vs credit_share; include table;",
+    compute_hint=(
+        "aggregate total_credits by course_category (or course_type|is_core|department); "
+        "compute percentage of total; pie chart category vs credit_share; include table; "
+        "category labels must be written in Korean. (e.g., '전공선택(D)' instead of just 'D')"
+    ),
     chart_type="pie",
     produces="chart",
     tags=["required","composition","credits","category","share"],
