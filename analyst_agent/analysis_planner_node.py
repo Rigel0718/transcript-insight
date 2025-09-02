@@ -36,7 +36,7 @@ credit_category_share_metric = MetricSpec(
 )
 
 
-class MetricPlannerNode(BaseNode):
+class AnalysisPlannerNode(BaseNode):
     '''
     성적표 분석 보고서를 작성하기 위한 플래너 노드.
     AnalysisSpec을 참고하여 필요한 Metric을 계획
