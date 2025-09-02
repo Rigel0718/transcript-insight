@@ -1,1 +1,1 @@
-![transcript-insight](./image/transcript_analyst_agent.png)
+<img src="./image/transcript_analyst_agent.png" width="700"/>
