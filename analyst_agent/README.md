@@ -1,0 +1,1 @@
+![transcript-insight](./image/transcript_analyst_agent.png)
