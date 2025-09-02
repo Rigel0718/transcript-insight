@@ -2,7 +2,6 @@ from base_node import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, Dict
-from langgraph.types import Command
 from langchain.callbacks import get_openai_callback
 from .utils import load_prompt_template, to_relative_path
 from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
@@ -24,7 +23,10 @@ class MetricInsightNode(BaseNode):
             temperature=0,
         )
         return llm
-    
+    @staticmethod
+    def _abs(*paths: str) -> str:
+        return os.path.abspath(os.path.join(*paths))
+
     def run(self, state: Dict) -> Dict:
         prompt = load_prompt_template("prompts/metric_insight_prompt.yaml") 
         # input variable : metric_spec, analysis_spec, dataframe
@@ -35,12 +37,17 @@ class MetricInsightNode(BaseNode):
         analyst = state['analyst']
         self.logger.info(f"[{self.name}]: {analyst}")
         
+        work_dir = self.env.work_dir
+        user_id = self.env.user_id
+        run_id = state['run_id']
+        base_dir = self._abs(self._abs(work_dir, "users", user_id, run_id))
+
         csv_path = state['csv_path']
         self.logger.info(f"[{self.name}]: {csv_path}")
-        relative_csv_path = to_relative_path(abs_path=csv_path, prefix="../")
+        relative_csv_path = to_relative_path(abs_path=csv_path, base_dir=base_dir)
         chart_path = state['chart_path']
         self.logger.info(f"[{self.name}]: {chart_path}")
-        relative_chart_path = to_relative_path(abs_path=chart_path, prefix="../")
+        relative_chart_path = to_relative_path(abs_path=chart_path, base_dir=base_dir)
 
         message = state['message']
         dataframe = []
