@@ -1,0 +1,489 @@
+{
+    "student_info": {
+        "name": "정소희",
+        "university": "이화여자대학교",
+        "department": "생화학과",
+        "degree": "이학사",
+        "date_of_birth": "1997-12-25",
+        "gender": "여",
+        "admission_date": "2016-03-02",
+        "graduation_date": "2020-08-20",
+        "degree_number": "이화여대2020(학)6789"
+    },
+    "semesters": [
+        {
+            "year": 2016,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "일반생물학 I",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "일반화학 I",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미적분학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "영어읽기",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "V"
+                },
+                {
+                    "name": "대학물리학 I",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "대학글쓰기",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "V"
+                },
+                {
+                    "name": "체육",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 18.0,
+            "gpa": 4.0,
+            "percentage": 95.0
+        },
+        {
+            "year": 2016,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "일반생물학 II",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "일반화학 II",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미분방정식",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "물리학 II",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "한국사",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "영어회화",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "V"
+                },
+                {
+                    "name": "유기화학 I",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "봉사활동",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 20.0,
+            "gpa": 4.0,
+            "percentage": 95.0
+        },
+        {
+            "year": 2017,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "생화학 I",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "유기화학 II",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "분자생물학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "물리화학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "통계학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "현대문학",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "리더십세미나",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 18.0,
+            "gpa": 4.0,
+            "percentage": 95.0
+        },
+        {
+            "year": 2017,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "생화학 II",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "미생물학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "해부학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "세포생물학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생리학",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "동아시아문화",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "음악감상",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "Z"
+                },
+                {
+                    "name": "체육",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 4.08,
+            "percentage": 95.8
+        },
+        {
+            "year": 2018,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "유전학",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "면역학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생물통계학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "화학실험 I",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "D"
+                },
+                {
+                    "name": "글쓰기와사고",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "V"
+                },
+                {
+                    "name": "철학개론",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "인문학과예술",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "봉사활동",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 20.0,
+            "gpa": 4.08,
+            "percentage": 95.8
+        },
+        {
+            "year": 2018,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "분자유전학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "단백질화학",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생물학실험",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생화학실험",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "D"
+                },
+                {
+                    "name": "문화인류학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "사회학개론",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "경제학개론",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "체육",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 20.0,
+            "gpa": 4.0,
+            "percentage": 95.0
+        },
+        {
+            "year": 2019,
+            "semester": "1학기",
+            "courses": [
+                {
+                    "name": "생화학세미나",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생물정보학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "시스템생물학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생화학연구실습",
+                    "grade": "A+",
+                    "credits": 2.0,
+                    "category": "D"
+                },
+                {
+                    "name": "화학공정학",
+                    "grade": "B+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "심리학개론",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "현대사회와문화",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "사제동행세미나",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 21.0,
+            "gpa": 4.05,
+            "percentage": 95.5
+        },
+        {
+            "year": 2019,
+            "semester": "2학기",
+            "courses": [
+                {
+                    "name": "졸업논문",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생화학특강",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "대사체학",
+                    "grade": "A+",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "바이오의약품학",
+                    "grade": "A0",
+                    "credits": 3.0,
+                    "category": "D"
+                },
+                {
+                    "name": "생물윤리",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "예술과미학",
+                    "grade": "A0",
+                    "credits": 2.0,
+                    "category": "Y"
+                },
+                {
+                    "name": "사회봉사",
+                    "grade": "P",
+                    "credits": 1.0,
+                    "category": "Z"
+                }
+            ],
+            "total_credits": 17.0,
+            "gpa": 4.19,
+            "percentage": 96.9
+        }
+    ],
+    "credit_summary": {
+        "total_credits": 155.0,
+        "total_gpa_points": 595.0,
+        "overall_gpa": 4.05,
+        "overall_percentage": 95.5,
+        "credits_by_category": {
+            "교양필수(A)": 0.0,
+            "학부기초(M)": 0.0,
+            "기초공통(B)": 0.0,
+            "기초교양(V)": 9.0,
+            "전공필수(C)": 0.0,
+            "전공기초교양(X)": 0.0,
+            "전공선택(D)": 104.0,
+            "핵심교양(Y)": 32.0,
+            "교양선택(E)": 0.0,
+            "자유교양(Z)": 10.0,
+            "일반선택(F)": 0.0,
+            "교직(H)": 0.0,
+            "교양기초(K)": 0.0,
+            "복수전공(J)": 0.0,
+            "계열교양(L)": 0.0,
+            "부전공(G)": 0.0
+        },
+        "multi_major_credits": {
+            "2전공(계열교양)(PL)": 0.0,
+            "2전공(전공기초교양)(PX)": 0.0,
+            "2전공(학부기초)(PM)": 0.0,
+            "2전공(전공)(PN)": 0.0,
+            "3전공(계열교양)(QL)": 0.0,
+            "3전공(전공기초교양)(QX)": 0.0,
+            "3전공(학부기초)(QM)": 0.0,
+            "3전공(전공)(QN)": 0.0,
+            "연계융합(학부기초)(RM)": 0.0,
+            "연계융합(전공)(RN)": 0.0
+        }
+    }
+}
