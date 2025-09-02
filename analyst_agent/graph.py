@@ -127,7 +127,7 @@ def transcript_analyst_graph(verbose: bool = False, track_time: bool = False, qu
     report_graph.add_edge(START, "analysis_planner")
     report_graph.add_edge("analysis_planner", "data_extractor")
     report_graph.add_edge("data_extractor", "metric_insight_scheduling")
-    report_graph.add_edge("react_code_agent", "transcript_analyst")
+    report_graph.add_edge("metric_insight_scheduling", "transcript_analyst")
     report_graph.add_edge("transcript_analyst", END)
     memory = MemorySaver()
     return report_graph.compile(checkpointer=memory)
