@@ -1,4 +1,3 @@
-from typing import Dict, Any
 from langgraph.graph import StateGraph, END, START
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.checkpoint.memory import MemorySaver  
@@ -11,11 +10,11 @@ from analyst_agent.state import ReportState
 from analyst_agent.transcript_analyst_node import TranscriptAnalystNode
 from analyst_agent.react_code_agent import react_code_agent, AgentContextState
 from analyst_agent.metric_insight_node import MetricInsightNode
-from analyst_agent.metric_planner_node import MetricPlannerNode
+from analyst_agent.analysis_planner_node import AnalysisPlannerNode
 from analyst_agent.data_extractor_node import DataExtractorNode
 
 
-class ReActCodeAgentNode(BaseNode):
+class MetricInsightSchedulingNode(BaseNode):
     def __init__(self, verbose=False, track_time=False, queue: Queue=None, env: Env=None):
         super().__init__(verbose=verbose, track_time=track_time, queue=queue, env=env)
         self.verbose = verbose
@@ -114,20 +113,20 @@ class ReActCodeAgentNode(BaseNode):
         return state
 
 def transcript_analyst_graph(verbose: bool = False, track_time: bool = False, queue: Queue=None, env: Env=None) -> CompiledStateGraph:
-    metric_planner_node = MetricPlannerNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
+    analysis_planner_node = AnalysisPlannerNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
     data_extractor_node = DataExtractorNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
-    react_code_agent_node = ReActCodeAgentNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
+    metric_insight_scheduling_node = MetricInsightSchedulingNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
     transcript_analyst_node = TranscriptAnalystNode(verbose=verbose, track_time=track_time, queue=queue, env=env)
     
     report_graph = StateGraph(ReportState)
-    report_graph.add_node("metric_planner", metric_planner_node)
+    report_graph.add_node("analysis_planner", analysis_planner_node)
     report_graph.add_node("data_extractor", data_extractor_node)
-    report_graph.add_node("react_code_agent", react_code_agent_node)
+    report_graph.add_node("metric_insight_scheduling", metric_insight_scheduling_node)
     report_graph.add_node("transcript_analyst", transcript_analyst_node)
     
-    report_graph.add_edge(START, "metric_planner")
-    report_graph.add_edge("metric_planner", "data_extractor")
-    report_graph.add_edge("data_extractor", "react_code_agent")
+    report_graph.add_edge(START, "analysis_planner")
+    report_graph.add_edge("analysis_planner", "data_extractor")
+    report_graph.add_edge("data_extractor", "metric_insight_scheduling")
     report_graph.add_edge("react_code_agent", "transcript_analyst")
     report_graph.add_edge("transcript_analyst", END)
     memory = MemorySaver()
