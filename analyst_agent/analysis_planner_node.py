@@ -53,7 +53,7 @@ class AnalysisPlannerNode(BaseNode):
         return llm
 
     def run(self, state: ReportState) -> ReportState:
-        prompt = load_prompt_template("prompts/planner_prompt.yaml")
+        prompt = load_prompt_template("prompts/analysis_planner_prompt.yaml")
         chain = prompt | self.llm.with_structured_output(MetricPlan)
         
         analyst = state['analyst']
