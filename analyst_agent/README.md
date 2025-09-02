@@ -6,6 +6,42 @@
 최종 엔트리포인트는 **`transcript_analyst_graph()`**이며, 이 그래프 실행 결과가 API 출력(ReportState)입니다.
 
 ---
+## REPORT EXAMPLE
+
+AI로 생성된 가상 인물과 성적표 데이터를 기반으로 생성된 리포트입니다.
+
+[REPORT EXAMPLE](./test/result/users/TEST_02/2025-09-02-22-5237/2025-09-02-22-5237.md)
+
+[VIRTUAL DATA](./test/data/virtual_data01.json)
+
+**INPUT AnalysisSpec EXAMPLE**
+```
+ai_recruiter = AnalysisSpec(
+    focus=["GPA trend","major GPA","math-related courses"],
+    audience="evaluator",
+    audience_spec="AI company recruiter",
+    audience_goal="수학적 사고가 뛰어난 지원자를 선발",
+    audience_values=["성실성","논리적 문제 해결","성장 가능성"],
+    evaluation_criteria=["전공 과목 성취도","수학 과목 성적","꾸준한 GPA 상승"],
+    decision_context="채용 선발",
+    
+    time_scope="전체 학기",
+    comparison_target="동일 전공 평균",
+    priority_focus=["전공 GPA", "수학적 과목 성취도"],
+    
+    tone="formal",
+    language="ko",
+    detail_level="in_depth",
+    insight_style="comparative",
+    evidence_emphasis="high",
+    tone_variation="간결하지만 설득력 있게",
+    
+    output_format=["text","chart","recommendation"],
+    include_recommendations=True,
+    highlight_style="strengths"
+```
+
+---
 
 ## 🧠 Graph 개요
 
@@ -61,7 +97,7 @@ example
 - **LLM**: `gpt-4.1-mini`
 - **프롬프트**: [MetricInsightSchedulingNode 프롬프트](./prompts/metric_insight_scheduling_prompt.yaml)
 - **입력 → 출력**: `dataset`, `metric_plan`, `run_id` → Metric별 `csv_path`, `img_path`, `cost`
-- **비고**: ![ReAct Code Agent](./react_code_agent/README.md) 참조.
+- **비고**: [ReAct Code Agent](./react_code_agent/README.md) 참조.
 
 ### 4) MetricInsightNode
 - **역할**: Data + MetricSpec + AnalysisSpec을 입력으로 **2~5줄 인사이트**를 생성합니다. 필요시 `csv_path`/`chart_path`도 포함합니다.
