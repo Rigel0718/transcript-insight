@@ -6,7 +6,7 @@
 최종 엔트리포인트는 **`transcript_analyst_graph()`**이며, 이 그래프 실행 결과가 API 출력(ReportState)입니다.
 
 ---
-## REPORT EXAMPLE
+## 📝 REPORT EXAMPLE
 
 AI로 생성된 가상 인물과 성적표 데이터를 기반으로 생성된 리포트입니다.
 
