@@ -23,3 +23,10 @@ The frontend communicates with the backend to process and analyze transcripts.
 The parser uses a graph-based approach to analyze transcripts. It leverages the Upstage API for OCR and document parsing, and it includes a subgraph for handling OCR on specific elements.
 
 ![ParseGraph](images/ParseGraph.png)
+
+## Transcript Analyst
+
+The Transcript Analyst Agent automates transcript analysis using a LangGraph pipeline.  
+It produces a final report tailored to the audience with Table and Chart.
+
+![TranscriptAnalyst](analyst_agent/image/transcript_analyst_agent.png)
