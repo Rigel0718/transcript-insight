@@ -6,12 +6,12 @@ class ReportState(TypedDict, total=False):
     user_query: Annotated[str, "Original user query or question"] = ''
     dataset: Annotated[str, "Input dataset (as a dictionary or serialized string)"] = ''
     run_id: Annotated[str, "Unique run identifier"] = ''
+    analyst: Annotated[AnalysisSpec, "Config for Analysis spec (focus, audience, tone, language)"] = ''
 
     # report_element
     report_plan: Annotated[ReportPlan, "List of MetricInsight"] = []
     metric_plan: Annotated[List[MetricSpec], "List of MetricSpec(id, rationale, compute_hint, chart_type, produces, tags)"] = []
     inform_metric: Annotated[InformMetric, "Normalized student profile & transcript summary (name, university, department, dates, credits, GPA, percentage)"] = ''
-    analyst: Annotated[AnalysisSpec, "Config for Analysis spec (focus, audience, tone, language)"] = ''
     report: Annotated[str, "Final report"] = ''
     rewrite_query: Annotated[str, "Rewritten query"] = ''
 
