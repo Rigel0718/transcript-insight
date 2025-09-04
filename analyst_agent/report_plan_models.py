@@ -1,4 +1,4 @@
-from typing import List, Dict, Literal, Optional
+from typing import List, Dict, Literal, Optional, Union
 from pydantic import BaseModel, Field, conlist
 
 class TableSpec(BaseModel):
@@ -24,7 +24,7 @@ class ChartSpec(BaseModel):
 
 class AnalysisSpec(BaseModel):
     # 분석 주제
-    focus: List[str]  
+    focus: Union[str, List[str]] = ["GPA trend", "major GPA"]
     
     # 독자 맥락
     audience: Literal["student","evaluator","advisor"] = "student"
@@ -32,7 +32,7 @@ class AnalysisSpec(BaseModel):
     audience_goal: str = "general insight"
     audience_values: List[str] = []          # ex) ["성실성","논리적 사고"]
     evaluation_criteria: List[str] = []      # ex) ["전공 성취도", "일관성"]
-    decision_context: str = "채용 선발"      # ex) "채용 선발", "장학금 심사"
+    decision_context: str = ""      # ex) "채용 선발", "장학금 심사"
     
     # 분석 범위
     time_scope: str = "전체 학기"
@@ -48,9 +48,9 @@ class AnalysisSpec(BaseModel):
     tone_variation: Optional[str] = None
     
     # 산출물 구성
-    output_format: List[Literal["text","chart","table","recommendation"]] = ["text"]
+    output_format: List[Literal["text","chart","table","recommendation"]] = ["text","chart", "table"]
     include_recommendations: bool = False
-    highlight_style: Literal["numbers","growth","risk","strengths"] = "growth"
+    highlight_style: Literal["numbers","growth","risk","strengths"] = "strengths"
 
 
 
