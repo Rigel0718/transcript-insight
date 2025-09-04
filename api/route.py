@@ -4,8 +4,8 @@ from pydantic    import BaseModel
 import os
 import shutil
 import tempfile
-from analyst_agent.run import run_analysis
-from typing import Union, Dict
+from analyst_agent import transcript_analyst_graph, AnalysisSpec, ReportState
+from typing import Union, Dict, Any
 import asyncio
 from queue import Queue
 import json
@@ -21,7 +21,10 @@ class PDFProcessResponse(BaseModel):
     final_result: Union[str, Dict]
 
 class Transcript(BaseModel):
-    transcript: Union[str, Dict]
+    transcript: Dict[str, Any]
+
+class Report(BaseModel):
+    report: str
 
 @router.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
@@ -49,8 +52,7 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
     
     # Save the uploaded file to a secure temporary dir.
     temp_dir = tempfile.mkdtemp()
-    temp_user_id = session_id
-    temp_path = os.path.join(temp_dir, f'{temp_user_id}.pdf')
+    temp_path = os.path.join(temp_dir, f'{session_id}.pdf')
 
     try:
         file_contents = await file.read()
@@ -67,7 +69,7 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
     try:
         q = Queue()
         graph = transcript_extract_graph(queue=q)
-        config = {"configurable": {"thread_id": str(temp_user_id)}}
+        config = {"configurable": {"thread_id": str(session_id)}}
         input_state = {'filepath': temp_path}
         
         result_state = {}
@@ -81,11 +83,11 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
         while thread.is_alive() or not q.empty():
             if not q.empty():
                 event = q.get()
-                await manager.send_to(temp_user_id, json.dumps(event))
+                await manager.send_to(session_id, json.dumps(event))
             else:
                 await asyncio.sleep(0.1)
         
-        await manager.send_to(temp_user_id, json.dumps({"event": "eof"}))
+        await manager.send_to(session_id, json.dumps({"event": "eof"}))
         await asyncio.sleep(0.1)
         thread.join()
 
@@ -100,9 +102,43 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
     
 
 @router.post("/analyze/{session_id}")
-def analyze_transcript(transcript: Transcript, session_id: str):
+async def analyze_transcript(transcript: Transcript, analyst: AnalysisSpec, session_id: str):
     """
-    Analyzes the transcript and returns a report and visualizations.
+    Analyzes the transcript report with Table and Chart.
     """
-    return run_analysis(transcript.transcript, session_id)
+    q = Queue()
+    graph = transcript_analyst_graph(queue=q)
+    config = {"configurable": {"thread_id": str(session_id)}}
+    text_transcript = json.dumps(transcript.transcript, ensure_ascii=False, indent=2)
+    input_state = ReportState(
+        dataset=text_transcript,
+        user_query='',
+        analyst=analyst,
+        run_id=session_id,
+    )
+
+    result_state = {}
+    def run_graph():
+        result = graph.invoke(input=input_state, config=config)
+        result_state.update(result)
+
+    thread = Thread(target=run_graph)
+    thread.start()
+
+    while thread.is_alive() or not q.empty():
+        if not q.empty():
+            event = q.get()
+            await manager.send_to(session_id, json.dumps(event))
+        else:
+            await asyncio.sleep(0.1)
+    
+    await manager.send_to(session_id, json.dumps({"event": "eof"}))
+    await asyncio.sleep(0.1)
+    thread.join()
+
+    report = result_state.get("report", None)
+    if not report:
+        raise HTTPException(status_code=500, detail="No final result produced by the pipeline.")
+
+    return Report(report=report)
 
