@@ -30,14 +30,14 @@ class AnalysisSpec(BaseModel):
     audience: Literal["student","evaluator","advisor"] = "student"
     audience_spec: str = ""  
     audience_goal: str = "general insight"
-    audience_values: List[str] = []          # ex) ["성실성","논리적 사고"]
-    evaluation_criteria: List[str] = []      # ex) ["전공 성취도", "일관성"]
+    audience_values: Union[str, List[str]]     = []      # ex) ["성실성","논리적 사고"]
+    evaluation_criteria: Union[str, List[str]]     = []      # ex) ["전공 성취도", "일관성"]
     decision_context: str = ""      # ex) "채용 선발", "장학금 심사"
     
     # 분석 범위
     time_scope: str = "전체 학기"
     comparison_target: Optional[str] = None
-    priority_focus: List[str] = []           # 분석 중 가장 강조할 포인트
+    priority_focus: Union[str, List[str]]           # 분석 중 가장 강조할 포인트
     
     # 보고서 톤/스타일
     tone: Literal["neutral","encouraging","formal"] = "neutral"
