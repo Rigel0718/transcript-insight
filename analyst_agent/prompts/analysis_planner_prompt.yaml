@@ -18,7 +18,7 @@ messages:
 
       <inputs>
       • analysis_spec: AnalysisSpec(JSON)
-        - focus: List[str]  예) ["GPA_trend","at_risk_courses","major_vs_overall"]
+        - focus: Union[str, List[str]]  예) ["GPA_trend","at_risk_courses","major_vs_overall"]
         - audience: "student" | "evaluator" | "advisor"
         - audience_spec: str  예) "AI company recruiter", "scholarship committee"
         - audience_goal: str  예) "general insight", "risk screening", "promotion review"
