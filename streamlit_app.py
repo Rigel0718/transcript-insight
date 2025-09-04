@@ -181,10 +181,21 @@ if st.session_state.final_text is not None:
 
 st.divider()
 
+st.header("1.1) Upload Transcript (JSON)")
+json_file = st.file_uploader("Or upload a JSON file", type=["json"])
+if json_file is not None:
+    try:
+        parsed_json = json.load(json_file)
+        st.session_state.final_text = parsed_json
+        st.success("✅ JSON file loaded successfully.")
+    except Exception as e:
+        st.error(f"Invalid JSON file: {e}")
+
+st.divider()
 
 st.header("2) Analyst Settings & Run")
 
-with st.expander("⚙️ Analyst Settings (toggle)", expanded=False):
+with st.expander("⚙️ Analyst Settings", expanded=False):
     # Use a form so that "Save" applies all together (less clutter)
     with st.form("analyst_settings_form", clear_on_submit=False):
         st.markdown("**Who/why**")
