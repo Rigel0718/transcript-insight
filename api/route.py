@@ -135,7 +135,7 @@ async def analyze_transcript(transcript: Transcript, analyst: AnalysisSpec, sess
     await manager.send_to(session_id, json.dumps({"event": "eof"}))
     await asyncio.sleep(0.1)
     thread.join()
-
+            
     report = result_state.get("report", None)
     if not report:
         raise HTTPException(status_code=500, detail="No final result produced by the pipeline.")
