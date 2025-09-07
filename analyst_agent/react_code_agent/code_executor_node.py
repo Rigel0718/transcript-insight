@@ -154,9 +154,9 @@ class DataFrameCodeExecutorNode(BaseNode):
             #         self.logger.exception("DataFrame execution failed")
 
             # check local_env for RESULT_DF and save it as the primary result DataFrame.
-            if "primary_df" not in registry and isinstance(l_env, dict) and "RESULT_DF" in l_env:
+            if "primary_df" not in registry and isinstance(g_env, dict) and "RESULT_DF" in g_env:
                 try:
-                    df = l_env["RESULT_DF"]
+                    df = g_env["RESULT_DF"]
                     g_env["save_df"](df, "result")
                     self.logger.info("RESULT_DF saved as primary result")
                 except Exception as e:
@@ -202,7 +202,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                     "csv_path": "",
                     "stdout": stdout_stream.getvalue(),
                     "stderr": stderr_stream.getvalue().strip(),
-                    "error_log": msg,
+                    "error_log": error_log,
                     "errors": (state.get("errors") or []) + ["empty_dataframe"],
                     "attempts": (state.get("attempts", 0)) + 1,
                     "status": Status(status="alert", message=msg),
