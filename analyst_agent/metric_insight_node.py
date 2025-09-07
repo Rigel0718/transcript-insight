@@ -2,10 +2,11 @@ from base_node import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, Dict
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template, to_relative_path
 from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
 import pandas as pd
+import os
 
 class MetricInsightNode(BaseNode):
     '''
@@ -40,7 +41,10 @@ class MetricInsightNode(BaseNode):
         work_dir = self.env.work_dir
         user_id = self.env.user_id
         run_id = state['run_id']
-        base_dir = self._abs(self._abs(work_dir, "users", user_id, run_id))
+        if self.env.url:
+            base_dir = self._abs(self._abs(work_dir, "users"))
+        else:
+            base_dir = self._abs(self._abs(work_dir, "users",user_id))
 
         csv_path = state['csv_path']
         self.logger.info(f"[{self.name}]: {csv_path}")
@@ -48,6 +52,9 @@ class MetricInsightNode(BaseNode):
         chart_path = state['chart_path']
         self.logger.info(f"[{self.name}]: {chart_path}")
         relative_chart_path = to_relative_path(abs_path=chart_path, base_dir=base_dir)
+        if self.env.url:
+            relative_csv_path = os.path.join(self.env.url, "artifacts", relative_csv_path)
+            relative_chart_path = os.path.join(self.env.url, "artifacts", relative_chart_path)
 
         message = state['message']
         dataframe = []
@@ -76,6 +83,7 @@ class MetricInsightNode(BaseNode):
         "csv_path": relative_csv_path,           
         "chart_path": relative_chart_path,       
         })
+        self.logger.info(f'COST : {cost}')
         state['cost'] += cost
         state['metric_insight'] = metric_insight_v2
         return state
