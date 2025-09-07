@@ -1,7 +1,9 @@
 import logging, os, time
 from logging.handlers import RotatingFileHandler
 from typing import Optional
-from .env_model import Env
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .env_model import Env
 
 class _NodeNameFilter(logging.Filter):
     """%(node_name)s KeyError 방지: 레코드에 node_name 필드 강제 주입"""
@@ -64,23 +66,19 @@ class RunLogger:
 
         self._configured_for = run_id
         
-    def _get_root_logger(self, env: Env, run_id: str) -> logging.Logger:
-        work_dir = env.work_dir
-        user_id = env.user_id
-
+    def _get_root_logger(self, work_dir: str, user_id: str, run_id: str) -> logging.Logger:
         logs_dir = self._abs(work_dir, "users", user_id, run_id, "logs")
         os.makedirs(logs_dir, exist_ok=True)
-        
+
         root_name = f"{self.base_name}.{user_id}.{run_id}"
         root_logger = logging.getLogger(root_name)
         self._setup_handlers(root_logger, run_id, logs_dir)
-
         return root_logger
 
 
-    def get_logger(self, env: Env, run_id, node_name: Optional[str] = None) -> logging.LoggerAdapter:
+    def get_logger(self, work_dir: str, user_id: str, run_id: str, node_name: Optional[str] = None) -> logging.LoggerAdapter:
         """노드에서 바로 쓰는 메인 API. 항상 LoggerAdapter 반환."""
-        root = self._get_root_logger(env, run_id)
+        root = self._get_root_logger(work_dir, user_id, run_id)
         name = root.name if node_name is None else f"{root.name}.{node_name}"
         base = logging.getLogger(name)
         return logging.LoggerAdapter(base, {"node_name": node_name or "-"})
