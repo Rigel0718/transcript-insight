@@ -108,6 +108,7 @@ class MetricInsightSchedulingNode(BaseNode):
             metric_insight_node = MetricInsightNode(verbose=self.verbose, track_time=self.track_time, queue=self.queue, env=self.env)
             metric_insight_result = metric_insight_node(input_insight)
             report_plan.append(metric_insight_result['metric_insight'])
+            self.logger.info(f'COST : {metric_insight_result["cost"]}')
             state['cost'] += metric_insight_result['cost']
         state['report_plan'] = report_plan
         return state
