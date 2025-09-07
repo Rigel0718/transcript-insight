@@ -5,23 +5,31 @@ import os
 import shutil
 import tempfile
 from analyst_agent import transcript_analyst_graph, AnalysisSpec, ReportState
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Optional
 import asyncio
 from queue import Queue
 import json
 from threading import Thread
 from .connection_manager import manager
 from pathlib import Path
+from base_node import Env, RunLogger
+from datetime import datetime
+from langchain_core.runnables import RunnableConfig  
+
+
 
 router = APIRouter()
 
-CLIENT_DATA_DIR = Path("client_data")
+CLIENT_DATA_DIR = Path("test_data")
 
 class PDFProcessResponse(BaseModel):
     final_result: Union[str, Dict]
 
-class Transcript(BaseModel):
+
+class AnalyzeRequest(BaseModel):
     transcript: Dict[str, Any]
+    analyst: AnalysisSpec
+    url : Optional[str] = None
 
 class Report(BaseModel):
     report: str
@@ -102,19 +110,32 @@ async def parse_pdf(session_id: str, file: UploadFile = File(...)):
     
 
 @router.post("/analyze/{session_id}")
-async def analyze_transcript(transcript: Transcript, analyst: AnalysisSpec, session_id: str):
+async def analyze_transcript(session_id: str, req: AnalyzeRequest):
     """
     Analyzes the transcript report with Table and Chart.
     """
+    transcript = req.transcript
+    analyst = req.analyst
+    
+
+    
+    run_id = datetime.now().strftime("%Y-%m-%d-%H-%M%S")
+    logger = RunLogger()
+    env = Env(
+    work_dir=CLIENT_DATA_DIR,
+    user_id=session_id,
+    run_logger=logger,
+    url=req.url,
+    )
     q = Queue()
-    graph = transcript_analyst_graph(queue=q)
-    config = {"configurable": {"thread_id": str(session_id)}}
-    text_transcript = json.dumps(transcript.transcript, ensure_ascii=False, indent=2)
+    graph = transcript_analyst_graph(queue=q, verbose=True, env=env, track_time=True)
+    config = RunnableConfig(thread_id=str(session_id), max_iterations=40)
+    text_transcript = json.dumps(transcript, ensure_ascii=False, indent=2)
     input_state = ReportState(
         dataset=text_transcript,
         user_query='',
         analyst=analyst,
-        run_id=session_id,
+        run_id=run_id,
     )
 
     result_state = {}
