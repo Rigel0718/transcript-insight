@@ -46,6 +46,7 @@ class AnalysisSpec(BaseModel):
     insight_style: Literal["descriptive","comparative","predictive"] = "descriptive"
     evidence_emphasis: Literal["low","medium","high"] = "medium"
     tone_variation: Optional[str] = None
+    report_format: Literal["markdown","html"] = "html"
     
     # 산출물 구성
     output_format: List[Literal["text","chart","table","recommendation"]] = ["text","chart", "table"]
