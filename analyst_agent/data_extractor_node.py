@@ -3,7 +3,7 @@ from analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template
 from analyst_agent.report_plan_models import InformMetric, MetricPlan
 from langchain_core.output_parsers import JsonOutputParser
@@ -68,6 +68,7 @@ class DataExtractorNode(BaseNode):
             if metric_spec.extraction_mode == "semantic":
                 metric_spec.semantic_course_names = result['semantic_course_names'][metric_spec.id]
         state['metric_plan'] = metric_plan
+        self.logger.info(f'COST : {cost}')
         state['cost'] = cost
 
         return state

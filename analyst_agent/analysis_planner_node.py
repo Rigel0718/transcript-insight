@@ -4,7 +4,7 @@ from analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template
 from analyst_agent.report_plan_models import MetricPlan, MetricSpec
 
@@ -65,5 +65,6 @@ class AnalysisPlannerNode(BaseNode):
         self.logger.info(f"[{self.name}]: {result}")
         default_metrics = [gpa_trend_metric, credit_category_share_metric]
         state['metric_plan'] = default_metrics + result.metrics
+        self.logger.info(f'COST : {cost}')
         state['cost'] = cost
         return state

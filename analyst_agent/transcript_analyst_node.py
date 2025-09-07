@@ -3,7 +3,7 @@ from analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, List
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template
 from langchain_core.output_parsers import StrOutputParser
 from analyst_agent.report_plan_models import AnalysisSpec, MetricInsightv2, InformMetric, MetricSpec, ReportPlan
@@ -40,6 +40,7 @@ class TranscriptAnalystNode(BaseNode):
             result = chain.invoke(input_values)
             cost = cb.total_cost
         self.logger.info(f"[{self.name}]: {result}")
+        self.logger.info(f'COST : {cost}')
         state['cost'] = cost
         state['report'] = result
         return state
