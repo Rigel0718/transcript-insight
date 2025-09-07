@@ -2,7 +2,7 @@ from base_node.base import BaseNode
 from analyst_agent.react_code_agent.state import ChartState, DataFrameState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 from typing import Optional
 from .utils import load_prompt_template
 import pandas as pd

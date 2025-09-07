@@ -5,7 +5,7 @@ from analyst_agent.react_code_agent.state import AgentContextState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from analyst_agent.react_code_agent.utils import load_prompt_template
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks.manager import get_openai_callback
 
 class RouteDecision(BaseModel):
     action: Literal["to_gen_df", "to_gen_chart", "finish"] = Field(
