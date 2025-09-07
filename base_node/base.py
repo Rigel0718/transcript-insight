@@ -29,7 +29,13 @@ class BaseNode(ABC, Generic[T]):
     def _setup_logger(self, state: T):
         if self.logger is not None:
             return
-        self.logger = self.run_logger.get_logger(self.env, run_id=state['run_id'], node_name=self.name)
+        if self.run_logger:
+            self.logger = self.run_logger.get_logger(
+                work_dir=self.env.work_dir,
+                user_id=self.env.user_id,
+                run_id=state['run_id'],
+                node_name=self.name
+            )
 
 
     def log(self, message: str, level: int = logging.INFO, **kwargs):
