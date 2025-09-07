@@ -1,16 +1,15 @@
-from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
-
 from pydantic import BaseModel, ConfigDict, Field
-if TYPE_CHECKING:
-    from base_node.logger import RunLogger
+from typing import Optional, Any, Union
+from pathlib import Path
 
 class Env(BaseModel):
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,  # 임의 타입 허용 (RunLogger)
-        frozen=True,                  
-        populate_by_name=True          
+        arbitrary_types_allowed=True,
+        frozen=True,
+        populate_by_name=True
     )
     user_id: str = Field(default="anonymous")
-    work_dir: str = Field(default=".")
-    run_logger: Optional["RunLogger"] = None
+    work_dir: Union[str, Path] = Field(default=".")
+    # RunLogger 대신 Any (외부 주입)
+    run_logger: Optional[Any] = None
+    url: Optional[str] = None
