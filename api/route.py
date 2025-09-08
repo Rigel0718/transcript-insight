@@ -38,9 +38,13 @@ class Report(BaseModel):
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     await manager.connect(websocket, session_id)
     try:
-        data = await websocket.receive_text()
+        async for _ in websocket.iter_text():
+            pass
     except WebSocketDisconnect:
-        manager.disconnect(session_id)
+        pass
+    finally:
+        await manager.close_and_disconnect(session_id)
+
 
 
 @router.post("/upload/{session_id}")
