@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 from weasyprint import HTML
 import io
-
+import markdown
 
 FASTAPI_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 WS_URL_BASE = os.environ.get("BACKEND_WS_URL", "ws://localhost:8000")
@@ -91,7 +91,7 @@ session_dir.mkdir(exist_ok=True, parents=True)
 
 
 async def listen_to_websocket(placeholder, session_id):
-    WEBSOCKET_URL = f"ws://localhost:8000/ws/{session_id}"
+    WEBSOCKET_URL = f"{WS_URL_BASE}/ws/{session_id}"
     try:
         async with websockets.connect(WEBSOCKET_URL) as websocket:
             while True:
@@ -143,9 +143,10 @@ async def run_analysis(transcript_payload: dict, report_placeholder):
         st.session_state.cost = cost
 
         if st.session_state.spec_report_format:
-            report_path = f'./test_data/users/{session_id}/{session_id}.{st.session_state.spec_report_format}'
+            report_path = Path(f'{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.{st.session_state.spec_report_format}')
         else : 
-            report_path = f'./test_data/users/{session_id}/{session_id}.html'
+            report_path = Path(f'{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.html')
+        report_path.parent.mkdir(parents=True, exist_ok=True)
         with open(report_path, "w") as f:
             f.write(response_state.get("report"))
     await asyncio.gather(
@@ -181,6 +182,7 @@ st.divider()
 st.header("1) Upload Transcript")
 
 with st.container():
+    transcript_placeholder = st.empty()
     c1, c2 = st.columns(2)
 
     with c1:
@@ -299,12 +301,11 @@ if st.session_state.analysis_report is not None:
         # PDF 변환 버튼
         try:
             if report_format == "html":
-                pdf_bytes = HTML(string=report_content).write_pdf()
+                pdf_bytes = HTML(string=report_content, base_url=".").write_pdf()
             else:
                 # markdown → html 변환 후 PDF
-                import markdown
                 html_from_md = markdown.markdown(report_content)
-                pdf_bytes = HTML(string=html_from_md).write_pdf()
+                pdf_bytes = HTML(string=html_from_md, base_url=".").write_pdf()
 
             st.download_button(
                 "📄 Download report.pdf",
