@@ -1,10 +1,19 @@
 FROM python:3.10
 
+# uv 설치
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY . /app
-WORKDIR /app
+# 한글 폰트만 설치 (차트/그래프 라벨용)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fonts-nanum fonts-dejavu-core \
+ && rm -rf /var/lib/apt/lists/* \
+ && fc-cache -f
 
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-cache
 
-CMD ["/app/.venv/bin/python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY . .
+
+EXPOSE 8000
+CMD ["uv", "run", "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
