@@ -1,32 +1,176 @@
 # Transcript Insight
 
-This project is a web application for analyzing transcripts. It consists of a FastAPI backend and a Streamlit frontend.
+Analyze university **transcripts → structured metrics → audience-ready reports** (Markdown & PDF).  
+This project consists of a **FastAPI** backend and a **Streamlit** frontend and focuses on **parsing transcripts, computing metrics, visualizing charts, and generating downloadable reports**.
 
 ## Project Structure
 
-The project is divided into two main components:
+- **FastAPI Backend**  
+  API for parsing/analysis and long-running workflows (WebSocket streaming logs supported).  
+  Main app: `main.py`, Dockerfile: `Dockerfile.api`.
 
--   **FastAPI Backend:** The backend is a FastAPI application that provides an API for processing and analyzing transcripts. The main application file is `main.py`, and the Dockerfile for the backend is `Dockerfile.api`.
--   **Streamlit Frontend:** The frontend is a Streamlit application that provides a user interface for interacting with the backend. The main application file is `streamlit_app.py`, and the Dockerfile for the frontend is `Dockerfile.streamlit`.
+- **Streamlit Frontend**  
+  UI for uploading transcripts (PDF/JSON), configuring analysis, monitoring progress, and downloading the final report (Markdown/HTML→PDF).  
+  Main app: `streamlit_app.py`, Dockerfile: `Dockerfile.streamlit`.
+
+- **Agents (LangGraph)**  
+  Parser Agent (OCR/structure), Transcript Analyst Agent (metrics → tables/charts → report writer).
 
 ## How it Works
 
-The project uses Docker to containerize the backend and frontend applications. The `docker-compose.yml` file is used to orchestrate the two services.
-
--   The FastAPI backend runs on port 8000.
--   The Streamlit frontend runs on port 8501.
-
-The frontend communicates with the backend to process and analyze transcripts.
+- **Upload** a transcript (PDF or JSON) in the Streamlit UI.
+- **Parser** extracts structured data (OCR via Upstage; graph-based subflow for tricky areas).
+- **Analyst** computes metrics and generates tables/charts.
+- **Report Writer** produces audience-tailored report in **Markdown or HTML**, and the frontend can export **PDF (WeasyPrint)**.
+- Frontend ↔ Backend communicate over HTTP & WebSocket (live logs/progress).
 
 ## Parser
 
-The parser uses a graph-based approach to analyze transcripts. It leverages the Upstage API for OCR and document parsing, and it includes a subgraph for handling OCR on specific elements.
+The parser uses a **graph-based** approach with OCR (Upstage API) and subgraphs for selective element OCR.
 
 ![ParseGraph](images/ParseGraph.png)
 
 ## Transcript Analyst
 
-The Transcript Analyst Agent automates transcript analysis using a LangGraph pipeline.  
-It produces a final report tailored to the audience with Table and Chart.
+The Transcript Analyst Agent automates transcript analysis with a **LangGraph** pipeline.  
+It produces a final report tailored to the audience with **tables and charts**.
 
 ![TranscriptAnalyst](analyst_agent/image/transcript_analyst_agent.png)
+
+---
+
+## Local Development (uv)
+
+Requires Python **3.10+** and [uv](https://github.com/astral-sh/uv).
+
+```bash
+# install deps (creates .venv/)
+uv sync --no-cache
+
+# run API (FastAPI)
+uv run python -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# run Streamlit UI
+uv run python -m streamlit run streamlit_app.py
+# (alternative) launcher script: uv run streamlit run streamlit_app.py
+```
+
+> If you see a `VIRTUAL_ENV ... does not match ...` warning, prefer the single project `.venv/` and run with `uv run ...`.  
+> `python -m streamlit` is a robust fallback when a launcher script isn’t on PATH.
+
+---
+
+## Docker Setup
+
+### Dockerfile.api (FastAPI)
+
+- Installs **Nanum Gothic** (and **DejaVu**) fonts so charts/images render Korean labels correctly.
+- Runs FastAPI via **uvicorn**.
+
+**CMD example**
+
+```dockerfile
+CMD ["uv", "run", "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Dockerfile.streamlit (Streamlit + PDF)
+
+- Installs **WeasyPrint runtime** libs (Cairo / Pango / GDK-Pixbuf / libffi) and **Nanum Gothic** fonts for PDF generation with Korean.
+- Runs Streamlit via `uv run streamlit run ...` (or `python -m streamlit`).
+
+**CMD example**
+
+```dockerfile
+CMD ["uv", "run", "streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
+
+### docker-compose.yml (minimal, internal networking)
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      # Streamlit → FastAPI (use service name 'api' instead of localhost)
+      BACKEND_URL: "http://api:8000"
+      BACKEND_WS_URL: "ws://api:8000"
+    depends_on:
+      - api
+```
+
+**Run**
+
+```bash
+docker compose up --build
+# API:       http://localhost:8000/docs
+# Streamlit: http://localhost:8501
+```
+
+---
+
+## Fonts & PDF (WeasyPrint)
+
+To ensure Korean renders in PDF:
+
+1. **Install fonts** in both containers (API for charts, Streamlit for final PDF):
+   - `fonts-nanum`, `fonts-dejavu-core`
+2. **WeasyPrint runtime** (Streamlit container):
+   - `libcairo2`, `libpango-1.0-0`, `libpangoft2-1.0-0`, `libpangocairo-1.0-0`, `libgdk-pixbuf-2.0-0`, `libffi8`, `shared-mime-info`
+3. **Font cache** after install:
+   - `fc-cache -f`
+4. **HTML to PDF**:
+   - Use: `HTML(string=html, base_url=".").write_pdf(...)`
+   - CSS example:
+     ```css
+     body { font-family: 'NanumGothic','DejaVu Sans',sans-serif; line-height: 1.45; }
+     ```
+
+---
+
+## Configuration
+
+- **Environment (Streamlit)**  
+  `BACKEND_URL`, `BACKEND_WS_URL` must point to the API service from inside the container/network (`http://api:8000`, `ws://api:8000`).
+
+- **Uploads & Exports**  
+  The app saves intermediate artifacts (tables/charts) and the final report (Markdown/HTML/PDF).  
+  Ensure writeable paths (e.g., `./test_data/users/{session_id}/...`) exist or are created at runtime.
+
+- **WebSocket**  
+  Streamlit listens to backend events via WebSocket for live progress; ensure URL uses `BACKEND_WS_URL`.
+
+---
+
+## Troubleshooting
+
+- **`uv run streamlit` not found**  
+  Use `uv run python -m streamlit run ...` or reinstall `streamlit` with `uv add streamlit && uv sync`.
+
+- **Images/CSS missing in PDF**  
+  Add `base_url="."` when calling `WeasyPrint.HTML(...)` so relative paths resolve.
+
+- **Korean text broken in charts/PDF**  
+  Confirm `fonts-nanum` is installed and `fc-cache -f` ran; ensure CSS sets the font family.
+
+---
+
+## Roadmap (excerpt)
+
+- Advanced metrics planner (audience-aware objectives).  
+- More robust DataFrame validation and error recovery.  
+- Asset packaging & permalink for downloadable reports.
