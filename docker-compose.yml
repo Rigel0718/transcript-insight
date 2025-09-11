@@ -19,5 +19,6 @@ services:
     environment:
       BACKEND_URL: "http://api:8000"
       BACKEND_WS_URL: "ws://api:8000"
+      PUBLIC_BACKEND_URL: "http://localhost:8000"
     depends_on:
       - api
