@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
+(CLIENT_DATA_DIR / "users").mkdir(parents=True, exist_ok=True)
 
 app = FastAPI()
 app.include_router(router)
