@@ -43,7 +43,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     except WebSocketDisconnect:
         pass
     finally:
-        await manager.close_and_disconnect(session_id)
+        manager.disconnect(session_id)
 
 
 
