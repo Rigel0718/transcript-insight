@@ -14,8 +14,9 @@ from weasyprint import HTML
 import io
 import markdown
 
-FASTAPI_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
-WS_URL_BASE = os.environ.get("BACKEND_WS_URL", "ws://localhost:8000")
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://api:8000")
+WS_URL_BASE = os.environ.get("BACKEND_WS_URL", "ws://api:8000")
+PUBLIC_BACKEND_URL = os.getenv("PUBLIC_BACKEND_URL", "http://localhost:8000")
 
 CLIENT_DATA_DIR = Path("./test_data/")
 
@@ -86,7 +87,7 @@ def clear_data_only():
 
 # --- Session Directory Setup ---
 session_id = st.session_state.session_id
-session_dir = CLIENT_DATA_DIR / session_id
+session_dir = CLIENT_DATA_DIR / 'users'/ session_id
 session_dir.mkdir(exist_ok=True, parents=True)
 
 
@@ -119,7 +120,7 @@ async def parse_with_backend(file, placeholder) -> None:
     async def _upload_pdf(): 
         files = {"file": (file.name, file.getvalue(), "application/pdf")} 
         async with httpx.AsyncClient(timeout=300) as client: 
-            response = await client.post(f"{FASTAPI_URL}/upload/{session_id}", files=files) 
+            response = await client.post(f"{BACKEND_URL}/upload/{session_id}", files=files) 
             response.raise_for_status() 
             data = response.json() 
             st.session_state.final_text = data.get("final_result") 
@@ -133,8 +134,8 @@ async def run_analysis(transcript_payload: dict, report_placeholder):
     async def _call_analyze():
         async with httpx.AsyncClient(timeout=600) as client:
             response = await client.post(
-                f"{FASTAPI_URL}/analyze/{session_id}",
-                json={"transcript": transcript_payload, "analyst": spec, "url": FASTAPI_URL}
+                f"{BACKEND_URL}/analyze/{session_id}",
+                json={"transcript": transcript_payload, "analyst": spec, "url": PUBLIC_BACKEND_URL}
             )
         response.raise_for_status()
         response_state = response.json()
@@ -301,11 +302,13 @@ if st.session_state.analysis_report is not None:
         # PDF 변환 버튼
         try:
             if report_format == "html":
-                pdf_bytes = HTML(string=report_content, base_url=".").write_pdf()
+                html_for_pdf = report_content.replace(PUBLIC_BACKEND_URL, BACKEND_URL)
+                pdf_bytes = HTML(string=html_for_pdf, base_url='.').write_pdf()
             else:
                 # markdown → html 변환 후 PDF
                 html_from_md = markdown.markdown(report_content)
-                pdf_bytes = HTML(string=html_from_md, base_url=".").write_pdf()
+                html_for_pdf = html_from_md.replace(PUBLIC_BACKEND_URL, BACKEND_URL)
+                pdf_bytes = HTML(string=html_for_pdf, base_url='.').write_pdf()
 
             st.download_button(
                 "📄 Download report.pdf",
