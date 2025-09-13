@@ -167,9 +167,8 @@ class DataFrameCodeExecutorNode(BaseNode):
                     errors.append(f"Failed to save RESULT_DF: {e}")
                     self.logger.exception("Failed to save RESULT_DF")
 
-            # scanning is allowed, search l_env for the first pandas DataFrame (optional)
             if state.get("allow_scan_df", True) and not registry["dataframes"]:
-                for k, v in (l_env or {}).items():
+                for k, v in (g_env or {}).items():
                     if isinstance(v, pd.DataFrame):
                         g_env["save_df"](v, f"auto_{k}")
                         self.logger.info(f"Auto-detected DataFrame saved as auto_{k}")
@@ -332,8 +331,8 @@ class ChartCodeExecutorNode(BaseNode):
             "pd": pd,
             "plt": plt,
             "save_chart": save_chart,
-            "use_korean_font": lambda: applied_font.get("family", ""),
-            "_applied_font": dict(applied_font),
+            # "use_korean_font": lambda: applied_font.get("family", ""),
+            # "_applied_font": dict(applied_font),
         }
 
     def run(self, state: ChartState) -> ChartState:
@@ -356,11 +355,10 @@ class ChartCodeExecutorNode(BaseNode):
         error_log = ""
 
         try:
-            # Serialize matplotlib access to avoid global rcParams/figure conflicts
-            with _MATPLOTLIB_LOCK:
+            with self._MATPLOTLIB_LOCK:
                 plt.clf()
                 plt.close("all")
-                # korean font
+                # 한글 폰트 적용
                 applied = self._auto_apply_korean_font()
                 plt.rcParams["axes.unicode_minus"] = False
                 work_dir = self.env.work_dir
@@ -382,7 +380,7 @@ class ChartCodeExecutorNode(BaseNode):
                             error_log = "Chart exec failed"
                             self.logger.exception("Chart execution failed")
 
-            # Font warnings are considered errors (retry routing)
+            # 한글 폰트 warning
             warn_hit = any(self.FONT_WARN_PATTERN.search(str(w.message)) for w in warning_list)
             log_hit = self.FONT_WARN_PATTERN.search(log_stream.getvalue())
             if warn_hit or log_hit:
@@ -418,7 +416,7 @@ class ChartCodeExecutorNode(BaseNode):
             return Command(goto=goto, update=state)
 
         finally:
-            with _MATPLOTLIB_LOCK:
+            with self._MATPLOTLIB_LOCK:
                 mpl_logger.removeHandler(mpl_handler)
                 try:
                     plt.close("all")
