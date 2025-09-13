@@ -14,8 +14,8 @@ from weasyprint import HTML
 import io
 import markdown
 
-BACKEND_URL = os.environ.get("BACKEND_URL", "http://api:8000")
-WS_URL_BASE = os.environ.get("BACKEND_WS_URL", "ws://api:8000")
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
+WS_URL_BASE = os.environ.get("BACKEND_WS_URL", "ws://localhost:8000")
 PUBLIC_BACKEND_URL = os.getenv("PUBLIC_BACKEND_URL", "http://localhost:8000")
 
 CLIENT_DATA_DIR = Path("./test_data/")
@@ -97,20 +97,35 @@ async def listen_to_websocket(placeholder, session_id):
         async with websockets.connect(WEBSOCKET_URL) as websocket:
             while True:
                 try:
-                    message = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                    # Wait longer than server keepalive interval; treat timeouts as idle, not fatal
+                    message = await asyncio.wait_for(websocket.recv(), timeout=30.0)
                     data = json.loads(message)
+                    # Ignore keepalive frames; just keep the loop alive
+                    if data.get("event") == "keepalive":
+                        continue
                     if "name" in data and "status" in data:
-                        if data["status"] == "start":
+                        status = data["status"]
+                        if status == "start":
                             placeholder.text(f"Processing: {data['name']}...")
-                        elif data["status"] == "end":
+                        elif status == "progress":
+                            comp = data.get("completed")
+                            total = data.get("total")
+                            if isinstance(comp, int) and isinstance(total, int) and total > 0:
+                                placeholder.text(f"Processing: {data['name']}… ({comp}/{total})")
+                            else:
+                                placeholder.text(f"Processing: {data['name']}…")
+                        elif status == "end":
                             if "duration" in data:
                                 placeholder.text(f"Finished: {data['name']} in {data['duration']}s")
                             else:
                                 placeholder.text(f"Finished: {data['name']}")
                     if data.get("event") == "eof":
+                        # Signal finish in the UI before exiting
+                        placeholder.success("Finished Analyst — assembling final report…")
                         break
                 except asyncio.TimeoutError:
-                    break
+                    # No messages recently; continue listening
+                    continue
     except websockets.exceptions.ConnectionClosed:
         pass
 
@@ -142,6 +157,7 @@ async def run_analysis(transcript_payload: dict, report_placeholder):
         st.session_state.analysis_report = response_state.get("report")
         cost = response_state.get("cost", 0.0)
         st.session_state.cost = cost
+        st.session_state.analysis_run_id = response_state.get("run_id")
 
         if st.session_state.spec_report_format:
             report_path = Path(f'{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.{st.session_state.spec_report_format}')
@@ -269,7 +285,7 @@ if st.button("🚀 Run Analyst and Build Report", type="primary", disabled=analy
 
 # 💰 비용 표시 (Analyst Settings & Run 섹션 바로 밑)
 if "cost" in st.session_state:
-    st.info(f"💰 Total analysis cost: **${st.session_state.cost:.2f}**")
+    st.info(f"💰 Total analysis cost: **${st.session_state.cost:.4f}**")
 
 st.divider()
 
