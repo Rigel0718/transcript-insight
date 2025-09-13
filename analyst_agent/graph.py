@@ -12,6 +12,8 @@ from analyst_agent.react_code_agent import react_code_agent, AgentContextState
 from analyst_agent.metric_insight_node import MetricInsightNode
 from analyst_agent.analysis_planner_node import AnalysisPlannerNode
 from analyst_agent.data_extractor_node import DataExtractorNode
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, Any, Tuple
 
 
 class MetricInsightSchedulingNode(BaseNode):
@@ -21,11 +23,11 @@ class MetricInsightSchedulingNode(BaseNode):
         self.track_time = track_time
         self.queue = queue
         self.env = env
+        # Emit a friendly, coarse-grained status for UI instead of per-metric noise
+        self.name = "Doing extract Table and Chart."
         
     def run(self, state: ReportState):
-        react_code_agent_graph = react_code_agent(verbose=self.verbose, track_time=self.track_time, queue=self.queue, env=self.env)
         report_plan = []
-        config = RunnableConfig(thread_id=state['run_id'], max_iterations=30) 
         schema_explanations = '''
             - id : Stable indentifier
             - rationalbe: Reason for extracting this metric
@@ -49,67 +51,105 @@ class MetricInsightSchedulingNode(BaseNode):
            단 , metric_spec의 produces가 metric인 경우를 제외한다.
         </attention>
         '''
-        
-        for metric_spec in state['metric_plan']:
+        # Build inputs for each metric and launch the full pipeline (agent + insight) in parallel
+        def build_agent_input(metric_spec) -> Dict[str, Any]:
             input_metric_dict = metric_spec.model_dump(exclude={"extraction_mode", "extraction_query"})
-            
-            DEFAULT_AGENT_CONTEXT_STATE = {
-            'user_query': '',
-            'dataset': '',
-            'run_id':'',
-            'attempts': {},
-            'errors': [],
-            'chart_name':'',
-            'chart_desc':'',
-            'chart_code': '',
-            'img_path': '',
-            'csv_path':'',
-            'df_code': '',
-            'df_name':'',
-            'df_desc':'',
-            'df_meta':{},
-            'previous_node':'_START_',
-            'next_action': '',
-            'cost' : 0.0,
+            default_ctx: Dict[str, Any] = {
+                'user_query': '',
+                'dataset': '',
+                'run_id': '',
+                'attempts': {},
+                'errors': [],
+                'chart_name': '',
+                'chart_desc': '',
+                'chart_code': '',
+                'img_path': '',
+                'csv_path': '',
+                'df_code': '',
+                'df_name': '',
+                'df_desc': '',
+                'df_meta': {},
+                'previous_node': '_START_',
+                'next_action': '',
+                'cost': 0.0,
             }
             user_input = {
                 'user_query': input_metric_dict,
                 'schema_explanations': schema_explanations,
                 'note': note,
             }
-            input_values = {
-                **DEFAULT_AGENT_CONTEXT_STATE,
+            metric_id = getattr(metric_spec, 'id', None) or input_metric_dict.get('id', '')
+            # Initialize per-agent run_id with metric_id to avoid extra state fields
+            return {
+                **default_ctx,
                 'user_query': user_input,
-                'run_id':state['run_id'],
+                'run_id': metric_id,
                 'dataset': state['dataset'],
             }
-            react_code_agent_result : AgentContextState = react_code_agent_graph.invoke(
-            input=input_values,
-            config=config
-            )
-            csv_path = react_code_agent_result['csv_path']
-            chart_path = react_code_agent_result['img_path']
-            status = react_code_agent_result['status']
-            if status.status != "normal":
-                state['cost'] += react_code_agent_result['cost']
-                
-            state['cost'] += react_code_agent_result['cost']
 
-            input_insight = {
-                'csv_path' : csv_path,
+        def run_full_pipeline_for_metric(metric_spec) -> Tuple[str, Dict[str, Any]]:
+            """Run react_code_agent then MetricInsightNode for a single metric.
+            Returns (metric_id, { 'insight': MetricInsightv2, 'cost': float })."""
+            metric_id = getattr(metric_spec, 'id', None) or metric_spec.model_dump().get('id', '')
+            # 1) Run code agent
+            # Suppress per-metric event emission; keep logs intact
+            graph = react_code_agent(verbose=self.verbose, track_time=self.track_time, queue=None, env=self.env)
+            cfg = RunnableConfig(thread_id=f"{state['run_id']}:{metric_id}", max_iterations=30)
+            inputs = build_agent_input(metric_spec)
+            agent_result: AgentContextState = graph.invoke(input=inputs, config=cfg)
+            agent_cost = float(agent_result.get('cost', 0.0)) if isinstance(agent_result, dict) else getattr(agent_result, 'cost', 0.0)
+
+            # 2) Run insight node using agent outputs
+            csv_path = agent_result.get('csv_path', '') if isinstance(agent_result, dict) else getattr(agent_result, 'csv_path', '')
+            chart_path = agent_result.get('img_path', '') if isinstance(agent_result, dict) else getattr(agent_result, 'img_path', '')
+            status = agent_result.get('status', {'status': 'unknown', 'message': ''}) if isinstance(agent_result, dict) else getattr(agent_result, 'status', {'status': 'unknown', 'message': ''})
+
+            insight_input = {
+                'csv_path': csv_path,
                 'chart_path': chart_path,
                 'metric_spec': metric_spec,
                 'analyst': state['analyst'],
                 'run_id': state['run_id'],
-                'cost' : 0.0,
-                'message': status.message,
+                'metric_id': metric_id,
+                'cost': 0.0,
+                'message': getattr(status, 'message', status.get('message', '') if isinstance(status, dict) else ''),
             }
 
-            metric_insight_node = MetricInsightNode(verbose=self.verbose, track_time=self.track_time, queue=self.queue, env=self.env)
-            metric_insight_result = metric_insight_node(input_insight)
-            report_plan.append(metric_insight_result['metric_insight'])
-            self.logger.info(f'COST : {metric_insight_result["cost"]}')
-            state['cost'] += metric_insight_result['cost']
+            # Build a fresh node per thread for safety
+            # Suppress per-metric event emission; keep logs intact
+            insight_node = MetricInsightNode(verbose=self.verbose, track_time=self.track_time, queue=None, env=self.env)
+            insight_result = insight_node(insight_input)
+            total_cost = agent_cost + float(insight_result.get('cost', 0.0))
+            return metric_id, {
+                'insight': insight_result.get('metric_insight'),
+                'cost': total_cost,
+            }
+
+        metrics = state['metric_plan']
+        max_workers = min(4, max(1, len(metrics)))
+        results_by_id: Dict[str, Dict[str, Any]] = {}
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_map = {executor.submit(run_full_pipeline_for_metric, spec): spec for spec in metrics}
+            for future in as_completed(future_map):
+                spec = future_map[future]
+                try:
+                    metric_id, result_bundle = future.result()
+                    results_by_id[metric_id] = result_bundle
+                except Exception as e:
+                    # In case of failure, create a minimal error-like result
+                    metric_id = getattr(spec, 'id', None) or spec.model_dump().get('id', '')
+                    self.logger.error(f"react_code_agent failed for metric {metric_id}: {e}")
+                    results_by_id[metric_id] = {'insight': None, 'cost': 0.0}
+
+        # After all parallel runs complete, aggregate results in original order
+        for metric_spec in metrics:
+            metric_id = getattr(metric_spec, 'id', None) or metric_spec.model_dump().get('id', '')
+            bundle = results_by_id.get(metric_id, {})
+            insight = bundle.get('insight')
+            if insight is not None:
+                report_plan.append(insight)
+            state['cost'] += float(bundle.get('cost', 0.0))
         state['report_plan'] = report_plan
         return state
 
