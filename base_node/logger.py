@@ -1,4 +1,4 @@
-import logging, os, time
+import logging, os, time, threading
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 from typing import TYPE_CHECKING
@@ -27,6 +27,7 @@ class RunLogger:
         self.level = level
         self._configured_for: Optional[str] = None  # run_id
         self.log_path: Optional[str] = None
+        self._lock = threading.Lock()
 
     @staticmethod
     def _abs(*paths: str) -> str:
@@ -35,36 +36,38 @@ class RunLogger:
 
     def _setup_handlers(self, root_logger: logging.Logger, run_id: str, logs_dir: str):
         """같은 run_id면 재설정 생략. 다르면 핸들러 교체."""
-        if self._configured_for == run_id and root_logger.handlers:
-            return
-        
-        for h in list(root_logger.handlers):
-            root_logger.removeHandler(h)
-        root_logger.setLevel(self.level)
-        root_logger.propagate = False
+        with self._lock:
+            if self._configured_for == run_id and root_logger.handlers:
+                return
 
-        os.makedirs(logs_dir, exist_ok=True)
-        self.log_path = self._abs(logs_dir, f"{run_id}.log")
+            for h in list(root_logger.handlers):
+                root_logger.removeHandler(h)
+            root_logger.setLevel(self.level)
+            root_logger.propagate = False
 
-        formatter = logging.Formatter(self._FMT_WITH_NODE_NAME, datefmt=self._DATEFMT)
-        node_filter = _NodeNameFilter("-")
+            os.makedirs(logs_dir, exist_ok=True)
+            self.log_path = self._abs(logs_dir, f"{run_id}.log")
 
-        fh = RotatingFileHandler(
-            self.log_path,
-            maxBytes=self._MAX_BYTES,
-            backupCount=self._BACKUP_COUNT,
-            encoding="utf-8",
-        )
-        fh.setFormatter(formatter)
-        fh.addFilter(node_filter)
-        root_logger.addHandler(fh)
+            # Include thread name for clarity in concurrent runs
+            formatter = logging.Formatter(self._FMT_WITH_NODE_NAME + " [%(threadName)s]", datefmt=self._DATEFMT)
+            node_filter = _NodeNameFilter("-")
 
-        ch = logging.StreamHandler()
-        ch.setFormatter(formatter)
-        ch.addFilter(node_filter)
-        root_logger.addHandler(ch)
+            fh = RotatingFileHandler(
+                self.log_path,
+                maxBytes=self._MAX_BYTES,
+                backupCount=self._BACKUP_COUNT,
+                encoding="utf-8",
+            )
+            fh.setFormatter(formatter)
+            fh.addFilter(node_filter)
+            root_logger.addHandler(fh)
 
-        self._configured_for = run_id
+            ch = logging.StreamHandler()
+            ch.setFormatter(formatter)
+            ch.addFilter(node_filter)
+            root_logger.addHandler(ch)
+
+            self._configured_for = run_id
         
     def _get_root_logger(self, work_dir: str, user_id: str, run_id: str) -> logging.Logger:
         logs_dir = self._abs(work_dir, "users", user_id, run_id, "logs")
