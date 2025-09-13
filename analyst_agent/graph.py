@@ -23,8 +23,7 @@ class MetricInsightSchedulingNode(BaseNode):
         self.track_time = track_time
         self.queue = queue
         self.env = env
-        # Emit a friendly, coarse-grained status for UI instead of per-metric noise
-        self.name = "Doing extract Table and Chart."
+        self.name = "Extracting Table and Chart."
         
     def run(self, state: ReportState):
         report_plan = []
@@ -54,7 +53,7 @@ class MetricInsightSchedulingNode(BaseNode):
         # Build inputs for each metric and launch the full pipeline (agent + insight) in parallel
         def build_agent_input(metric_spec) -> Dict[str, Any]:
             input_metric_dict = metric_spec.model_dump(exclude={"extraction_mode", "extraction_query"})
-            default_ctx: Dict[str, Any] = {
+            default_state: Dict[str, Any] = {
                 'user_query': '',
                 'dataset': '',
                 'run_id': '',
@@ -81,7 +80,7 @@ class MetricInsightSchedulingNode(BaseNode):
             metric_id = getattr(metric_spec, 'id', None) or input_metric_dict.get('id', '')
             # Initialize per-agent run_id with metric_id to avoid extra state fields
             return {
-                **default_ctx,
+                **default_state,
                 'user_query': user_input,
                 'run_id': metric_id,
                 'dataset': state['dataset'],
@@ -115,8 +114,6 @@ class MetricInsightSchedulingNode(BaseNode):
                 'message': getattr(status, 'message', status.get('message', '') if isinstance(status, dict) else ''),
             }
 
-            # Build a fresh node per thread for safety
-            # Suppress per-metric event emission; keep logs intact
             insight_node = MetricInsightNode(verbose=self.verbose, track_time=self.track_time, queue=None, env=self.env)
             insight_result = insight_node(insight_input)
             total_cost = agent_cost + float(insight_result.get('cost', 0.0))
@@ -126,23 +123,27 @@ class MetricInsightSchedulingNode(BaseNode):
             }
 
         metrics = state['metric_plan']
-        max_workers = min(4, max(1, len(metrics)))
+        total = len(metrics)
+        max_workers = min(4, max(1, total))
         results_by_id: Dict[str, Dict[str, Any]] = {}
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_map = {executor.submit(run_full_pipeline_for_metric, spec): spec for spec in metrics}
+            completed = 0
             for future in as_completed(future_map):
                 spec = future_map[future]
+                metric_id = getattr(spec, 'id', None) or spec.model_dump().get('id', '')
                 try:
                     metric_id, result_bundle = future.result()
                     results_by_id[metric_id] = result_bundle
                 except Exception as e:
                     # In case of failure, create a minimal error-like result
-                    metric_id = getattr(spec, 'id', None) or spec.model_dump().get('id', '')
                     self.logger.error(f"react_code_agent failed for metric {metric_id}: {e}")
                     results_by_id[metric_id] = {'insight': None, 'cost': 0.0}
+                finally:
+                    completed += 1
+                    self.emit_event("progress", completed=completed, total=total, metric_id=metric_id)
 
-        # After all parallel runs complete, aggregate results in original order
         for metric_spec in metrics:
             metric_id = getattr(metric_spec, 'id', None) or metric_spec.model_dump().get('id', '')
             bundle = results_by_id.get(metric_id, {})
