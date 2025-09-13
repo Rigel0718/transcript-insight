@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 from typing import Dict
+import logging
 
 class ConnectionManager:
     '''
@@ -19,9 +20,17 @@ class ConnectionManager:
     def disconnect(self, session_id: str):
         self.active_connections.pop(session_id, None)
 
-    async def send_to(self, session_id: str, message: str):
+    async def send_to(self, session_id: str, message: str) -> bool:
         websocket = self.active_connections.get(session_id)
-        if websocket:
+        if not websocket:
+            return False
+        try:
             await websocket.send_text(message)
+            return True
+        except Exception as e:
+            logging.getLogger("ConnectionManager").warning(
+                f"send_to failed for {session_id}: {e}. Disconnecting.")
+            self.disconnect(session_id)
+            return False
 
 manager = ConnectionManager()
