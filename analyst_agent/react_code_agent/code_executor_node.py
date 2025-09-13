@@ -1,16 +1,20 @@
 import io, re, logging, time, warnings, traceback
+import threading
 from typing import Dict, Any
 from contextlib import redirect_stdout, redirect_stderr
 import os, json
 import pandas as pd
 import matplotlib.font_manager as fm
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from analyst_agent.react_code_agent.state import DataFrameState, ChartState, Status
 from base_node.base import BaseNode
 from analyst_agent.react_code_agent.utils import is_alert
 from langgraph.types import Command
 from langgraph.graph import END
+import matplotlib as mpl
+mpl.use("Agg")
+
+
 
 class DataFrameCodeExecutorNode(BaseNode):
     def __init__(self, verbose: bool = False, **kwargs):
@@ -229,14 +233,12 @@ class DataFrameCodeExecutorNode(BaseNode):
             
             return Command(goto=goto, update=state)
         finally:
-            try:
-                plt.close("all")
-            except: 
-                pass
+            pass
 
 
 class ChartCodeExecutorNode(BaseNode):
     FONT_WARN_PATTERN = re.compile(r"(Glyph .* missing|findfont:.*Font family .* not found)", re.I)
+    _MATPLOTLIB_LOCK = threading.RLock()
 
     FONT_CANDIDATES: Dict[str, list[str]] = {
         "NanumGothic": [
@@ -354,29 +356,31 @@ class ChartCodeExecutorNode(BaseNode):
         error_log = ""
 
         try:
-            plt.clf()
-            plt.close("all")
-            # korean font
-            applied = self._auto_apply_korean_font()
-            plt.rcParams["axes.unicode_minus"] = False
-            work_dir = self.env.work_dir
-            user_id = self.env.user_id
-            run_id = state.get("run_id")
-            artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
-            g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
-            l_env: Dict[str, Any] = {}
+            # Serialize matplotlib access to avoid global rcParams/figure conflicts
+            with _MATPLOTLIB_LOCK:
+                plt.clf()
+                plt.close("all")
+                # korean font
+                applied = self._auto_apply_korean_font()
+                plt.rcParams["axes.unicode_minus"] = False
+                work_dir = self.env.work_dir
+                user_id = self.env.user_id
+                run_id = state.get("run_id")
+                artifact_dir = self._abs(work_dir, "users", user_id, run_id, "artifacts")
+                g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
+                l_env: Dict[str, Any] = {}
 
-            self.logger.info("Executing chart_code …")
+                self.logger.info("Executing chart_code …")
 
-            with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
-                with warnings.catch_warnings(record=True) as warning_list:
-                    warnings.simplefilter("always")
-                    try:
-                        exec(code, g_env, l_env)
-                    except Exception:
-                        errors.append(traceback.format_exc())
-                        error_log = "Chart exec failed"
-                        self.logger.exception("Chart execution failed")
+                with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
+                    with warnings.catch_warnings(record=True) as warning_list:
+                        warnings.simplefilter("always")
+                        try:
+                            exec(code, g_env, l_env)
+                        except Exception:
+                            errors.append(traceback.format_exc())
+                            error_log = "Chart exec failed"
+                            self.logger.exception("Chart execution failed")
 
             # Font warnings are considered errors (retry routing)
             warn_hit = any(self.FONT_WARN_PATTERN.search(str(w.message)) for w in warning_list)
@@ -414,9 +418,12 @@ class ChartCodeExecutorNode(BaseNode):
             return Command(goto=goto, update=state)
 
         finally:
-            mpl_logger.removeHandler(mpl_handler)
-            try: plt.close("all")
-            except: pass
+            with _MATPLOTLIB_LOCK:
+                mpl_logger.removeHandler(mpl_handler)
+                try:
+                    plt.close("all")
+                except:
+                    pass
 
 if __name__ == "__main__":
     import sys
