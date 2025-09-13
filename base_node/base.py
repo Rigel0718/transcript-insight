@@ -29,19 +29,26 @@ class BaseNode(ABC, Generic[T]):
     def _setup_logger(self, state: T):
         if self.logger is not None:
             return
-        if self.run_logger:
-            self.logger = self.run_logger.get_logger(
-                work_dir=self.env.work_dir,
-                user_id=self.env.user_id,
-                run_id=state['run_id'],
-                node_name=self.name
-            )
+        if not self.run_logger:
+            return
+        node_title = self.name
+        run_id = state.get('run_id') if isinstance(state, dict) else None
+        if not run_id:
+            return
+        self.logger = self.run_logger.get_logger(
+            work_dir=self.env.work_dir,
+            user_id=self.env.user_id,
+            run_id=run_id,
+            node_name=node_title,
+        )
 
 
     def log(self, message: str, level: int = logging.INFO, **kwargs):
-        if self.logger is None:
-            self._setup_logger({})
-        self.logger.log(level, message, extra={"node_name": self.name, **kwargs})
+        # Prefer the structured run logger when available; otherwise fall back
+        if self.logger is not None:
+            self.logger.log(level, message, extra={**kwargs})
+        else:
+            logging.getLogger(self.name).log(level, message)
 
     def emit_event(self, status: str, **extras):
         if self.queue:
