@@ -14,13 +14,13 @@ This project consists of a **FastAPI** backend and a **Streamlit** frontend and 
   Main app: `streamlit_app.py`, Dockerfile: `Dockerfile.streamlit`.
 
 - **Agents (LangGraph)**  
-  Parser Agent (OCR/structure), Transcript Analyst Agent (metrics → tables/charts → report writer).
+  Parser Agent (OCR/structure), Transcript Analyst Agent using a parallelized `react_code_agent` (metrics → tables/charts → report writer).
 
 ## How it Works
 
 - **Upload** a transcript (PDF or JSON) in the Streamlit UI.
 - **Parser** extracts structured data (OCR via Upstage; graph-based subflow for tricky areas).
-- **Analyst** computes metrics and generates tables/charts.
+- **Analyst** computes metrics and generates tables/charts in parallel using a `react_code_agent` subgraph.
 - **Report Writer** produces audience-tailored report in **Markdown or HTML**, and the frontend can export **PDF (WeasyPrint)**.
 - Frontend ↔ Backend communicate over HTTP & WebSocket (live logs/progress).
 
@@ -32,8 +32,8 @@ The parser uses a **graph-based** approach with OCR (Upstage API) and subgraphs 
 
 ## Transcript Analyst
 
-The Transcript Analyst Agent automates transcript analysis with a **LangGraph** pipeline.  
-It produces a final report tailored to the audience with **tables and charts**.
+The Transcript Analyst Agent automates transcript analysis with a **LangGraph** pipeline and a parallelized `react_code_agent`.  
+It plans and executes metric extraction, chart generation, and report writing in parallel where possible, producing an audience-tailored report with **tables and charts**.
 
 ![TranscriptAnalyst](analyst_agent/image/transcript_analyst_agent.png)
 

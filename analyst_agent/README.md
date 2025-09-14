@@ -5,6 +5,8 @@
 성적표(Transcript) 데이터를 기반으로 **메트릭 기획 → 데이터 추출 → CSV/차트 생성 → 인사이트 작성 → 최종 보고서**까지 자동화하는 LangGraph 기반 에이전트입니다.  
 최종 엔트리포인트는 **`transcript_analyst_graph()`**이며, 이 그래프 실행 결과가 API 출력(ReportState)입니다.
 
+Parallel execution: 이 그래프는 메트릭별 CSV/차트 생성을 위해 병렬화된 `react_code_agent` 서브그래프를 사용합니다. 필요한 단계(DataFrame 코드 생성/실행, 차트 코드 생성/실행)를 가능한 한 동시에 수행하여 총 소요 시간을 단축합니다. 세부 동작은 [react_code_agent/README.md](./react_code_agent/README.md)를 참고하세요.
+
 ---
 ## 📝 REPORT EXAMPLE
 
@@ -47,7 +49,7 @@ ai_recruiter = AnalysisSpec(
 
 파이프라인 실행 순서:
 
-1) **AnalysisPlannerNode** → 2) **DataExtractorNode** → 3) **MetricInsightSchedulingNode**(서브그래프 실행) → 4) **MetricInsightNode** → 5) **TranscriptAnalystNode**
+1) **AnalysisPlannerNode** → 2) **DataExtractorNode** → 3) **MetricInsightSchedulingNode**(메트릭별 병렬 `react_code_agent` 서브그래프 실행) → 4) **MetricInsightNode** → 5) **TranscriptAnalystNode**
 
 
 ---
@@ -93,11 +95,11 @@ example
 - **입력 → 출력**: `dataset`, `metric_plan` → `inform_metric`, `metric_plan(semantic_course_names 채움)`
 
 ### 3) MetricInsightSchedulingNode
-- **역할**: Metric별로 **ReAct Code Agent 서브그래프**를 실행하여 DataFrame/CSV 생성 및 Chart(PNG)를 만듭니다.
+- **역할**: Metric별로 **ReAct Code Agent 서브그래프**를 실행하여 DataFrame/CSV 생성 및 Chart(PNG)를 만듭니다. 메트릭 단위로 작업을 병렬 dispatch하여 전체 처리 시간을 줄입니다.
 - **LLM**: `gpt-4.1-mini`
 - **프롬프트**: [MetricInsightSchedulingNode 프롬프트](./prompts/metric_insight_scheduling_prompt.yaml)
 - **입력 → 출력**: `dataset`, `metric_plan`, `run_id` → Metric별 `csv_path`, `img_path`, `cost`
-- **비고**: [ReAct Code Agent](./react_code_agent/README.md) 참조.
+- **비고**: [ReAct Code Agent](./react_code_agent/README.md) 참조. (병렬 처리 세부 구현 포함)
 
 ### 4) MetricInsightNode
 - **역할**: Data + MetricSpec + AnalysisSpec을 입력으로 **2~5줄 인사이트**를 생성합니다. 필요시 `csv_path`/`chart_path`도 포함합니다.
