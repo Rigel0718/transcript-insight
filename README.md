@@ -62,6 +62,25 @@ uv run python -m streamlit run streamlit_app.py
 
 ## Docker Setup
 
+### .env for docker-compose
+
+- Create a `.env` file at the project root before running `docker compose up`.
+- Required for the parser agent (OCR + LLM): set `OPENAI_API_KEY` and `UPSTAGE_API_KEY`.
+- `docker-compose.yml` already loads this via `env_file: .env`.
+
+Example `.env`:
+
+```
+# required for parser agent
+OPENAI_API_KEY=sk-...
+UPSTAGE_API_KEY=upstage-...
+
+# optional: LangSmith tracing
+# LANGCHAIN_TRACING_V2=true
+# LANGSMITH_API_KEY=ls-...
+```
+
+
 ### Dockerfile.api (FastAPI)
 
 - Installs **Nanum Gothic** (and **DejaVu**) fonts so charts/images render Korean labels correctly.
