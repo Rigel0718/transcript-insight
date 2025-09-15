@@ -40,7 +40,9 @@ ai_recruiter = AnalysisSpec(
     
     output_format=["text","chart","recommendation"],
     include_recommendations=True,
-    highlight_style="strengths"
+    highlight_style="strengths",
+    report_format="html"
+)
 ```
 
 ---
@@ -121,25 +123,25 @@ example
 분석의 맥락(누가/무엇을/왜 평가하는가)을 명확히 기술해야 하며, **정확하고 구체적일수록 결과물이 좋아집니다.**
 
 ```python
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Union
 from pydantic import BaseModel
 
 class AnalysisSpec(BaseModel):
     # 분석 주제
-    focus: List[str]  
+    focus: Union[str, List[str]] = ["GPA trend", "major GPA"]
     
     # 독자 맥락
     audience: Literal["student","evaluator","advisor"] = "student"
-    audience_spec: str = ""  
+    audience_spec: str = ""
     audience_goal: str = "general insight"
-    audience_values: List[str] = []          # ex) ["성실성","논리적 사고"]
-    evaluation_criteria: List[str] = []      # ex) ["전공 성취도", "일관성"]
-    decision_context: str = "채용 선발"      # ex) "채용 선발", "장학금 심사"
+    audience_values: Union[str, List[str]] = []      # ex) ["성실성","논리적 사고"]
+    evaluation_criteria: Union[str, List[str]] = []  # ex) ["전공 성취도", "일관성"]
+    decision_context: str = ""                       # ex) "채용 선발", "장학금 심사"
     
     # 분석 범위
     time_scope: str = "전체 학기"
     comparison_target: Optional[str] = None
-    priority_focus: List[str] = []           # 분석 중 가장 강조할 포인트
+    priority_focus: Union[str, List[str]]            # 분석 중 가장 강조할 포인트 (필수)
     
     # 보고서 톤/스타일
     tone: Literal["neutral","encouraging","formal"] = "neutral"
@@ -148,11 +150,12 @@ class AnalysisSpec(BaseModel):
     insight_style: Literal["descriptive","comparative","predictive"] = "descriptive"
     evidence_emphasis: Literal["low","medium","high"] = "medium"
     tone_variation: Optional[str] = None
+    report_format: Literal["markdown","html"] = "html"
     
     # 산출물 구성
-    output_format: List[Literal["text","chart","table","recommendation"]] = ["text"]
+    output_format: List[Literal["text","chart","table","recommendation"]] = ["text","chart","table"]
     include_recommendations: bool = False
-    highlight_style: Literal["numbers","growth","risk","strengths"] = "growth"
+    highlight_style: Literal["numbers","growth","risk","strengths"] = "strengths"
 ```
 
 ### 필드
@@ -162,7 +165,8 @@ class AnalysisSpec(BaseModel):
 - **decision_context**: 활용 맥락 명시(채용, 장학금, 승진 등).  
 - **time_scope / comparison_target**: 분석 기간(최근 N학기 등)과 비교 기준(동일 전공 평균 등).  
 - **tone / language / detail_level**: 톤/언어/디테일.  
-- **output_format / include_recommendations**: 출력 형태와 추천 포함 여부.
+- **report_format / output_format / include_recommendations**: 보고서 포맷(마크다운/HTML), 출력 형태, 추천 포함 여부.
+- **focus / priority_focus**: 단일 문자열 또는 리스트 사용 가능.
 
 ### 방향성 예시
 - **맥락을 최대한 구체화**하세요. (예: *“AI 채용 실무자 관점에서, 최근 4학기 성과와 전공 수학 과목 중심으로, 성장 가능성을 강조”*)  
@@ -215,6 +219,7 @@ state = {
         audience_goal="수학적 사고와 성장 가능성 평가",
         time_scope="최근 4학기",
         priority_focus=["전공 수학 과목 성취도"],
+        report_format="html",
         output_format=["text","chart","table","recommendation"],
         include_recommendations=True,
         language="ko",
