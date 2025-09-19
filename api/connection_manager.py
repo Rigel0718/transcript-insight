@@ -1,6 +1,5 @@
 from fastapi import WebSocket
 from typing import Dict
-import logging
 
 class ConnectionManager:
     '''
@@ -27,9 +26,7 @@ class ConnectionManager:
         try:
             await websocket.send_text(message)
             return True
-        except Exception as e:
-            logging.getLogger("ConnectionManager").warning(
-                f"send_to failed for {session_id}: {e}. Disconnecting.")
+        except Exception:
             self.disconnect(session_id)
             return False
 
