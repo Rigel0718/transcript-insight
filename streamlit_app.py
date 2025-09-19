@@ -95,38 +95,37 @@ async def listen_to_websocket(placeholder, session_id):
     WEBSOCKET_URL = f"{WS_URL_BASE}/ws/{session_id}"
     try:
         async with websockets.connect(WEBSOCKET_URL) as websocket:
-            while True:
-                try:
-                    # Wait longer than server keepalive interval; treat timeouts as idle, not fatal
-                    message = await asyncio.wait_for(websocket.recv(), timeout=30.0)
-                    data = json.loads(message)
-                    # Ignore keepalive frames; just keep the loop alive
-                    if data.get("event") == "keepalive":
-                        continue
-                    if "name" in data and "status" in data:
-                        status = data["status"]
-                        if status == "start":
-                            placeholder.text(f"Processing: {data['name']}...")
-                        elif status == "progress":
-                            comp = data.get("completed")
-                            total = data.get("total")
-                            if isinstance(comp, int) and isinstance(total, int) and total > 0:
-                                placeholder.text(f"Processing: {data['name']}… ({comp}/{total})")
-                            else:
-                                placeholder.text(f"Processing: {data['name']}…")
-                        elif status == "end":
-                            if "duration" in data:
-                                placeholder.text(f"Finished: {data['name']} in {data['duration']}s")
-                            else:
-                                placeholder.text(f"Finished: {data['name']}")
-                    if data.get("event") == "eof":
-                        # Signal finish in the UI before exiting
-                        placeholder.success("Finished Analyst — assembling final report…")
-                        break
-                except asyncio.TimeoutError:
-                    # No messages recently; continue listening
+            async for message in websocket:  # 연결 유지 + 메시지 대기
+                data = json.loads(message)
+
+                # just check connection (keepalive)
+                if data.get("event") == "keepalive":
                     continue
+
+                if "name" in data and "status" in data:
+                    status = data["status"]
+                    if status == "start":
+                        placeholder.text(f"Processing: {data['name']}...")
+                    elif status == "progress":
+                        comp = data.get("completed")
+                        total = data.get("total")
+                        if isinstance(comp, int) and isinstance(total, int) and total > 0:
+                            placeholder.text(f"Processing: {data['name']}… ({comp}/{total})")
+                        else:
+                            placeholder.text(f"Processing: {data['name']}…")
+                    elif status == "end":
+                        if "duration" in data:
+                            placeholder.text(f"Finished: {data['name']} in {data['duration']}s")
+                        else:
+                            placeholder.text(f"Finished: {data['name']}")
+
+                if data.get("event") == "eof":
+                    placeholder.success("Finished Analyst — assembling final report…")
+                    await websocket.close()
+                    break
+
     except websockets.exceptions.ConnectionClosed:
+        # 서버나 클라이언트에서 종료되면 여기로 옴
         pass
 
 
