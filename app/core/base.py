@@ -5,7 +5,7 @@ from queue import Queue
 from logging import LoggerAdapter
 import logging
 from typing import Optional
-from app.base_node.env_model import Env
+from app.core.env_model import Env
 
 
 
