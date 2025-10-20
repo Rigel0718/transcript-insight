@@ -2,6 +2,7 @@ import logging, os, time, threading
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 from typing import TYPE_CHECKING
+from logging import LoggerAdapter
 if TYPE_CHECKING:
     from .env_model import Env
 
@@ -85,3 +86,15 @@ class RunLogger:
         name = root.name if node_name is None else f"{root.name}.{node_name}"
         base = logging.getLogger(name)
         return logging.LoggerAdapter(base, {"node_name": node_name or "-"})
+
+class NoopLoggerAdapter(LoggerAdapter):
+    def __init__(self):
+        super().__init__(logging.getLogger("noop"), {})
+        self.logger.disabled = True  # 어떤 레벨도 출력 안 함
+    def process(self, msg, kwargs):
+        return msg, kwargs
+
+class NoopRunLogger:
+    """RunLogger와 동일한 인터페이스로 get_logger만 제공"""
+    def get_logger(self, *_, **__) -> LoggerAdapter:
+        return NoopLoggerAdapter()

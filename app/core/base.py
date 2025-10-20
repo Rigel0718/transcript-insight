@@ -6,7 +6,7 @@ from logging import LoggerAdapter
 import logging
 from typing import Optional
 from app.core.env_model import Env
-
+from app.core.logger import NoopRunLogger
 
 
 
@@ -20,7 +20,7 @@ class BaseNode(ABC, Generic[T]):
         self.queue = queue
         self.env = env
         self.run_logger = logger or env.run_logger
-        self.logger: Optional[LoggerAdapter] = None
+        self.logger = logger or (env.run_logger if hasattr(env, "run_logger") else None) or NoopRunLogger()
 
     @abstractmethod
     def run(self, state: T) -> T:
