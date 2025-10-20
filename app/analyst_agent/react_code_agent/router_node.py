@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
-from app.base_node.base import BaseNode
+from app.core.base import BaseNode
 from app.analyst_agent.react_code_agent.state import AgentContextState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel

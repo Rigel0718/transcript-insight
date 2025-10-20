@@ -8,8 +8,8 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.checkpoint.memory import MemorySaver  
 from queue import Queue
 from langchain_core.runnables import RunnableConfig  
-from app.base_node.base import BaseNode
-from app.base_node.env_model import Env
+from app.core.base import BaseNode
+from app.core.env_model import Env
 
 
 #TODO bring csv file path and create methods to read csv file in codeexecutornode.

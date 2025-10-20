@@ -1,4 +1,4 @@
-from app.base_node import BaseNode
+from app.core import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, Dict

@@ -4,3 +4,4 @@ from langchain_core.messages import BaseMessage
 
 class ChatbotState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
+

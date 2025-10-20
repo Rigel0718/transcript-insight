@@ -13,7 +13,7 @@ import json
 from threading import Thread
 from .connection_manager import manager
 from pathlib import Path
-from app.base_node import Env, RunLogger
+from app.core import Env, RunLogger
 from datetime import datetime
 from langchain_core.runnables import RunnableConfig  
 
