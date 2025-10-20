@@ -1,11 +1,17 @@
-from .base import BaseNode
-from .state import ParseState
-from .element import Element ,CheckParsedResult
+from pathlib import Path
+from typing import Optional
+
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
-from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser
+
+from app.core.util import load_prompt_template
+from .base import BaseNode
+from .state import ParseState
+from .element import Element, CheckParsedResult
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
 class TableValidationNode(BaseNode):
@@ -25,7 +31,7 @@ class TableValidationNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
-        prompt_template = load_prompt_template('prompts/parsed_result_checker_prompt.yaml')
+        prompt_template = load_prompt_template(PROMPTS_DIR / 'parsed_result_checker_prompt.yaml')
 
         chain = prompt_template | self.llm.with_structured_output(CheckParsedResult)
         for elem in state['elements']:
@@ -134,7 +140,7 @@ class ExtractJsonNode(BaseNode):
         return llm 
     
     def run(self, state: ParseState) -> ParseState:
-        extract_prompt = load_prompt_template('prompts/extractor_json.yaml')
+        extract_prompt = load_prompt_template(PROMPTS_DIR / 'extractor_json.yaml')
         chain = extract_prompt | self.llm | JsonOutputParser()
 
         transcript_text = state['transcript_text']

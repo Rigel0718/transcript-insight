@@ -1,11 +1,16 @@
+from pathlib import Path
 from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
+
 from app.core.base import BaseNode
+from app.core.util import load_prompt_template
 from app.analyst_agent.react_code_agent.state import AgentContextState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from app.analyst_agent.react_code_agent.utils import load_prompt_template
 from langchain_community.callbacks.manager import get_openai_callback
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 class RouteDecision(BaseModel):
     action: Literal["to_gen_df", "to_gen_chart", "finish"] = Field(
@@ -29,7 +34,7 @@ class RouterNode(BaseNode):
     
     def run(self, state: AgentContextState) -> AgentContextState:
         try:
-            prompt = load_prompt_template("prompts/router.yaml")
+            prompt = load_prompt_template(PROMPTS_DIR / "router.yaml")
             chain = prompt | self.llm.with_structured_output(RouteDecision)
             self.logger.info(f"[{self.name}] LLM chain constructed (prompt → llm → structured output)")
         except Exception as e:
@@ -77,4 +82,3 @@ class RouterNode(BaseNode):
 
         self.log(message=result.action)
         return {'next_action': result.action, 'previous_node': 'router', 'cost': state['cost']}
-

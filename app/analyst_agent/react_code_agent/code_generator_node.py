@@ -1,13 +1,18 @@
+from pathlib import Path
+from typing import Optional
+
 from app.core.base import BaseNode
+from app.core.util import load_prompt_template
 from app.analyst_agent.react_code_agent.state import ChartState, DataFrameState, Status
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.callbacks.manager import get_openai_callback
-from typing import Optional
-from .utils import load_prompt_template
 import pandas as pd
 from pydantic import BaseModel, Field
 import os
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
 class DataFrameSpec(BaseModel):
@@ -40,7 +45,7 @@ class DataFrameCodeGeneratorNode(BaseNode):
 
     def run(self, state: DataFrameState) -> DataFrameState:
         try:
-            prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
+            prompt = load_prompt_template(PROMPTS_DIR / "generate_dataframe_code.yaml")
             chain = prompt | self.llm.with_structured_output(DataFrameSpec)
             self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
@@ -114,7 +119,7 @@ class ChartCodeGeneratorNode(BaseNode):
     def run(self, state: ChartState) -> ChartState:
 
         try:
-            prompt = load_prompt_template("prompts/generate_chart_code.yaml")
+            prompt = load_prompt_template(PROMPTS_DIR / "generate_chart_code.yaml")
             chain = prompt | self.llm.with_structured_output(ChartSpec)
             self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:

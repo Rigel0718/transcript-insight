@@ -1,14 +1,20 @@
-from pydantic import Json
-from .base import BaseNode
-from .state import Text2ChartState
+import io, re, traceback, logging, warnings
+from contextlib import redirect_stdout
+from pathlib import Path
+from typing import Optional
+
+import matplotlib.pyplot as plt
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
-from .utils import load_prompt_template
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-import io, re, traceback, logging, warnings
-import matplotlib.pyplot as plt
-from contextlib import redirect_stdout
+from pydantic import Json
+
+from app.core.util import load_prompt_template
+from .base import BaseNode
+from .state import Text2ChartState
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 class QueryReWrite(BaseNode):
     '''
@@ -27,7 +33,7 @@ class QueryReWrite(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        prompt = load_prompt_template("prompts/query_rewrite.yaml")
+        prompt = load_prompt_template(PROMPTS_DIR / "query_rewrite.yaml")
         chain = prompt | self.llm | StrOutputParser()
         input_query = state['query']
         input_dataset = state['dataset']
@@ -53,7 +59,7 @@ class DataFrameExtractorNode(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        prompt = load_prompt_template("prompts/generate_dataframe_code.yaml")
+        prompt = load_prompt_template(PROMPTS_DIR / "generate_dataframe_code.yaml")
         chain = prompt | self.llm | StrOutputParser()
         input_query = state['rewrite_query']
         input_dataset = state['dataset']
@@ -79,7 +85,7 @@ class Text2ChartNode(BaseNode):
         return llm 
 
     def run(self, state: Text2ChartState):
-        prompt = load_prompt_template("prompts/generate_chart_code.yaml")
+        prompt = load_prompt_template(PROMPTS_DIR / "generate_chart_code.yaml")
         chain = prompt | self.llm | JsonOutputParser()
         input_query = state['rewrite_query']
         input_dataframe = state['dataframe']

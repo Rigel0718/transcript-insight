@@ -1,12 +1,16 @@
+from pathlib import Path
 from typing import Optional
+
 from app.core import BaseNode
+from app.core.util import load_prompt_template
 from app.analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
 from langchain_community.callbacks.manager import get_openai_callback
-from .utils import load_prompt_template
 from app.analyst_agent.report_plan_models import MetricPlan, MetricSpec
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
 gpa_trend_metric = MetricSpec(
@@ -53,7 +57,7 @@ class AnalysisPlannerNode(BaseNode):
         return llm
 
     def run(self, state: ReportState) -> ReportState:
-        prompt = load_prompt_template("prompts/analysis_planner_prompt.yaml")
+        prompt = load_prompt_template(PROMPTS_DIR / "analysis_planner_prompt.yaml")
         chain = prompt | self.llm.with_structured_output(MetricPlan)
         
         analyst = state['analyst']

@@ -8,7 +8,7 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 from app.analyst_agent.react_code_agent.state import DataFrameState, ChartState, Status
 from app.core.base import BaseNode
-from app.analyst_agent.react_code_agent.utils import is_alert
+from app.core.util import is_alert
 from langgraph.types import Command
 from langgraph.graph import END
 import matplotlib as mpl

@@ -1,13 +1,18 @@
 from collections import defaultdict
-from .state import OCRParseState
-from .base import BaseNode
-from .utils import load_prompt_template
-from .element import TableBoundary
+from pathlib import Path
+from typing import Optional
+
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional
-from collections import defaultdict
+
+from app.core.util import load_prompt_template
+from .state import OCRParseState
+from .base import BaseNode
+from .element import TableBoundary
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
 class GroupXYLine(BaseNode):
@@ -111,7 +116,7 @@ class OCRTableBoundaryDetectorNode(BaseNode):
         
         source=state['ocr_data']
 
-        prompt_template = load_prompt_template('prompts/boundary_detector.yaml')
+        prompt_template = load_prompt_template(PROMPTS_DIR / 'boundary_detector.yaml')
 
         parser = PydanticOutputParser(pydantic_object=TableBoundary)
         

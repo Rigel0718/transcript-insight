@@ -1,12 +1,17 @@
+from pathlib import Path
+from typing import Optional, Dict
+
 from app.core import BaseNode
+from app.core.util import load_prompt_template, to_relative_path
+from app.analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional, Dict
 from langchain_community.callbacks.manager import get_openai_callback
-from .utils import load_prompt_template, to_relative_path
-from app.analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
 import pandas as pd
 import os
+
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 class MetricInsightNode(BaseNode):
     '''
@@ -29,7 +34,7 @@ class MetricInsightNode(BaseNode):
         return os.path.abspath(os.path.join(*paths))
 
     def run(self, state: Dict) -> Dict:
-        prompt = load_prompt_template("prompts/metric_insight_prompt.yaml") 
+        prompt = load_prompt_template(PROMPTS_DIR / "metric_insight_prompt.yaml") 
         # input variable : metric_spec, analysis_spec, dataframe
         chain = prompt | self.llm.with_structured_output(MetricInsight)
         

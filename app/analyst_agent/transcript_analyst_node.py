@@ -1,12 +1,16 @@
+from pathlib import Path
+from typing import Optional, List
+
 from app.core import BaseNode
+from app.core.util import load_prompt_template
 from app.analyst_agent.state import ReportState
+from app.analyst_agent.report_plan_models import AnalysisSpec, MetricInsightv2, InformMetric, MetricSpec, ReportPlan
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
-from typing import Optional, List
 from langchain_community.callbacks.manager import get_openai_callback
-from .utils import load_prompt_template
 from langchain_core.output_parsers import StrOutputParser
-from app.analyst_agent.report_plan_models import AnalysisSpec, MetricInsightv2, InformMetric, MetricSpec, ReportPlan
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 class TranscriptAnalystNode(BaseNode):
     def __init__(self, llm: Optional[BaseChatModel] = None, verbose=False, **kwargs):
@@ -21,7 +25,7 @@ class TranscriptAnalystNode(BaseNode):
         return llm
         
     def run(self, state: ReportState) -> ReportState:
-        prompt = load_prompt_template("prompts/transcript_analyst_prompt.yaml")
+        prompt = load_prompt_template(PROMPTS_DIR / "transcript_analyst_prompt.yaml")
         chain = prompt | self.llm | StrOutputParser()
 
         analyst: AnalysisSpec = state['analyst']
