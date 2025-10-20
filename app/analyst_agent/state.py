@@ -1,5 +1,5 @@
 from typing import TypedDict, Annotated, List
-from analyst_agent.report_plan_models import AnalysisSpec, MetricSpec, InformMetric, ReportPlan
+from app.analyst_agent.report_plan_models import AnalysisSpec, MetricSpec, InformMetric, ReportPlan
 
 class ReportState(TypedDict, total=False):
     # user_input

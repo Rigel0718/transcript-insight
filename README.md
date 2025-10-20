@@ -35,7 +35,7 @@ The parser uses a **graph-based** approach with OCR (Upstage API) and subgraphs 
 The Transcript Analyst Agent automates transcript analysis with a **LangGraph** pipeline and a parallelized `react_code_agent`.  
 It plans and executes metric extraction, chart generation, and report writing in parallel where possible, producing an audience-tailored report with **tables and charts**.
 
-![TranscriptAnalyst](analyst_agent/image/transcript_analyst_agent.png)
+![TranscriptAnalyst](app/analyst_agent/image/transcript_analyst_agent.png)
 
 ---
 

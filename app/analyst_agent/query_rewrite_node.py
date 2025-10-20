@@ -1,5 +1,5 @@
-from base_node import BaseNode
-from analyst_agent.state import ReportState
+from app.base_node import BaseNode
+from app.analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional

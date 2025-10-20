@@ -1,10 +1,10 @@
-from base_node import BaseNode
+from app.base_node import BaseNode
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional, Dict
 from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template, to_relative_path
-from analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
+from app.analyst_agent.report_plan_models import MetricInsight, MetricInsightv2, MetricSpec
 import pandas as pd
 import os
 

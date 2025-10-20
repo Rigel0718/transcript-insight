@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.route import router, CLIENT_DATA_DIR
+from app.api.route import router, CLIENT_DATA_DIR
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 

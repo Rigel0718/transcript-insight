@@ -1,11 +1,11 @@
-from base_node import BaseNode
-from analyst_agent.state import ReportState
+from app.base_node import BaseNode
+from app.analyst_agent.state import ReportState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 from typing import Optional
 from langchain_community.callbacks.manager import get_openai_callback
 from .utils import load_prompt_template
-from analyst_agent.report_plan_models import InformMetric, MetricPlan
+from app.analyst_agent.report_plan_models import InformMetric, MetricPlan
 from langchain_core.output_parsers import JsonOutputParser
 
 class DataExtractorNode(BaseNode):

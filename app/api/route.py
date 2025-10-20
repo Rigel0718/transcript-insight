@@ -1,10 +1,10 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket, WebSocketDisconnect
-from parser.graph import transcript_extract_graph
+from app.parser.graph import transcript_extract_graph
 from pydantic    import BaseModel
 import os
 import shutil
 import tempfile
-from analyst_agent import transcript_analyst_graph, AnalysisSpec, ReportState
+from app.analyst_agent import transcript_analyst_graph, AnalysisSpec, ReportState
 from typing import Union, Dict, Any, Optional
 import asyncio
 import time
@@ -13,7 +13,7 @@ import json
 from threading import Thread
 from .connection_manager import manager
 from pathlib import Path
-from base_node import Env, RunLogger
+from app.base_node import Env, RunLogger
 from datetime import datetime
 from langchain_core.runnables import RunnableConfig  
 

@@ -205,8 +205,8 @@ class AnalysisSpec(BaseModel):
 
 ```python
 from langchain_core.runnables import RunnableConfig
-from analyst_agent.graph import transcript_analyst_graph
-from analyst_agent.report_plan_models import AnalysisSpec
+from app.analyst_agent.graph import transcript_analyst_graph
+from app.analyst_agent.report_plan_models import AnalysisSpec
 
 graph = transcript_analyst_graph(verbose=False)
 
