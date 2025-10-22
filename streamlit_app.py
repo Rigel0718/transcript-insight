@@ -46,28 +46,20 @@ if "spec_saved" not in st.session_state:
 
 
 def build_analysis_spec_from_session_state() -> dict:
-
+    """Collect the AnalysisSpec payload using the latest session values."""
     return {
-        "focus": st.session_state.get("spec_focus", ["GPA trend", "major GPA"]),
+        "focus": st.session_state.get("spec_focus", "GPA trend, major GPA"),
         "audience": st.session_state.get("spec_audience", "student"),
         "audience_spec": st.session_state.get("spec_audience_spec", ""),
         "audience_goal": st.session_state.get("spec_audience_goal", "general insight"),
-        "audience_values": st.session_state.get("spec_audience_values", ""),
         "evaluation_criteria": st.session_state.get("spec_evaluation_criteria", ""),
         "decision_context": st.session_state.get("spec_decision_context", ""),
         "time_scope": st.session_state.get("spec_time_scope", "전체 학기"),
         "comparison_target": st.session_state.get("spec_comparison_target") or None,
-        "priority_focus": st.session_state.get("spec_priority_focus", ""),
         "tone": st.session_state.get("spec_tone", "neutral"),
         "language": st.session_state.get("spec_language", "ko"),
-        "detail_level": st.session_state.get("spec_detail_level", "balanced"),
         "insight_style": st.session_state.get("spec_insight_style", "descriptive"),
-        "evidence_emphasis": st.session_state.get("spec_evidence_emphasis", "medium"),
-        "tone_variation": st.session_state.get("spec_tone_variation") or None,
         "report_format": st.session_state.get("spec_report_format", "html"),
-        "output_format": st.session_state.get("spec_output_format", ["text","chart","table"]),
-        "include_recommendations": st.session_state.get("spec_include_recommendations", False),
-        "highlight_style": st.session_state.get("spec_highlight_style", "strengths"),
     }
 
 def clear_data_only():
@@ -158,10 +150,8 @@ async def run_analysis(transcript_payload: dict, report_placeholder):
         st.session_state.cost = cost
         st.session_state.analysis_run_id = response_state.get("run_id")
 
-        if st.session_state.spec_report_format:
-            report_path = Path(f'{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.{st.session_state.spec_report_format}')
-        else : 
-            report_path = Path(f'{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.html')
+        report_format = st.session_state.get("spec_report_format", "html") or "html"
+        report_path = Path(f"{CLIENT_DATA_DIR}/users/{session_id}/{session_id}.{report_format}")
         report_path.parent.mkdir(parents=True, exist_ok=True)
         with open(report_path, "w") as f:
             f.write(response_state.get("report"))
@@ -236,31 +226,23 @@ st.header("2) Analyst Settings & Run")
 with st.expander("⚙️ Analyst Settings", expanded=False):
     # Use a form so that "Save" applies all together (less clutter)
     with st.form("analyst_settings_form", clear_on_submit=False):
-        st.markdown("**Who/why**")
+        st.markdown("**Focus & Audience**")
+        st.text_input("Focus (comma or a single phrase)", value="GPA trend, major GPA", key="spec_focus")
         st.selectbox("Audience", ["student", "evaluator", "advisor"], index=0, key="spec_audience")
         st.text_input("Audience Spec (예: AI company recruiter)", value="", key="spec_audience_spec")
         st.text_input("Audience Goal", value="general insight", key="spec_audience_goal")
-        st.text_input("Audience Values (comma)", value="", key="spec_audience_values")
         st.text_input("Evaluation Criteria (comma)", value="", key="spec_evaluation_criteria")
         st.text_input("Decision Context (예: 채용 선발 / 장학금 심사)", value="", key="spec_decision_context")
         st.markdown("---")
         st.markdown("**Scope & Focus**")
         st.text_input("Time Scope", value="전체 학기", key="spec_time_scope")
         st.text_input("Comparison Target (optional)", value="", key="spec_comparison_target")
-        st.text_input("Priority Focus (comma)", value="", key="spec_priority_focus")
-        st.text_input("Focus (comma or a single phrase)", value="GPA trend, major GPA", key="spec_focus")
         st.markdown("---")
         st.markdown("**Style**")
         st.selectbox("Tone", ["neutral", "encouraging", "formal"], index=0, key="spec_tone")
         st.selectbox("Language", ["ko", "en"], index=0, key="spec_language")
-        st.selectbox("Detail Level", ["summary","balanced","in_depth"], index=1, key="spec_detail_level")
         st.selectbox("Insight Style", ["descriptive","comparative","predictive"], index=0, key="spec_insight_style")
-        st.selectbox("Evidence Emphasis", ["low","medium","high"], index=1, key="spec_evidence_emphasis")
-        st.text_input("Tone Variation (optional)", value="", key="spec_tone_variation")
         st.selectbox("Report Format", ["markdown","html"], index=1, key="spec_report_format")
-        st.multiselect("Output Format", ["text","chart","table","recommendation"], default=["text","chart","table"], key="spec_output_format")
-        st.checkbox("Include Recommendations", value=False, key="spec_include_recommendations")
-        st.selectbox("Highlight Style", ["numbers","growth","risk","strengths"], index=3, key="spec_highlight_style")
         saved = st.form_submit_button("💾 Save Settings")
         if saved:
             st.session_state.spec_saved = True

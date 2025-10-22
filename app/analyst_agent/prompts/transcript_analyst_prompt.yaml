@@ -18,7 +18,7 @@ messages:
       <global_goals>
       - 독자(audience)에 최적화된 **맞춤형 구성**(섹션 선택·순서·깊이)
       - MetricInsight / InformMetric의 **사실·수치만** 근거로 사용 (새 통계 생성 금지)
-      - analysis_spec의 **language, tone, detail_level, insight_style, evidence_emphasis, highlight_style** 충실 반영
+      - analysis_spec의 **language, tone, insight_style**을 충실히 반영하고, focus와 evaluation_criteria를 기준으로 강조점을 정함
       - **빈 섹션/빈 표/빈 캡션 출력 금지**, 거짓 경로/거짓 데이터 생성 금지
       </global_goals>
 
@@ -27,10 +27,9 @@ messages:
          - audience=="evaluator": 초반에 판단용 요약(Executive/Key Takeaways) 배치
          - audience=="advisor": 학생 상황 요약(InformMetric/경향) → 리스크/지원 필요 영역 → 실천 항목
          - audience=="student": 강점/개선점/다음 단계를 빠르게 노출
-      2) **priority_focus**와 **highlight_style**을 반영하여 섹션의 **순서·비중**을 조정.
-      3) **output_format**에 따라 text/table/chart/recommendation의 **존재 여부**와 배치 결정.
-      4) **include_recommendations==false**면 권고 섹션 생략. 빈 제목 금지.
-      5) **insight_style**
+      2) **focus**에 먼저 언급된 주제를 다루는 metric을 우선 배치하고, evaluation_criteria와 decision_context가 요구하는 판단 요소를 명시적으로 다룬다.
+      3) **comparison_target**가 존재하면 비교 설명을 포함하되, 실제로 제공된 비교 수치를 벗어나지 않는다.
+      4) **insight_style**
          - descriptive: 사실 중심 서술
          - comparative: 제공된 비교 정보(예: comparison_target)가 **분명히 존재할 때만** 비교적 표현
          - predictive: **새 수치 예측 금지**. 주어진 추세를 **신중한 서술**로 요약(“~경향을 보여줌” 수준)
@@ -41,17 +40,15 @@ messages:
         - Title & Meta: 제목/날짜/독자/목표
         - Reader-Fit Summary: 독자 맞춤 핵심 요약(3~6문장)
         - Student Snapshot: InformMetric 한 단락 요약 + 표(가능할 때)
-        - Focus Overview: analysis_spec.focus/priority_focus 요약
+        - Focus Overview: analysis_spec.focus 요약
         - Per-Metric Analysis: metric_insights 순회 섹션 (조건부 표/차트/포인트)
         - Strengths / Risks: 강점/리스크/주의 포인트
-        - Recommendations: actionable items (include_recommendations==true일 때만)
         - Caveats & Data Notes: metric별 caveats 통합(있을 때만)
       </section_library>
 
       <ordering_rules>
-        - priority_focus에 해당하는 metric을 **상단 우선 배치**.
-        - highlight_style이 "numbers"면 수치가 풍부한 metric을, "growth"면 추세 metric을, 
-          "risk"면 리스크 시사 metric을, "strengths"면 우수 성취 metric을 상대적으로 앞에 둔다.
+        - focus에서 먼저 등장한 키워드를 다루는 metric을 상단에 배치한다.
+        - evaluation_criteria 또는 decision_context에 직접 연결되는 metric은 핵심 섹션 앞부분에서 다룬다.
       </ordering_rules>
 
       <format_rules_common>
@@ -63,7 +60,7 @@ messages:
           * 근거 데이터가 전혀 없으면 해당 섹션을 **생략**한다.
           * 단, **데이터의 ‘부재’ 자체가 의미**를 갖는 경우(예: B0 이하 성적 없음, 학사 경고/낙제 없음 등)에는 섹션을 **유지**하고
             “해당 데이터 없음”을 명시한 뒤 그 시사점을 **1-2문장**으로 서술한다.
-          * “의미 있는 부재” 판단 기준: priority_focus·highlight_style과 직접 관련, 의사결정에 영향, 오해 방지 필요.
+          * “의미 있는 부재” 판단 기준: focus·evaluation_criteria와 직접 관련되고, 의사결정에 영향이 있는 경우.
       </format_rules_common>
 
       <conditional_rendering>
@@ -139,7 +136,7 @@ messages:
           * neutral: 중립적·건조한 서술
           * encouraging: 긍정/개선 유도 표현(과장/추정 없이)
           * formal: 격식 있고 간결한 문장
-        - evidence_emphasis에 따라 수치 인용 빈도/정확성 강조(새 계산은 금지).
+        - evaluation_criteria에 언급된 항목을 해석할 때는 관련 metric에서 해당 기준을 어떻게 충족/미충족하는지 명확히 연결한다.
       </tone_language_rules>
 
       <do_not_output>
@@ -167,7 +164,7 @@ messages:
 
       위 입력만을 근거로,
       - **analysis_spec.report_format**(markdown|html)을 준수하되, 고정 목차 없이 **동적으로 최적화된 보고서 구조**를 설계·작성하라.
-      - **audience / audience_spec / audience_goal / priority_focus / output_format / include_recommendations / highlight_style**를 반영해 섹션을 선택·배치하라.
+      - **audience / audience_spec / audience_goal / focus / evaluation_criteria / decision_context / comparison_target**을 반영해 섹션을 선택·배치하라.
       - 표는 **key_numbers 또는 dataframe/csv_path**가 있을 때만, 차트는 **chart_path가 있을 때만** 포함한다. 없으면 해당 요소 전체를 생략한다(이미지/캡션/표 임의 생성 금지).
       - 차트 이미지를 포함하는 경우, 바로 다음 줄에 **한 줄 공백**을 두고 이후 내용을 이어서 작성하라.
       - 비교/추세/예측 표현은 **주어진 데이터 범위 안에서만** 허용한다(재계산·추정 금지).

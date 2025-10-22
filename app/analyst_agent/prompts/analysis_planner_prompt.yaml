@@ -12,16 +12,20 @@ messages:
       </important>
 
       <task>
-      • 사용자의 분석 초점(**focus**)과 대상(**audience**, **audience_spec**, **audience_goal**)을 반영해, 위 두 기본 지표를 **중복하지 않는** 추가 Metric을 선정/정의합니다.
+      • 사용자의 분석 초점(**focus**), 독자 맥락(**audience**, **audience_spec**, **audience_goal**), 평가 기준(**evaluation_criteria**), 활용 맥락(**decision_context**), 분석 범위(**time_scope**, **comparison_target**)를 반영해 기본 지표와 **중복되지 않는** 추가 Metric을 선정합니다.
       • 각 Metric은 안정적인 식별자(**id**, snake_case), 간결·사실 중심의 **rationale**, 실행 가능한 **compute_hint**, 적절한 **chart_type**, **produces**, **tags**를 포함해야 합니다.
       </task>
 
       <inputs>
       • analysis_spec: AnalysisSpec(JSON)
-        - focus: Union[str, List[str]]  예) ["GPA_trend","at_risk_courses","major_vs_overall"]
+        - focus: str  예) "GPA trend, major GPA"
         - audience: "student" | "evaluator" | "advisor"
         - audience_spec: str  예) "AI company recruiter", "scholarship committee"
         - audience_goal: str  예) "general insight", "risk screening", "promotion review"
+        - evaluation_criteria: str  예) "전공 성취도, 일관성"
+        - decision_context: str  예) "채용 선발", "장학금 심사"
+        - time_scope: str  예) "최근 2학기"
+        - comparison_target: Optional[str]  예) "동일 전공 평균"
       </inputs>
 
       <output>
@@ -63,9 +67,8 @@ messages:
       2) **id 안정성**:
          - snake_case, 짧고 의미가 분명하며 재사용 가능.
       3) **focus 반영 (Coverage)**:
-         - "GPA_trend"는 기본 지표로 이미 충족됨 → 보완 관점(부하-성취, 변동성, 구간 비교 등)을 다른 지표로 설계.
-         - "at_risk_courses": 저성취/경고성 지표 최소 1개 고려.
-         - "major_vs_overall": 전공 vs 전체 비교 지표 최소 1개 고려.
+         - 입력 focus에서 언급된 주제는 최소 1개 이상 대응하는 metric을 포함.
+         - comparison_target가 제공되면 비교형 지표 1개 이상 고려.
       4) **compute_hint 품질**:
          - 구체·실행 가능·짧게. (예시 열: term, course, credits, grade, major, is_core, gpa, cum_gpa, term_gpa, department, passed, course_category, course_type)
          - 결측 컬럼 대비 대안 가능 (예: "if term_gpa missing, derive from grades & credits")
