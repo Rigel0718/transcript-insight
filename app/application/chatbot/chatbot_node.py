@@ -6,6 +6,7 @@ from app.core.util import load_prompt_template
 from app.application.chatbot.state import ChatbotState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
+from langchain_core.output_parsers import StrOutputParser
 from langchain_community.callbacks.manager import get_openai_callback
 
 
@@ -26,7 +27,7 @@ class ChatbotNode(BaseNode):
 
     def run(self, state: ChatbotState) -> ChatbotState:
         prompt = load_prompt_template(PROMPTS_DIR / "chatbot_prompt.yaml")
-        chain = prompt | self.llm
+        chain = prompt | self.llm | StrOutputParser()
         with get_openai_callback() as cb:
             result = chain.invoke(state)
             cost = cb.total_cost
