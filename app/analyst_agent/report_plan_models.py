@@ -14,44 +14,88 @@ class ChartSpec(BaseModel):
     options: Dict = Field(default_factory=dict)  # aggregation, hue, facet, etc..
 
 
-# class AnalysisSpec(BaseModel):
-#     focus: List[str]  # ["GPA_trend","at_risk_courses","major_vs_overall"]
-#     audience: Literal["student","evaluator","advisor"] = "student"
-#     audience_spec: str = ""  # ex) "AI company recruiter", "scholarship committee", "promotion reviewer"
-#     audience_goal: str = "general insight"  # ex) "general insight", "risk screening", "promotion review"
-#     tone: Literal["neutral","encouraging","formal"] = "neutral"
-#     language: Literal["ko","en"] = "ko"
-
 class AnalysisSpec(BaseModel):
     # 분석 주제
-    focus: Union[str, List[str]] = ["GPA trend", "major GPA"]
-    
+    focus: str = Field(
+        default="GPA trend, major GPA",
+        description=(
+            "이번 분석에서 중점적으로 다룰 초점. 쉼표로 여러 항목을 구분해 입력할 수 있음. "
+            "예: 전체 GPA 추이, 전공 과목 성적, 특정 과목군 성취도 등"
+        ),
+        examples=["GPA trend, major GPA", "core courses performance", "overall GPA improvement"],
+    )
+
     # 독자 맥락
-    audience: Literal["student","evaluator","advisor"] = "student"
-    audience_spec: str = ""  
-    audience_goal: str = "general insight"
-    audience_values: Union[str, List[str]]     = []      # ex) ["성실성","논리적 사고"]
-    evaluation_criteria: Union[str, List[str]]     = []      # ex) ["전공 성취도", "일관성"]
-    decision_context: str = ""      # ex) "채용 선발", "장학금 심사"
-    
+    audience: Literal["student", "evaluator", "advisor"] = Field(
+        default="student",
+        description="리포트의 주요 대상(학생 본인 / 평가자 / 조언자).",
+        examples=["student", "evaluator", "advisor"],
+    )
+    audience_spec: str = Field(
+        default="",
+        description=(
+            "대상이 평가자/조언자인 경우 구체화(예: AI 기업 채용 담당자, 학과 장학금 심사위원, 멘토 교수). "
+            "학생 본인인 경우 비워둘 수 있음."
+        ),
+        examples=["AI 기업 채용 담당자", "장학금 심사위원", ""],
+    )
+    audience_goal: str = Field(
+        default="general insight",
+        description=(
+            "대상이 리포트에서 얻고자 하는 목표. "
+            "예: 일반적 통찰, 개선 필요 영역 파악, 합격 가능성 평가 등"
+        ),
+        examples=["general insight", "identify improvement areas", "admission likelihood"],
+    )
+    evaluation_criteria: str = Field(
+        default="",
+        description=(
+            "참고할 평가 기준을 쉼표로 구분하여 입력. "
+            "예: 전공 성취도, 일관성, 도전 과목 이수, 평균 학점 등. 없으면 비워둠."
+        ),
+        examples=["전공 성취도, 일관성", "도전 과목 이수", ""],
+    )
+    decision_context: str = Field(
+        default="",
+        description="이 분석이 사용될 맥락. 예: 채용 전형, 장학금 심사, 진로 상담 등.",
+        examples=["채용 전형", "장학금 심사", ""],
+    )
+
     # 분석 범위
-    time_scope: str = "전체 학기"
-    comparison_target: Optional[str] = None
-    priority_focus: Union[str, List[str]]           # 분석 중 가장 강조할 포인트
-    
+    time_scope: str = Field(
+        default="전체 학기",
+        description="분석 기간 범위. 기본은 전체 학기. 예: 최근 2학기, 3학년, 2022~2024 등.",
+        examples=["전체 학기", "최근 2학기", "3학년"],
+    )
+    comparison_target: Optional[str] = Field(
+        default=None,
+        description=(
+            "비교 기준 또는 대상(옵션). 예: 학과 평균, 지난 학기 본인 성적, 상위 10% 기준 등."
+        ),
+        examples=["학과 평균", "지난 학기 본인", None],
+    )
+
     # 보고서 톤/스타일
-    tone: Literal["neutral","encouraging","formal"] = "neutral"
-    language: Literal["ko","en"] = "ko"
-    detail_level: Literal["summary","balanced","in_depth"] = "balanced"
-    insight_style: Literal["descriptive","comparative","predictive"] = "descriptive"
-    evidence_emphasis: Literal["low","medium","high"] = "medium"
-    tone_variation: Optional[str] = None
-    report_format: Literal["markdown","html"] = "html"
-    
-    # 산출물 구성
-    output_format: List[Literal["text","chart","table","recommendation"]] = ["text","chart", "table"]
-    include_recommendations: bool = False
-    highlight_style: Literal["numbers","growth","risk","strengths"] = "strengths"
+    tone: Literal["neutral", "encouraging", "formal"] = Field(
+        default="neutral",
+        description="리포트의 문체 톤(중립적 / 격려하는 / 공식적인).",
+        examples=["neutral", "encouraging", "formal"],
+    )
+    language: Literal["ko", "en"] = Field(
+        default="ko",
+        description="리포트 작성 언어(ko | en).",
+        examples=["ko", "en"],
+    )
+    insight_style: Literal["descriptive", "comparative", "predictive"] = Field(
+        default="descriptive",
+        description="인사이트 방식: 서술형(descriptive) / 비교형(comparative) / 예측형(predictive).",
+        examples=["descriptive", "comparative", "predictive"],
+    )
+    report_format: Literal["markdown", "html"] = Field(
+        default="html",
+        description="리포트 산출 포맷. 일반 사용자는 HTML 기본값을 권장.",
+        examples=["html", "markdown"],
+    )
 
 
 
