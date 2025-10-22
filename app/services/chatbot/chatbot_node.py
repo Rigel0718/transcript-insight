@@ -3,7 +3,7 @@ from typing import Optional
 
 from app.core import BaseNode
 from app.core.util import load_prompt_template
-from app.application.chatbot.state import ChatbotState
+from app.services.chatbot.state import ChatbotState
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import StrOutputParser
