@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, Any, Union
 from pathlib import Path
+from app.core.logger import NoopRunLogger
 
 class Env(BaseModel):
     model_config = ConfigDict(
@@ -10,6 +11,5 @@ class Env(BaseModel):
     )
     user_id: str = Field(default="anonymous")
     work_dir: Union[str, Path] = Field(default=".")
-    # RunLogger 대신 Any (외부 주입)
-    run_logger: Optional[Any] = None
+    run_logger: Any = Field(default_factory=NoopRunLogger)
     url: Optional[str] = None

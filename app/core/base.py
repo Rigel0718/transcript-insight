@@ -19,8 +19,8 @@ class BaseNode(ABC, Generic[T]):
         self.track_time = track_time
         self.queue = queue
         self.env = env
-        self.run_logger = logger or env.run_logger
-        self.logger = logger or (env.run_logger if hasattr(env, "run_logger") else None) or NoopRunLogger()
+        self.run_logger = getattr(env, "run_logger", None)
+        self.logger: LoggerAdapter | None = logger
 
     @abstractmethod
     def run(self, state: T) -> T:
@@ -30,6 +30,7 @@ class BaseNode(ABC, Generic[T]):
         if self.logger is not None:
             return
         if not self.run_logger:
+            self.logger = NoopRunLogger().get_logger()
             return
         node_title = self.name
         run_id = state.get('run_id') if isinstance(state, dict) else None
