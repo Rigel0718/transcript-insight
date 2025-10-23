@@ -53,20 +53,22 @@ class RunLogger:
             formatter = logging.Formatter(self._FMT_WITH_NODE_NAME + " [%(threadName)s]", datefmt=self._DATEFMT)
             node_filter = _NodeNameFilter("-")
 
-            fh = RotatingFileHandler(
+            file_handler = RotatingFileHandler(
                 self.log_path,
                 maxBytes=self._MAX_BYTES,
                 backupCount=self._BACKUP_COUNT,
                 encoding="utf-8",
             )
-            fh.setFormatter(formatter)
-            fh.addFilter(node_filter)
-            root_logger.addHandler(fh)
+            file_handler.setFormatter(formatter)
+            file_handler.addFilter(node_filter)
+            file_handler.setLevel(self.level)
+            root_logger.addHandler(file_handler)
 
-            ch = logging.StreamHandler()
-            ch.setFormatter(formatter)
-            ch.addFilter(node_filter)
-            root_logger.addHandler(ch)
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            console_handler.addFilter(node_filter)
+            console_handler.setLevel(logging.INFO)
+            root_logger.addHandler(console_handler)
 
             self._configured_for = run_id
         
