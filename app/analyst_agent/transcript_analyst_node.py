@@ -43,8 +43,8 @@ class TranscriptAnalystNode(BaseNode):
         with get_openai_callback() as cb:
             result = chain.invoke(input_values)
             cost = cb.total_cost
-        self.logger.info(f"[{self.name}]: {result}")
-        self.logger.info(f'COST : {cost}')
+        self.logger.debug("report_text=%s", result)
+        self.logger.debug("cost=%s", cost)
         state['cost'] = cost
         state['report'] = result
         return state

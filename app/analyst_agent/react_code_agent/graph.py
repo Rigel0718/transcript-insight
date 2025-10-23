@@ -60,7 +60,7 @@ class ChartAgentExecutorNode(BaseNode):
             'cost': cost,
         }
 
-        self.logger.info("Invoking chart_code_react_agent …")
+        self.logger.debug("Invoking chart_code_react_agent …")
         self.logger.debug(f"chart_code_react_agent input preview: {input_values}")
 
         result : ChartState = chart_graph.invoke(

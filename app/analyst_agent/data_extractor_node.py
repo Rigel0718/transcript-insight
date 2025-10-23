@@ -65,14 +65,14 @@ class DataExtractorNode(BaseNode):
             result = chain.invoke(input_values)
             cost = cb.total_cost
 
-        self.logger.info(f"[{self.name}]: {result}")
+        self.logger.debug("extracted_data=%s", result)
         inform_metric = InformMetric(**result['inform_metric'])
         state['inform_metric'] = inform_metric
         for metric_spec in metric_plan:
             if metric_spec.extraction_mode == "semantic":
                 metric_spec.semantic_course_names = result['semantic_course_names'][metric_spec.id]
         state['metric_plan'] = metric_plan
-        self.logger.info(f'COST : {cost}')
+        self.logger.debug("cost=%s", cost)
         state['cost'] = cost
 
         return state

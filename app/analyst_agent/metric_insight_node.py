@@ -39,9 +39,9 @@ class MetricInsightNode(BaseNode):
         chain = prompt | self.llm.with_structured_output(MetricInsight)
         
         metric_spec: MetricSpec = state['metric_spec']
-        self.logger.info(f"[{self.name}]: {metric_spec}")
+        self.logger.debug("metric_spec=%s", metric_spec)
         analyst = state['analyst']
-        self.logger.info(f"[{self.name}]: {analyst}")
+        self.logger.debug("analysis_spec=%s", analyst)
         
         work_dir = self.env.work_dir
         user_id = self.env.user_id
@@ -52,10 +52,10 @@ class MetricInsightNode(BaseNode):
             base_dir = self._abs(self._abs(work_dir, "users",user_id))
 
         csv_path = state['csv_path']
-        self.logger.info(f"[{self.name}]: {csv_path}")
+        self.logger.debug("csv_path=%s", csv_path)
         relative_csv_path = to_relative_path(abs_path=csv_path, base_dir=base_dir)
         chart_path = state['chart_path']
-        self.logger.info(f"[{self.name}]: {chart_path}")
+        self.logger.debug("chart_path=%s", chart_path)
         relative_chart_path = to_relative_path(abs_path=chart_path, base_dir=base_dir)
         if self.env.url:
             relative_csv_path = os.path.join(self.env.url, "artifacts", relative_csv_path)
@@ -81,14 +81,14 @@ class MetricInsightNode(BaseNode):
                     }
                 )
             cost = cb.total_cost
-        self.logger.info(f"[{self.name}]: {result}")
+        self.logger.debug("metric_insight=%s", result)
 
         metric_insight_v2 = MetricInsightv2(**result.model_dump()).model_copy(update={
         "dataframe": dataframe,
         "csv_path": relative_csv_path,           
         "chart_path": relative_chart_path,       
         })
-        self.logger.info(f'COST : {cost}')
+        self.logger.debug("cost=%s", cost)
         state['cost'] += cost
         state['metric_insight'] = metric_insight_v2
         return state

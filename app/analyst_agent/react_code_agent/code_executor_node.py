@@ -118,7 +118,7 @@ class DataFrameCodeExecutorNode(BaseNode):
 
     def run(self, state: DataFrameState) -> DataFrameState:
         if is_alert(state.get("status")):
-            self.logger.info("Upstream status='alert'. Skipping DataFrameCodeExecutorNode.run and returning state as-is.")
+            self.logger.debug("Upstream status='alert'. Skipping DataFrameCodeExecutorNode.run and returning state as-is.")
             return state
         code = state.get("df_code")
         if not code or not code.strip():
@@ -162,7 +162,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                 try:
                     df = g_env["RESULT_DF"]
                     g_env["save_df"](df, "result")
-                    self.logger.info("RESULT_DF saved as primary result")
+                    self.logger.debug("RESULT_DF saved as primary result")
                 except Exception as e:
                     errors.append(f"Failed to save RESULT_DF: {e}")
                     self.logger.exception("Failed to save RESULT_DF")
@@ -171,7 +171,7 @@ class DataFrameCodeExecutorNode(BaseNode):
                 for k, v in (g_env or {}).items():
                     if isinstance(v, pd.DataFrame):
                         g_env["save_df"](v, f"auto_{k}")
-                        self.logger.info(f"Auto-detected DataFrame saved as auto_{k}")
+                        self.logger.debug("Auto-detected DataFrame saved as auto_%s", k)
                         break
 
             # collect metas
@@ -215,8 +215,8 @@ class DataFrameCodeExecutorNode(BaseNode):
 
 
             attempts = (state.get("attempts", 0)) + 1
-            self.log(message=stdout_stream.getvalue())
-            self.logger.info("DataFrame execution node completed")
+            self.log(message=stdout_stream.getvalue(), level=logging.DEBUG)
+            self.logger.debug("DataFrame execution node completed")
             self.logger.debug(f"DF handles: {df_handles}")
             self.logger.debug(f"DF meta: {df_meta}")
 
@@ -337,7 +337,7 @@ class ChartCodeExecutorNode(BaseNode):
 
     def run(self, state: ChartState) -> ChartState:
         if is_alert(state.get("status")):
-            self.logger.info("Upstream status='alert'. Skipping ChartCodeExecutorNode.run and returning state as-is.")
+            self.logger.debug("Upstream status='alert'. Skipping ChartCodeExecutorNode.run and returning state as-is.")
             return state
         code = state["chart_code"]
         if not code or not code.strip():
@@ -368,7 +368,7 @@ class ChartCodeExecutorNode(BaseNode):
                 g_env = self._create_exec_env_for_chart(registry, artifact_dir, applied)
                 l_env: Dict[str, Any] = {}
 
-                self.logger.info("Executing chart_code …")
+                self.logger.debug("Executing chart_code …")
 
                 with redirect_stdout(stdout_stream), redirect_stderr(stderr_stream):
                     with warnings.catch_warnings(record=True) as warning_list:
@@ -408,10 +408,10 @@ class ChartCodeExecutorNode(BaseNode):
 
             if not registry["images"]:
                 goto = 'chart_executor_node'
-                self.logger.info("Chart image not found. Retrying chart execution.")
+                self.logger.debug("Chart image not found. Retrying chart execution.")
             else :
                 goto = END
-                self.logger.info("Chart image found. Chart execution completed.")
+                self.logger.debug("Chart image found. Chart execution completed.")
 
             return Command(goto=goto, update=state)
 

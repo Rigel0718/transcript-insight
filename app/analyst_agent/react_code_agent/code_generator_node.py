@@ -47,10 +47,10 @@ class DataFrameCodeGeneratorNode(BaseNode):
         try:
             prompt = load_prompt_template(PROMPTS_DIR / "generate_dataframe_code.yaml")
             chain = prompt | self.llm.with_structured_output(DataFrameSpec)
-            self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
+            self.logger.debug("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
-            state.setdefault("errors", []).append(f"[DataFrameCodeGeneratorNode] chain init error: {e}")
+            state.setdefault("errors", []).append(f"{self.name} chain init error: {e}")
             return state
 
         input_query = state.get("user_query", "")
@@ -64,15 +64,15 @@ class DataFrameCodeGeneratorNode(BaseNode):
         
         inc_cost = 0.0
         try:
-            self.logger.info("Invoking LLM for df_code/df_info …")
+            self.logger.debug("Invoking LLM for df_code/df_info …")
             with get_openai_callback() as cb:
                 result = chain.invoke(input_values)
             inc_cost = getattr(cb, "total_cost", 0.0)
-            self.logger.info("LLM invocation done")
+            self.logger.debug("LLM invocation done")
         except Exception as e:
             status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
-            state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
+            state.setdefault("errors", []).append(f"{self.name} llm invoke error: {e}")
             state['status'] = status
         finally:
             state['cost'] = state.get('cost', 0.0) + float(inc_cost)
@@ -92,9 +92,9 @@ class DataFrameCodeGeneratorNode(BaseNode):
         state['df_name'] = df_name
         state['df_desc'] = df_desc
 
-        self.logger.info(f"df_code: {df_code}")
-        self.logger.info(f"df_name: {df_name}")
-        self.logger.info(f"df_desc: {df_desc}")
+        self.logger.debug("df_code=%s", df_code)
+        self.logger.debug("df_name=%s", df_name)
+        self.logger.debug("df_desc=%s", df_desc)
         self.logger.debug("DF CodeGen end")
         return state
 
@@ -121,10 +121,10 @@ class ChartCodeGeneratorNode(BaseNode):
         try:
             prompt = load_prompt_template(PROMPTS_DIR / "generate_chart_code.yaml")
             chain = prompt | self.llm.with_structured_output(ChartSpec)
-            self.logger.info("LLM chain constructed (prompt → llm → JSON parser)")
+            self.logger.debug("LLM chain constructed (prompt → llm → JSON parser)")
         except Exception as e:
             self.logger.exception("Failed to construct LLM chain")
-            state.setdefault("errors", []).append(f"[{self.name}] chain init error: {e}")
+            state.setdefault("errors", []).append(f"{self.name} chain init error: {e}")
             return state
         
         input_query = state.get("user_query", "")
@@ -135,7 +135,7 @@ class ChartCodeGeneratorNode(BaseNode):
         code_error = state.get("error_log", "")
         df_meta = state.get("df_meta", {})
 
-        self.logger.info("user_query received")
+        self.logger.debug("user_query received")
         self.logger.debug(f"user_query: {input_query}")
         if df_name is None:
             self.logger.warning("df_name is missing (expected df_name)")
@@ -165,7 +165,7 @@ class ChartCodeGeneratorNode(BaseNode):
         if not csv_path or not os.path.isfile(csv_path):
             msg = f"CSV not ready or missing: {csv_path}, Must going to 'to_gen_df'"
             self.logger.warning(msg)
-            state.setdefault("errors", []).append(f"[{self.name}] {msg}")
+            state.setdefault("errors", []).append(f"{self.name} {msg}")
             state["status"] = Status(status="alert", message=msg)
             return state
 
@@ -188,15 +188,15 @@ class ChartCodeGeneratorNode(BaseNode):
         
         inc_cost = 0.0
         try:
-            self.logger.info("Invoking LLM for chart code/info …")
+            self.logger.debug("Invoking LLM for chart code/info …")
             with get_openai_callback() as cb:
                 chart_generator_result = chain.invoke(input_values)
             inc_cost = getattr(cb, "total_cost", 0.0)
-            self.logger.info("LLM invocation done")
+            self.logger.debug("LLM invocation done")
         except Exception as e:
             status = Status(status="alert", message=f"LLM invocation failed: {e}")
             self.logger.exception("LLM invocation failed")
-            state.setdefault("errors", []).append(f"[{self.name}] llm invoke error: {e}")
+            state.setdefault("errors", []).append(f"{self.name} llm invoke error: {e}")
             state['status'] = status
         finally:
             state['cost'] = state.get('cost', 0.0) + float(inc_cost)
@@ -221,17 +221,17 @@ class ChartCodeGeneratorNode(BaseNode):
 
         if not chart_code or str(chart_code).strip().lower() == "none":
             state["previous_node"] = "chart_code_generator"
-            self.logger.info("No chart code returned → route to 'chart_code_generator'")
+            self.logger.debug("No chart code returned → route to 'chart_code_generator'")
         else:
             state["previous_node"] = "code_executor"
-            self.logger.info("Chart code returned → route to 'code_executor'")
+            self.logger.debug("Chart code returned → route to 'code_executor'")
 
         state['chart_code'] = chart_code
         state['chart_name'] = chart_name
         state['chart_desc'] = chart_desc
 
-        self.logger.info(f"chart_code: {chart_code}")
-        self.logger.info(f"chart_name='{chart_name}'")
-        self.logger.info(f"chart_desc='{chart_desc}'")
+        self.logger.debug("chart_code=%s", chart_code)
+        self.logger.debug("chart_name=%s", chart_name)
+        self.logger.debug("chart_desc=%s", chart_desc)
         self.logger.debug("Chart CodeGen end")
         return state

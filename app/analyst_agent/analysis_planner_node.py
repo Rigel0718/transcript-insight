@@ -61,14 +61,14 @@ class AnalysisPlannerNode(BaseNode):
         chain = prompt | self.llm.with_structured_output(MetricPlan)
         
         analyst = state['analyst']
-        self.logger.info(f"[{self.name}]: {analyst}")
+        self.logger.debug("analysis_spec=%s", analyst)
 
         with get_openai_callback() as cb:
             result = chain.invoke(input = {'analysis_spec':analyst})
             cost = cb.total_cost
-        self.logger.info(f"[{self.name}]: {result}")
+        self.logger.debug("metric_plan_result=%s", result)
         default_metrics = [gpa_trend_metric, credit_category_share_metric]
         state['metric_plan'] = default_metrics + result.metrics
-        self.logger.info(f'COST : {cost}')
+        self.logger.debug("cost=%s", cost)
         state['cost'] = cost
         return state
