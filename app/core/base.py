@@ -27,25 +27,39 @@ class BaseNode(ABC, Generic[T]):
         pass
     
     def _setup_logger(self, state: T):
-        if self.logger is not None:
-            return
-        if not self.run_logger:
-            self.logger = NoopRunLogger().get_logger()
-            return
-        node_title = self.name
-        run_id = state.get('run_id') if isinstance(state, dict) else None
-        if not run_id:
-            return
-        self.logger = self.run_logger.get_logger(
-            work_dir=self.env.work_dir,
-            user_id=self.env.user_id,
-            run_id=run_id,
-            node_name=node_title,
-        )
+        """self.logger가 항상 LoggerAdapter가 되도록 설정한다.
+        - 주입(logger 파라미터)이 있으면 그대로 사용
+        - 없으면 env.run_logger.get_logger(...) 또는 Noop로 대체
+        - run_id가 없으면 NoopRunLogger로 일관화
+        """
 
+        if isinstance(self.logger, LoggerAdapter):
+            return
+
+        run_id = None
+        try:
+            run_id = state.get("run_id")
+        except Exception:
+            run_id = None
+        
+        node_name = getattr(self, "name", self.__class__.__name__)
+        work_dir = getattr(self.env, "work_dir", ".")
+        user_id = getattr(self.env, "user_id", "anonymous")
+
+        if not run_id:
+            # run_id = '-'로 일관화
+            self.logger = NoopRunLogger().get_logger(work_dir, user_id, "-", node_name)
+            return
+
+        run_logger = getattr(self.env, "run_logger", None) or NoopRunLogger()
+        self.logger = run_logger.get_logger(work_dir, user_id, run_id, node_name)
 
     def log(self, message: str, level: int = logging.INFO, **kwargs):
-        # Prefer the structured run logger when available; otherwise fall back
+        logger = self.logger
+
+        if not isinstance(logger, LoggerAdapter):
+            logger = NoopLoggerAdapter()
+            self.logger = logger
         if self.logger is not None:
             self.logger.log(level, message, extra={**kwargs})
         else:
