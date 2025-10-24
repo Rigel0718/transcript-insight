@@ -1,6 +1,6 @@
 import logging, os, time, threading
 from logging.handlers import RotatingFileHandler
-from typing import Optional
+from typing import Optional, Protocol
 from typing import TYPE_CHECKING
 from logging import LoggerAdapter
 if TYPE_CHECKING:
@@ -88,6 +88,10 @@ class RunLogger:
         name = root.name if node_name is None else f"{root.name}.{node_name}"
         base = logging.getLogger(name)
         return logging.LoggerAdapter(base, {"node_name": node_name or "-"})
+
+class RunLoggerLike(Protocol):
+    def get_logger(self, work_dir: str, user_id: str, run_id: str, node_name: Optional[str] = None) -> LoggerAdapter:
+        ...
 
 class NoopLoggerAdapter(LoggerAdapter):
     def __init__(self):
