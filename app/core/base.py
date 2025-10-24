@@ -60,10 +60,9 @@ class BaseNode(ABC, Generic[T]):
         if not isinstance(logger, LoggerAdapter):
             logger = NoopLoggerAdapter()
             self.logger = logger
-        if self.logger is not None:
-            self.logger.log(level, message, extra={**kwargs})
-        else:
-            logging.getLogger(self.name).log(level, message)
+        extras_from_user = kwargs.pop("extra", {})
+        extra = {**extras_from_user, **kwargs}
+        logger.log(level, message, extra=extra)
 
     def emit_event(self, status: str, **extras):
         if self.queue:
