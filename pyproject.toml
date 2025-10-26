@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4>=4.13.4",
     "ipython>=8.36.0",
-    "langchain>=0.3.25",
+    "langchain==1.0.2",
     "langchain-community>=0.3.24",
     "langchain-core>=0.3.62",
     "lxml>=5.4.0",
@@ -19,7 +19,6 @@ dependencies = [
     "langchain-openai>=0.3.18",
     "fastapi[standard]>=0.115.14",
     "streamlit>=1.46.1",
-    "langchain-experimental>=0.3.4",
     "matplotlib>=3.10.3",
     "seaborn>=0.13.2",
     "websockets>=12.0",
