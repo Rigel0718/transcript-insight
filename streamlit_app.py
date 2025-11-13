@@ -160,6 +160,14 @@ async def run_analysis(transcript_payload: dict, report_placeholder):
         _call_analyze()
     )
 
+async def save_spec_to_backend():
+    spec = build_analysis_spec_from_session_state()
+    async with httpx.AsyncClient(timeout=10) as client:
+        await client.post(
+            f"{BACKEND_URL}/spec/{session_id}",
+            json=spec
+        )
+
 
 st.title("📄 Transcript Insight")
 
@@ -246,7 +254,8 @@ with st.expander("⚙️ Analyst Settings", expanded=False):
         saved = st.form_submit_button("💾 Save Settings")
         if saved:
             st.session_state.spec_saved = True
-            st.toast("Analyst settings saved.", icon="✅")
+            asyncio.run(save_spec_to_backend())
+            st.toast("Analyst settings saved + backend updated.", icon="✅")
 
 report_placeholder = st.empty()
 analyze_disabled = st.session_state.final_text is None
